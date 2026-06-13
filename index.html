@@ -113,7 +113,6 @@
     </style>
 </head>
 
-<!-- CLASS pb-12 DIHAPUS DARI BODY AGAR FOOTER MENTOK KE BAWAH -->
 <body class="bg-gray-100 min-h-screen font-sans overflow-x-hidden w-full max-w-full">
 
     <header class="bg-white shadow-md py-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4 sticky top-0 z-50">
@@ -820,16 +819,31 @@
                 };
                 const sTotalText = { ...sTotal, alignment: { horizontal: "left", vertical: "center" } };
 
-                let headerRow = ["NAMA PAKET", "BERAT KIRIMAN (KG)", "NILAI PROYEK (MARGIN 15%)", "DPP", "PPN (1.1%)", "COLLECTING", "PROCESSING"];
+                // HEADER BARU SESUAI REQUEST
+                let headerRow = [
+                    "NAMA PAKET", 
+                    "BERAT AKTUAL (KG)", 
+                    "PANJANG (CM)", 
+                    "LEBAR (CM)", 
+                    "TINGGI (CM)", 
+                    "BERAT VOLUMETRIK (KG)", 
+                    "CHARGEABLE WEIGHT (KG)", 
+                    "NILAI PROYEK (MARGIN 15%)", 
+                    "DPP", 
+                    "PPN (1.1%)", 
+                    "COLLECTING", 
+                    "PROCESSING"
+                ];
                 globalRutes.forEach(r => headerRow.push(r.nama.toUpperCase()));
                 headerRow.push(globalTersier.nama.toUpperCase(), "DELIVERY", "TOTAL OPTIMALISASI", "OVERHEAD (5%)", "COF", "TOTAL BIAYA", "LABA", "MARGIN (%)");
                 
-                // Injeksi Style ke Header
                 let styledHeaderRow = headerRow.map(h => ({ v: h, t: 's', s: sHeader }));
                 wsData.push(styledHeaderRow);
 
-                let iB = 1, iNP = 2, iDPP = 3, iPPN = 4, iCol = 5, iPro = 6;
-                let iFirstRute = 7;
+                // INDEKS KOLOM BARU
+                let iAct = 1, iP = 2, iL = 3, iT = 4, iVol = 5, iCW = 6;
+                let iNP = 7, iDPP = 8, iPPN = 9, iCol = 10, iPro = 11;
+                let iFirstRute = 12;
                 let iTer = iFirstRute + globalRutes.length;
                 let iDeliv = iTer + 1;
                 let iOpt = iDeliv + 1;
@@ -843,11 +857,36 @@
                 pkts.forEach((row, index) => {
                     let R = index + 2; 
                     let pNama = row.querySelector('.paket-nama').value.toUpperCase() || `PAKET ${index+1}`;
-                    let pCW = parseFloat(row.querySelector('.paket-cw').value) || 1;
+                    
+                    // Ambil nilai mentah dari DOM
+                    let pAct = parseFloat(row.querySelector('.paket-aktual').value) || 0;
+                    let pP = parseFloat(row.querySelector('.paket-p').value) || 0;
+                    let pL = parseFloat(row.querySelector('.paket-l').value) || 0;
+                    let pT = parseFloat(row.querySelector('.paket-t').value) || 0;
 
                     let rowData = [];
                     rowData[0] = { v: pNama, t: 's', s: sDataText };
-                    rowData[iB] = { t: 'n', v: pCW, s: sDataNum };
+                    rowData[iAct] = { t: 'n', v: pAct, s: sDataNum };
+                    rowData[iP] = { t: 'n', v: pP, s: sDataNum };
+                    rowData[iL] = { t: 'n', v: pL, s: sDataNum };
+                    rowData[iT] = { t: 'n', v: pT, s: sDataNum };
+
+                    // Konversi index ke huruf kolom Excel (e.g., iAct=1 -> 'B', iVol=5 -> 'F')
+                    let colAct = getColName(iAct); // B
+                    let colP = getColName(iP); // C
+                    let colL = getColName(iL); // D
+                    let colT = getColName(iT); // E
+                    let colVol = getColName(iVol); // F
+                    let colCW = getColName(iCW); // G
+
+                    // RUMUS VOLUMETRIK
+                    rowData[iVol] = { t: 'n', f: `${colP}${R}*${colL}${R}*${colT}${R}/4000`, z: '0.00', s: sDataNum };
+                    
+                    // RUMUS CHARGEABLE WEIGHT (Max Aktual/Volumetrik, pembulatan atas kelipatan 1 jika desimal > 0.3)
+                    let maxStr = `MAX(${colAct}${R},${colVol}${R})`;
+                    let formulaCW = `MAX(1, IF((${maxStr}-INT(${maxStr}))>0.3, INT(${maxStr})+1, INT(${maxStr})))`;
+                    rowData[iCW] = { t: 'n', f: formulaCW, s: sDataNum };
+
                     rowData[iNP] = { t: 'n', f: `${getColName(iDPP)}${R}*101.1/100`, z: rpFmt, s: sDataNum };
                     rowData[iDPP] = { t: 'n', f: `${getColName(iBiaya)}${R}+${getColName(iLaba)}${R}`, z: rpFmt, s: sDataNum };
                     rowData[iPPN] = { t: 'n', f: `${getColName(iDPP)}${R}*0.011`, z: rpFmt, s: sDataNum };
@@ -855,11 +894,11 @@
                     rowData[iPro] = { t: 'n', v: 1000, z: rpFmt, s: sDataNum };
                     
                     globalRutes.forEach((route, idx) => {
-                        rowData[iFirstRute + idx] = { t: 'n', f: `$B${R}*${route.tarif}`, z: rpFmt, s: sDataNum };
+                        rowData[iFirstRute + idx] = { t: 'n', f: `$${colCW}${R}*${route.tarif}`, z: rpFmt, s: sDataNum };
                     });
                     
-                    rowData[iTer] = { t: 'n', f: `$B${R}*${globalTersier.tarif}`, z: rpFmt, s: sDataNum };
-                    rowData[iDeliv] = { t: 'n', f: `IF($B${R}<=3, 2775, 2775+(($B${R}-3)*2300))`, z: rpFmt, s: sDataNum };
+                    rowData[iTer] = { t: 'n', f: `$${colCW}${R}*${globalTersier.tarif}`, z: rpFmt, s: sDataNum };
+                    rowData[iDeliv] = { t: 'n', f: `IF($${colCW}${R}<=3, 2775, 2775+(($${colCW}${R}-3)*2300))`, z: rpFmt, s: sDataNum };
                     rowData[iOpt] = { t: 'n', f: `SUM(${getColName(iCol)}${R}:${getColName(iDeliv)}${R})`, z: rpFmt, s: sDataNum };
                     rowData[iOver] = { t: 'n', f: `${getColName(iOpt)}${R}*0.05`, z: rpFmt, s: sDataNum };
                     rowData[iCOF] = { t: 'n', f: `${getColName(iOpt)}${R}*30/365*0.08`, z: rpFmt, s: sDataNum };
@@ -873,18 +912,37 @@
                 let totalR = pkts.length + 2;
                 let footData = [];
                 footData[0] = { v: "GRAND TOTAL", t: 's', s: sTotalText };
-                for(let c = 1; c < iMargin; c++) {
-                    footData[c] = { t: 'n', f: `SUM(${getColName(c)}2:${getColName(c)}${totalR-1})`, z: rpFmt, s: sTotal };
-                }
+
+                // Proses sum kolom secara dinamis
+                let columnsToSum = [iAct, iVol, iCW].concat(Array.from({length: iMargin - iNP}, (_, i) => iNP + i));
+                columnsToSum.forEach(c => {
+                    let fmt = (c === iVol) ? '0.00' : rpFmt;
+                    footData[c] = { t: 'n', f: `SUM(${getColName(c)}2:${getColName(c)}${totalR-1})`, z: fmt, s: sTotal };
+                });
+
+                // Kosongkan bagian P, L, T di Total Bawah
+                footData[iP] = { v: "", s: sTotal };
+                footData[iL] = { v: "", s: sTotal };
+                footData[iT] = { v: "", s: sTotal };
+
                 footData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${totalR}/${getColName(iBiaya)}${totalR}`, z: '0.00%', s: sTotal };
                 wsData.push(footData);
 
                 const ws = XLSX.utils.aoa_to_sheet(wsData);
                 
-                let colWidths = [{ wch: 30 }, { wch: 20 }];
-                for(let c=2; c<=iMargin; c++) colWidths.push({ wch: 20 });
+                // Lebar kolom disesuaikan dengan header baru
+                let colWidths = [
+                    { wch: 30 }, // NAMA PAKET
+                    { wch: 20 }, // AKTUAL
+                    { wch: 15 }, // P
+                    { wch: 15 }, // L
+                    { wch: 15 }, // T
+                    { wch: 25 }, // VOLUMETRIK
+                    { wch: 28 }  // CHARGEABLE WEIGHT
+                ];
+                for(let c=iNP; c<=iMargin; c++) colWidths.push({ wch: 20 });
                 ws['!cols'] = colWidths;
-                ws['!rows'] = [{ hpt: 30 }]; // Memperbesar tinggi baris header excel
+                ws['!rows'] = [{ hpt: 30 }];
 
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "OPTIMALISASI MULTI PAKET");
