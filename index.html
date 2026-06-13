@@ -99,7 +99,6 @@
             .footer-desc { display: none; }
         }
 
-        /* Mobile Adjustments for Tables */
         .min-w-input { min-width: 80px; }
     </style>
 </head>
@@ -128,8 +127,10 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tujuan Akhir (Kabupaten/Kota)</label>
-                    <input type="text" id="tujuanAkhir" placeholder="CONTOH: CIMAHI" class="w-full border border-gray-300 p-2.5 rounded focus:ring-posorange font-bold uppercase">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tujuan Akhir (Pilih KCU/KC Tersier)</label>
+                    <select id="tujuanAkhirSelect" class="w-full uppercase" placeholder="KETIK NAMA KOTA/KCU..." onchange="syncTersier()">
+                        <option value="">KETIK KCU/KC TUJUAN...</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Pilihan Moda Utama</label>
@@ -165,7 +166,7 @@
                         </tr>
                     </thead>
                     <tbody id="paketBody" class="divide-y divide-gray-200">
-                        <!-- Paket Rows Dihasilkan Dinamis -->
+                        <!-- Paket Rows -->
                     </tbody>
                 </table>
             </div>
@@ -186,38 +187,32 @@
             </button>
         </section>
 
-        <!-- STEP 3: TERSIER (WAJIB) -->
+        <!-- STEP 3: TERSIER (OTOMATIS DARI TUJUAN) -->
         <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-green-600 mb-6">
             <h2 class="text-base md:text-lg font-bold posblue mb-4 flex items-center">
                 <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs md:text-sm mr-2">3</span> 
-                Biaya Tersier (Wajib)
+                Biaya Tersier (Otomatis)
             </h2>
-            <p class="text-xs md:text-sm text-gray-500 mb-4">Pilih KCU/KC pengantaran akhir. Silakan ketik nama kotanya untuk pencarian cepat (Termasuk Bandung, dsb).</p>
+            <p class="text-xs md:text-sm text-gray-500 mb-4">Biaya pengantaran akhir ini ditarik secara otomatis berdasarkan Tujuan Akhir yang Anda pilih di Step 1.</p>
             
             <div class="flex flex-col md:flex-row gap-3 md:gap-4 items-center bg-gray-50 p-4 rounded border border-gray-200">
-                <div class="w-full md:w-auto text-left md:text-center font-bold text-gray-500 text-sm">KCU/KC :</div>
-                <div class="w-full flex-1">
-                    <select id="tersierSelect" class="w-full uppercase" placeholder="KETIK NAMA KCU/KC..." onchange="updateTarifTersier()">
-                        <option value="">KETIK KCU/KC TUJUAN...</option>
-                    </select>
-                </div>
-                <div class="relative w-full md:w-1/3 mt-2 md:mt-0">
-                    <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tarif / Kg</label>
-                    <span class="absolute left-3 top-8 md:top-3 text-gray-500 font-semibold">Rp</span>
+                <div class="w-full md:w-auto text-left md:text-center font-bold text-gray-500 text-sm">Tarif Pengantaran KCU/KC :</div>
+                <div class="relative w-full flex-1 mt-2 md:mt-0">
+                    <span class="absolute left-3 top-2.5 text-gray-500 font-semibold">Rp</span>
                     <input type="text" id="tarifTersier" class="w-full bg-gray-200 border border-gray-300 p-2.5 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0">
                 </div>
             </div>
         </section>
 
-        <!-- Tombol Kalkulasi -->
-        <div class="flex justify-end mb-12">
+        <!-- Tombol Kalkulasi (Diberi margin bottom besar agar tidak nabrak footer) -->
+        <div class="flex justify-end mb-16">
             <button onclick="hitungOptimalisasi()" id="btnHitung" class="bg-posorange hover:bg-red-600 text-white font-bold py-4 px-8 rounded shadow-lg text-lg w-full md:w-auto opacity-50 cursor-not-allowed transition-all" disabled>
                 KALKULASI TARIF OPTIMALISASI
             </button>
         </div>
 
         <!-- Tabel Output -->
-        <section id="hasil-container" class="hidden bg-white p-4 md:p-6 rounded-lg shadow-md border border-gray-200 mb-12">
+        <section id="hasil-container" class="hidden bg-white p-4 md:p-6 rounded-lg shadow-md border border-gray-200 mb-16">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b pb-4 mb-4 gap-4">
                 <div>
                     <h2 class="text-xl font-bold posblue">Tabel Rekapitulasi Optimalisasi</h2>
@@ -232,13 +227,13 @@
             <div class="overflow-x-auto pb-2">
                 <table class="w-full text-sm md:text-base text-left text-gray-700 border" id="tableHasil">
                     <thead class="text-xs md:text-sm text-white uppercase bg-posblue border-b" id="hasilHeaders">
-                        <!-- Headers diinjeksi JS -->
+                        <!-- Headers -->
                     </thead>
                     <tbody id="tbodyHasil" class="divide-y divide-gray-200 bg-gray-50">
-                        <!-- Baris Data Paket diinjeksi JS -->
+                        <!-- Baris Paket -->
                     </tbody>
                     <tfoot id="tfootHasil" class="bg-gray-200 font-bold text-posblue uppercase text-sm border-t-2 border-gray-400">
-                        <!-- Total Bawah diinjeksi JS -->
+                        <!-- Total -->
                     </tfoot>
                 </table>
             </div>
@@ -281,7 +276,6 @@
             "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=844283654&single=true&output=csv",
             "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=1040661244&single=true&output=csv"
         ];
-        // =================================================================================
 
         let matrixUdara = {}; 
         let matrixDarat = {}; 
@@ -289,10 +283,7 @@
         let matrixSekunder = {}; 
         let tersierMap = {}; 
         let ruteCount = 0;
-        let tsTersier; 
-        
-        let globalRutes = [];
-        let globalTersier = null;
+        let tsTujuan; // TomSelect Instance untuk Tujuan Akhir
 
         // ================= FUNGSI MULTI-PAKET (CHARGEABLE WEIGHT) =================
         function renderPaketRows() {
@@ -344,7 +335,7 @@
             row.querySelector('.paket-cw').value = cw;
         }
 
-        // ================= PARSER ANGKA (ANTI-ERROR BANDUNG RP 2) =================
+        // ================= PARSER ANGKA & ALIAS =================
         function parseRupiah(str) {
             if (str === null || str === undefined) return 0;
             let s = String(str).trim();
@@ -478,12 +469,13 @@
                             if(tarif > tersierMap[kcu]) tersierMap[kcu] = tarif;
                         }
 
+                        // Menggunakan data Tersier untuk mengisi Tujuan Akhir di Step 1
                         let tersierOptions = Object.keys(tersierMap).sort().map(kcu => ({ value: kcu, text: kcu }));
-                        tsTersier = new TomSelect("#tersierSelect", {
+                        tsTujuan = new TomSelect("#tujuanAkhirSelect", {
                             options: tersierOptions,
                             create: false,
                             sortField: { field: "text", direction: "asc" },
-                            placeholder: "KETIK KCU/KC TUJUAN..."
+                            placeholder: "KETIK KCU/KC TUJUAN AKHIR..."
                         });
                     }
                 });
@@ -518,6 +510,20 @@
         function findDestKey(matrix, origin, keyword) {
             if (!matrix[origin]) return "";
             return Object.keys(matrix[origin]).find(k => k.includes(keyword)) || "";
+        }
+
+        // ================= SINKRONISASI TUJUAN & TERSIER =================
+        function syncTersier() {
+            const valKcu = document.getElementById('tujuanAkhirSelect').value;
+            const inp = document.getElementById('tarifTersier');
+            
+            if (valKcu && tersierMap[valKcu] !== undefined) {
+                let valTarif = tersierMap[valKcu];
+                inp.value = valTarif > 0 ? formatRupiahUI(valTarif) : '0 (GRATIS)'; 
+                inp.dataset.value = valTarif;
+            } else {
+                inp.value = ''; inp.dataset.value = 0;
+            }
         }
 
         // ================= RUTE BUILDER =================
@@ -661,26 +667,15 @@
             });
         }
 
-        function updateTarifTersier() {
-            const valKcu = document.getElementById('tersierSelect').value;
-            const inp = document.getElementById('tarifTersier');
-            if (valKcu && tersierMap[valKcu] !== undefined) {
-                let valTarif = tersierMap[valKcu];
-                inp.value = valTarif > 0 ? formatRupiahUI(valTarif) : '0 (GRATIS)'; 
-                inp.dataset.value = valTarif;
-            } else {
-                inp.value = ''; inp.dataset.value = 0;
-            }
-        }
-
-        // ================= KALKULASI & EXCEL EXPORT (ANTI-BUG) =================
+        // ================= KALKULASI & EXCEL EXPORT =================
+        let globalRutes = [];
+        let globalTersier = null;
+        
         function hitungOptimalisasi() {
             try {
-                let tujuanAkhir = document.getElementById('tujuanAkhir').value.toUpperCase() || "TUJUAN TIDAK DITENTUKAN";
-                
-                let valTersier = document.getElementById('tersierSelect').value;
-                if (!valTersier || valTersier === "") {
-                    alert("PENGANTARAN TERSIER WAJIB DIPILIH! Silakan ketik nama KCU/KC tujuan pada langkah 3.");
+                let tujuanAkhir = document.getElementById('tujuanAkhirSelect').value;
+                if (!tujuanAkhir || tujuanAkhir === "") {
+                    alert("HARAP PILIH TUJUAN AKHIR TERLEBIH DAHULU PADA LANGKAH 1!");
                     return;
                 }
 
@@ -695,11 +690,10 @@
                 });
 
                 globalTersier = { 
-                    nama: `TERSIER KCU: ${valTersier}`, 
+                    nama: `TERSIER KCU: ${tujuanAkhir}`, 
                     tarif: parseFloat(document.getElementById('tarifTersier').dataset.value) || 0 
                 };
 
-                // Menyusun Table Header Menggunakan String Builder
                 let trHTML = `<tr><th class="px-4 py-3 whitespace-nowrap">NAMA PAKET</th><th class="px-4 py-3 text-right">BERAT (KG)</th><th class="px-4 py-3 text-right">NILAI PROYEK</th><th class="px-4 py-3 text-right">DPP</th><th class="px-4 py-3 text-right">PPN</th><th class="px-4 py-3 text-right">COLLECTING</th><th class="px-4 py-3 text-right">PROCESSING</th>`;
                 globalRutes.forEach(r => trHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${r.nama}</th>`);
                 trHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${globalTersier.nama}</th><th class="px-4 py-3 text-right">DELIVERY</th><th class="px-4 py-3 text-right">TOTAL OPT</th><th class="px-4 py-3 text-right">OVERHEAD</th><th class="px-4 py-3 text-right">COF</th><th class="px-4 py-3 text-right text-posorange">TOTAL BIAYA</th><th class="px-4 py-3 text-right">LABA</th><th class="px-4 py-3 text-right">MARGIN</th></tr>`;
@@ -779,7 +773,7 @@
                 </tr>`;
                 document.getElementById('tfootHasil').innerHTML = trFoot;
 
-                document.getElementById('labelTujuan').innerText = `Tujuan Akhir (Kabupaten/Kota): ${tujuanAkhir}`;
+                document.getElementById('labelTujuan').innerText = `Tujuan Akhir (KCU/KC): ${tujuanAkhir}`;
                 document.getElementById('hasil-container').classList.remove('hidden');
                 
                 setTimeout(() => {
@@ -811,7 +805,7 @@
                     return;
                 }
 
-                let tujuanAkhir = document.getElementById('tujuanAkhir').value.toUpperCase() || "TUJUAN TIDAK DITENTUKAN";
+                let tujuanAkhir = document.getElementById('tujuanAkhirSelect').value || "KOTA_TUJUAN";
                 const rpFmt = '#,##0'; 
                 let wsData = [];
                 
@@ -879,11 +873,12 @@
 
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, "OPTIMALISASI MULTI PAKET");
-                XLSX.writeFile(wb, `Kalkulasi_PosIND_${tujuanAkhir.replace(/\s+/g, '_')}.xlsx`);
+                let cleanFileName = tujuanAkhir.replace(/[^a-zA-Z0-9]/g, '_');
+                XLSX.writeFile(wb, `Kalkulasi_PosIND_${cleanFileName}.xlsx`);
 
             } catch (error) {
                 console.error("Excel Export Error:", error);
-                alert("Gagal mengunduh Excel karena format data korup atau tidak lengkap. Pesan: " + error.message);
+                alert("Gagal mengunduh Excel: " + error.message);
             }
         }
     </script>
