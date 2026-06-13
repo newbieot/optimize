@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Optimalisasi Pengiriman PosIND</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS untuk Export XLSX -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- PapaParse untuk membaca CSV Google Sheets otomatis -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
         tailwind.config = {
@@ -25,7 +22,6 @@
 </head>
 <body class="bg-gray-100 min-h-screen font-sans pb-12">
 
-    <!-- Header -->
     <header class="bg-white shadow-md py-4 px-8 flex justify-between items-center mb-8">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-12">
         <h1 class="text-2xl font-bold text-posblue text-center flex-1">Portal Kalkulasi & Optimalisasi Tarif PosIND</h1>
@@ -34,13 +30,11 @@
 
     <main class="max-w-5xl mx-auto space-y-6">
         
-        <!-- Status Loading Database -->
         <div id="loadingStatus" class="bg-blue-100 border-l-4 border-posblue text-posblue p-4 rounded shadow mb-4 flex items-center">
             <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <span class="font-semibold">Sedang membaca rute & tarif dari Google Sheets...</span>
+            <span class="font-semibold">Sedang merakit matriks tarif dari Google Sheets...</span>
         </div>
 
-        <!-- STEP 1: Informasi Dasar -->
         <section class="bg-white p-6 rounded-lg shadow-md border-t-4 border-posblue">
             <h2 class="text-lg font-bold text-posblue mb-4 flex items-center">
                 <span class="bg-posblue text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">1</span> 
@@ -58,17 +52,15 @@
             </div>
         </section>
 
-        <!-- STEP 2: Builder Rute Primer -->
         <section class="bg-white p-6 rounded-lg shadow-md border-t-4 border-posorange">
             <h2 class="text-lg font-bold text-posblue mb-4 flex items-center">
                 <span class="bg-posorange text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">2</span> 
                 Susun Rute Primer
             </h2>
-            <p class="text-sm text-gray-500 mb-4">Origin awal akan dikunci dari BATAM. Gunakan tombol Tambah Rute untuk penerbangan transit/estafet.</p>
+            <p class="text-sm text-gray-500 mb-4">Origin awal akan otomatis terkunci dari BATAM. Rute Estafet akan otomatis mengunci Origin dari tujuan sebelumnya.</p>
             
             <div id="ruteContainer" class="space-y-3">
-                <!-- Rute akan di-generate oleh JS (Chaining System) -->
-            </div>
+                </div>
 
             <button id="btnTambahRute" onclick="tambahRute()" class="mt-4 text-posblue font-bold text-sm flex items-center hover:text-posorange transition-colors opacity-50 cursor-not-allowed" disabled>
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
@@ -76,7 +68,6 @@
             </button>
         </section>
 
-        <!-- STEP 3: Rute Tersier -->
         <section class="bg-white p-6 rounded-lg shadow-md border-t-4 border-gray-500">
             <h2 class="text-lg font-bold text-posblue mb-4 flex items-center">
                 <span class="bg-gray-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">3</span> 
@@ -95,19 +86,17 @@
                 </select>
                 <div class="relative w-full md:w-1/3">
                     <span class="absolute left-3 top-2 text-gray-500">Rp</span>
-                    <input type="number" id="tarifTersier" class="w-full bg-gray-200 border border-gray-300 p-2 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly>
+                    <input type="text" id="tarifTersier" class="w-full bg-gray-200 border border-gray-300 p-2 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0">
                 </div>
             </div>
         </section>
 
-        <!-- Tombol Kalkulasi -->
         <div class="flex justify-end">
             <button onclick="hitungOptimalisasi()" id="btnHitung" class="bg-posorange hover:bg-red-600 text-white font-bold py-3 px-8 rounded shadow-lg text-lg w-full md:w-auto opacity-50 cursor-not-allowed" disabled>
                 Kalkulasi Total Tarif
             </button>
         </div>
 
-        <!-- Tabel Output -->
         <section id="hasil-container" class="hidden bg-white p-6 rounded-lg shadow-md mt-8 border border-gray-200">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b pb-4 mb-4 gap-4">
                 <div>
@@ -129,8 +118,7 @@
                         </tr>
                     </thead>
                     <tbody id="tbodyHasil" class="divide-y">
-                        <!-- Data akan di-generate via JS -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </section>
@@ -147,14 +135,22 @@
         let optionsTersierHTML = '<option value="0">PILIH KCU/KC TUJUAN...</option>';
         let ruteCount = 0;
 
-        // Pembersih Angka Rupiah
+        // FUNGSI SUPER ROBUST UNTUK TARIF (Hapus mutlak semua karakter selain angka murni)
         function parseRupiah(str) {
             if (!str) return 0;
-            let cleanStr = String(str).replace(/\./g, '').replace(',', '.').replace(/[^0-9.-]/g, '');
-            return parseFloat(cleanStr) || 0;
+            let s = String(str).trim();
+            // Buang pecahan dibelakang koma jika ada (contoh: 13.477,00 -> 13.477)
+            s = s.replace(/[,.]00$/, ''); 
+            // Buang SEMUA tanda titik dan koma (13.477 menjadi 13477 mutlak)
+            let cleanStr = s.replace(/[^0-9]/g, '');
+            return parseInt(cleanStr, 10) || 0;
         }
 
-        // FUNGSI INIT (MEMBACA SHEET LALU MEMBANGUN MATRIKS RUTING)
+        function formatRupiahUI(number) {
+            return new Intl.NumberFormat('id-ID').format(number);
+        }
+
+        // FUNGSI INIT & MEMBANGUN MATRIKS RUTING
         async function initData() {
             try {
                 const [resPrimer, resTersier] = await Promise.all([fetch(urlPrimerUdara), fetch(urlAllTersier)]);
@@ -169,23 +165,35 @@
                         const data = results.data;
                         if (data.length < 2) return;
                         
-                        let destHeaders = [];
-                        for(let j=1; j < data[0].length; j++) {
-                            destHeaders.push(String(data[0][j]).trim().toUpperCase());
+                        // MENCARI LOKASI HEADER OTOMATIS (Anti Error meski sheet disederhanakan)
+                        let headerRowIdx = 0;
+                        for(let r = 0; r < Math.min(data.length, 10); r++) {
+                            let rowStr = data[r].join("").toUpperCase();
+                            if (rowStr.includes("JAKARTA") || rowStr.includes("AMBON")) {
+                                headerRowIdx = r;
+                                break;
+                            }
                         }
 
-                        for(let i = 1; i < data.length; i++) {
+                        let destHeaders = [];
+                        for(let j=1; j < data[headerRowIdx].length; j++) {
+                            destHeaders.push(String(data[headerRowIdx][j]).trim().toUpperCase());
+                        }
+
+                        // Petakan Matriks Harga
+                        for(let i = headerRowIdx + 1; i < data.length; i++) {
                             let origin = String(data[i][0]).trim().toUpperCase(); 
-                            // FILTER CERDAS: Buang baris kosong, header ganda, atau garis "---"
                             if(!origin || origin.includes("---") || origin === "") continue;
                             
-                            dataMatrix[origin] = {};
+                            if(!dataMatrix[origin]) dataMatrix[origin] = {};
                             
                             for(let j = 0; j < destHeaders.length; j++) {
                                 let dest = destHeaders[j];
-                                let tarif = parseRupiah(data[i][j+1]);
+                                let tarifStr = data[i][j+1]; 
+                                let tarif = parseRupiah(tarifStr);
                                 
-                                if(dest && tarif > 0 && !dest.includes("---")) {
+                                // Cuma masukkan rute jika tarif berupa angka valid (bukan strip)
+                                if(dest && dest !== "" && !dest.includes("---") && tarif > 0) {
                                     dataMatrix[origin][dest] = tarif;
                                 }
                             }
@@ -193,7 +201,7 @@
                     }
                 });
 
-                // 2. PROSES TERSIER (AMBIL MAKSIMAL PER KCU)
+                // 2. PROSES TERSIER (AMBIL NILAI TERTINGGI PER KCU)
                 Papa.parse(textTersier, {
                     complete: function(results) {
                         const data = results.data;
@@ -219,7 +227,6 @@
                             }
                         }
 
-                        // Urutkan Tersier sesuai Abjad
                         Object.keys(maxTersierMap).sort().forEach(kcu => {
                             optionsTersierHTML += `<option value="${maxTersierMap[kcu]}">${kcu}</option>`;
                         });
@@ -227,10 +234,10 @@
                     }
                 });
 
-                // Buka Kunci UI setelah sukses baca data
+                // Buka Kunci UI 
                 const statusDiv = document.getElementById('loadingStatus');
                 statusDiv.className = "bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow mb-4 flex items-center";
-                statusDiv.innerHTML = `<svg class="h-5 w-5 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <span class="font-semibold">Sistem terhubung! Matriks Rute Siap Digunakan.</span>`;
+                statusDiv.innerHTML = `<svg class="h-5 w-5 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <span class="font-semibold">Matriks Tarif Terbaca Sempurna!</span>`;
                 setTimeout(() => statusDiv.style.display = 'none', 3000);
 
                 document.getElementById('btnHitung').disabled = false;
@@ -259,7 +266,6 @@
             row.className = 'flex flex-col md:flex-row gap-2 md:gap-4 items-center rute-baris mt-3 bg-gray-50 p-3 rounded border border-gray-200 shadow-sm';
             row.id = `rute-row-${ruteCount}`;
             
-            // Logika Estafet: Kalau Rute ke-2 ke atas, Origin mengambil dari Tujuan Rute sebelumnya.
             let currentOrigin = forcedOrigin;
             if (!currentOrigin) {
                 if (ruteCount > 1) {
@@ -268,7 +274,6 @@
                 }
             }
 
-            // Generate Opsi Dropdown sesuai Origin yang di-lock
             let destOptions = `<option value="">PILIH TUJUAN...</option>`;
             if (dataMatrix[currentOrigin]) {
                 let dests = Object.keys(dataMatrix[currentOrigin]).sort();
@@ -297,7 +302,7 @@
                 <div class="w-full md:w-1/4 relative">
                     <label class="text-[10px] text-gray-500 font-bold uppercase tracking-wide md:hidden">Tarif/Kg</label>
                     <span class="absolute left-3 top-8 md:top-2 text-gray-500 font-semibold">Rp</span>
-                    <input type="number" id="rute-tarif-${ruteCount}" class="w-full bg-gray-200 border border-gray-300 p-2 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly>
+                    <input type="text" id="rute-tarif-${ruteCount}" class="w-full bg-gray-200 border border-gray-300 p-2 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0">
                 </div>
                 
                 ${ruteCount > 1 ? `<button onclick="hapusRute(this)" class="w-full md:w-auto text-red-500 hover:bg-red-100 font-bold px-4 py-2 rounded text-lg border border-red-200 md:border-none mt-2 md:mt-0" title="Hapus Estafet">HAPUS</button>` : `<div class="hidden md:block w-16"></div>`}
@@ -305,25 +310,28 @@
             container.appendChild(row);
         }
 
-        // TRIGGER SAAT USER PILIH TUJUAN (UPDATE TARIF & ESTAFET BAWAHNYA)
+        // TRIGGER SAAT USER PILIH TUJUAN
         function onChangeDest(index) {
             const origin = document.getElementById(`rute-origin-${index}`).value;
             const dest = document.getElementById(`rute-dest-${index}`).value;
             const tarifInput = document.getElementById(`rute-tarif-${index}`);
             
             if (dest && dataMatrix[origin] && dataMatrix[origin][dest]) {
-                tarifInput.value = dataMatrix[origin][dest];
+                let trueVal = dataMatrix[origin][dest];
+                tarifInput.value = formatRupiahUI(trueVal); // Tampilkan cantik (cth: 13.477) di UI
+                tarifInput.dataset.value = trueVal;         // Simpan nilai murni 13477 di memory
             } else {
                 tarifInput.value = '';
+                tarifInput.dataset.value = 0;
             }
 
-            // Jika ada baris estafet di bawahnya, otomatis update Origin mereka!
+            // Cascade update estafet di bawahnya
             if (document.getElementById(`rute-origin-${index + 1}`)) {
                 updateChainSubsequent(index);
             }
         }
 
-        // UPDATE ESTAFET BAWAH SECARA BERANTAI
+        // UPDATE ESTAFET BERANTAI
         function updateChainSubsequent(fromIndex) {
             let nextIndex = fromIndex + 1;
             let currentDest = document.getElementById(`rute-dest-${fromIndex}`).value;
@@ -334,7 +342,6 @@
             if (nextOriginInput && nextDestSelect) {
                 nextOriginInput.value = currentDest || "PILIH TUJUAN SEBELUMNYA";
                 
-                // Repopulate pilihan kota tujuan untuk Origin yang baru ini
                 let destOptions = `<option value="">PILIH TUJUAN...</option>`;
                 if (currentDest && dataMatrix[currentDest]) {
                     let dests = Object.keys(dataMatrix[currentDest]).sort();
@@ -344,10 +351,10 @@
                 }
                 nextDestSelect.innerHTML = destOptions;
                 
-                // Reset harganya
-                document.getElementById(`rute-tarif-${nextIndex}`).value = '';
+                let nextTarifInput = document.getElementById(`rute-tarif-${nextIndex}`);
+                nextTarifInput.value = '';
+                nextTarifInput.dataset.value = 0;
                 
-                // Jika masih ada baris lagi di bawahnya, looping terus (Cascade effect)
                 if (document.getElementById(`rute-origin-${nextIndex + 1}`)) {
                     updateChainSubsequent(nextIndex);
                 }
@@ -356,24 +363,27 @@
 
         function hapusRute(btnElement) {
             btnElement.parentElement.remove();
-            // Rekalkulasi penomoran # 
             let allRows = document.querySelectorAll('.rute-baris');
             ruteCount = allRows.length;
             allRows.forEach((row, idx) => {
                 let trueIdx = idx + 1;
                 row.id = `rute-row-${trueIdx}`;
                 row.querySelector('.text-posorange').innerText = `#${trueIdx}`;
-                // Sesuaikan ulang id element di dalamnya jika diperlukan, namun untuk saat ini 
-                // menghapus baris tengah tidak disarankan tanpa menghapus yg bawah. 
-                // UX: User biasanya menghapus dari yg paling bawah/terakhir
             });
         }
 
-        // TOGGLE TERSIER
+        // FUNGSI TERSIER
         function updateTarifTersier(selectElement) {
             const tarifInput = document.getElementById('tarifTersier');
-            const selectedTarif = selectElement.value;
-            tarifInput.value = selectedTarif == 0 ? '' : selectedTarif;
+            const selectedTarif = parseFloat(selectElement.value) || 0;
+            
+            if (selectedTarif > 0) {
+                tarifInput.value = formatRupiahUI(selectedTarif);
+                tarifInput.dataset.value = selectedTarif;
+            } else {
+                tarifInput.value = '';
+                tarifInput.dataset.value = 0;
+            }
         }
 
         function toggleTersier() {
@@ -383,7 +393,9 @@
             } else {
                 form.classList.add('hidden');
                 document.getElementById('tersierSelect').value = '0';
-                document.getElementById('tarifTersier').value = '';
+                const tarifInput = document.getElementById('tarifTersier');
+                tarifInput.value = '';
+                tarifInput.dataset.value = 0;
             }
         }
 
@@ -401,7 +413,6 @@
             let totalBiayaPrimer = 0;
             let arrayRutePrimerExport = [];
 
-            // Looping mengambil data estafet primer
             for(let i = 1; i <= ruteCount; i++) {
                 let originInput = document.getElementById(`rute-origin-${i}`);
                 let destSelect = document.getElementById(`rute-dest-${i}`);
@@ -410,7 +421,8 @@
                 if (originInput && destSelect && destSelect.value && tarifInput) {
                     let origin = originInput.value;
                     let dest = destSelect.value;
-                    let tarif = parseFloat(tarifInput.value) || 0;
+                    // Tarik raw value (murni integer), bukan value UI nya
+                    let tarif = parseFloat(tarifInput.dataset.value) || 0; 
                     
                     if (tarif > 0) {
                         let totalBaris = tarif * berat;
@@ -420,14 +432,13 @@
                 }
             }
 
-            // Ambil Data Tersier
             let biayaTersier = 0;
             let arrayTersierExport = [];
             if (document.getElementById('pakaiTersier').checked) {
                 let selectTersier = document.getElementById('tersierSelect');
                 if (selectTersier.value != "0") {
                     let namaTersier = selectTersier.options[selectTersier.selectedIndex].text;
-                    let tarifTersier = parseFloat(document.getElementById('tarifTersier').value) || 0;
+                    let tarifTersier = parseFloat(document.getElementById('tarifTersier').dataset.value) || 0;
                     
                     if(tarifTersier > 0) {
                         biayaTersier = tarifTersier * berat;
@@ -436,8 +447,7 @@
                 }
             }
 
-            // Hitungan Sesuai Aturan: =2775+((berat kiriman-3)*2300)
-            // (Untuk base flat weight <= 3 di-handle dengan kondisi sederhana)
+            // Rumus Delivery
             let delivery = berat <= 3 ? 2775 : 2775 + ((berat - 3) * 2300);
 
             const totalOptimalisasi = collecting + processing + totalBiayaPrimer + biayaTersier + delivery;
@@ -445,14 +455,12 @@
             const cof = (30 / 365) * 0.08 * totalOptimalisasi;
             const totalBiaya = totalOptimalisasi + overhead + cof;
             
-            // Rumus Target Margin 15% (Laba = 15% dari Total Biaya, DPP = 1.15 * Total Biaya)
             const laba = 0.15 * totalBiaya;
             const dpp = totalBiaya + laba;
             const nilaiProyek = dpp * 1.011;
             const ppn = dpp * 0.011;
             const marginPersen = (laba / totalBiaya) * 100;
 
-            // Menyusun Struktur Tabel Laporan
             dataExport = [
                 { "Komponen": "TUJUAN AKHIR (CUSTOMER)", "Nilai": tujuanAkhir },
                 { "Komponen": "BERAT KIRIMAN (KG)", "Nilai": berat },
@@ -471,7 +479,6 @@
                 { "Komponen": "MARGIN (%)", "Nilai": marginPersen.toFixed(2) + "%" }
             ]);
 
-            // Render ke UI HTML
             document.getElementById('labelTujuan').innerText = `Tujuan: ${tujuanAkhir} | Berat: ${berat} Kg`;
             const tbody = document.getElementById('tbodyHasil');
             tbody.innerHTML = '';
@@ -491,7 +498,6 @@
             });
 
             document.getElementById('hasil-container').classList.remove('hidden');
-            // Scroll otomatis ke hasil
             document.getElementById('hasil-container').scrollIntoView({ behavior: 'smooth' });
         }
 
