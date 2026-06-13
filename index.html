@@ -6,6 +6,7 @@
     <title>Optimalisasi Pengiriman PosIND</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -27,9 +28,9 @@
         <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-10">
     </header>
 
-    <main class="max-w-5xl mx-auto mt-8 bg-white p-8 rounded-lg shadow">
+    <main class="max-w-6xl mx-auto mt-8 bg-white p-8 rounded-lg shadow">
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div>
                 <label class="block text-sm font-semibold text-posblue mb-2">Berat Kiriman (Kg)</label>
                 <input type="number" id="berat" class="w-full border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange" value="10" min="1">
@@ -37,18 +38,27 @@
             <div>
                 <label class="block text-sm font-semibold text-posblue mb-2">Rute 1: Origin - Hub</label>
                 <select id="rute1" class="w-full border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange">
-                    <option value="13477">Batam (29400) - Jakarta (10000) : Rp 13.477/kg</option>
+                    <option value="13477">BATAM - JAKARTA : Rp 13.477/kg</option>
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-semibold text-posblue mb-2">Rute 2: Hub - Tujuan</label>
                 <select id="rute2" class="w-full border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange">
-                    <option value="34801">Jakarta (10000) - Kupang : Rp 34.801/kg</option>
+                    <option value="34801">JAKARTA - KUPANG : Rp 34.801/kg</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-posblue mb-2">Tersier: KCU/KC Tujuan</label>
+                <select id="tersier" class="w-full border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange">
+                    <option value="564">KCU KUPANG (MAX) : Rp 564/kg</option>
                 </select>
             </div>
         </div>
 
-        <div class="flex justify-end mb-8">
+        <div class="flex justify-between items-center mb-8">
+            <div class="text-sm text-gray-500 italic">
+                *Database terhubung dengan link CSV Primer Udara & All Tersier
+            </div>
             <button onclick="hitungOptimalisasi()" class="bg-posorange hover:bg-red-600 text-white font-bold py-2 px-6 rounded shadow">
                 Kalkulasi Tarif
             </button>
@@ -80,12 +90,33 @@
     </main>
 
     <script>
+        // LINK DATABASE CSV DARI GOOGLE SHEETS
+        const urlPrimerUdara = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuYYRcuYa4ehq9NlTxSJlse6CMFLMrOWU5zHcaEdyj2k1VRKr-t7z52ua-5DrtA/pub?gid=1378317974&single=true&output=csv";
+        const urlAllTersier = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=1649129386&single=true&output=csv";
+
+        /*
+        // CONTOH FUNGSI BACA CSV OTOMATIS (Bisa diaktifkan jika nama kolom sudah dipastikan)
+        function loadDataTersier() {
+            Papa.parse(urlAllTersier, {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    const data = results.data;
+                    // Logika filter data KCU/KC KUPANG dan mencari Math.max() dari Biaya per KG
+                    console.log("Data Tersier Berhasil Dimuat:", data);
+                }
+            });
+        }
+        // loadDataTersier();
+        */
+
         let dataExport = [];
 
         function hitungOptimalisasi() {
             const berat = parseFloat(document.getElementById('berat').value);
             const tarifRute1_perKg = parseFloat(document.getElementById('rute1').value);
             const tarifRute2_perKg = parseFloat(document.getElementById('rute2').value);
+            const tarifTersier_perKg = parseFloat(document.getElementById('tersier').value);
 
             if (!berat || berat <= 0) {
                 alert("Masukkan berat kiriman yang valid.");
@@ -98,11 +129,14 @@
             const biayaRute1 = tarifRute1_perKg * berat;
             const biayaRute2 = tarifRute2_perKg * berat;
             
-            // Delivery: =2775+((berat kiriman-3)*2300)
+            // Komponen Tersier (Baru)
+            const biayaTersier = tarifTersier_perKg * berat;
+            
+            // Delivery
             const delivery = 2775 + ((berat - 3) * 2300);
 
-            // Total Optimalisasi
-            const totalOptimalisasi = collecting + processing + biayaRute1 + biayaRute2 + delivery;
+            // Total Optimalisasi (Ditambah Biaya Tersier)
+            const totalOptimalisasi = collecting + processing + biayaRute1 + biayaRute2 + biayaTersier + delivery;
 
             // Overhead & COF
             const overhead = totalOptimalisasi * 0.05;
@@ -112,37 +146,30 @@
             const totalBiaya = totalOptimalisasi + overhead + cof;
 
             // Target Margin 15%
-            // Rumus User: Margin = Laba / Total Biaya. Berarti Laba = 15% dari Total Biaya
             const laba = 0.15 * totalBiaya;
-
-            // Rumus User: Laba = DPP - Total Biaya -> DPP = Total Biaya + Laba
             const dpp = totalBiaya + laba;
-
-            // Rumus User: DPP = Nilai Proyek * 100 / 101.1 -> Nilai Proyek = DPP * 101.1 / 100
             const nilaiProyek = dpp * 1.011;
-
-            // PPN = DPP * 1.1%
             const ppn = dpp * 0.011;
-
             const marginPersen = (laba / totalBiaya) * 100;
 
             // Menyiapkan Data untuk Tabel HTML & Excel
             dataExport = [
-                { "Komponen": "Berat Kiriman (Kg)", "Nilai": berat },
-                { "Komponen": "Nilai Proyek (Otomatis untuk Margin 15%)", "Nilai": nilaiProyek },
+                { "Komponen": "BERAT KIRIMAN (KG)", "Nilai": berat },
+                { "Komponen": "NILAI PROYEK (OTOMATIS UNTUK MARGIN 15%)", "Nilai": nilaiProyek },
                 { "Komponen": "DPP", "Nilai": dpp },
                 { "Komponen": "PPN (1.1%)", "Nilai": ppn },
-                { "Komponen": "Collecting", "Nilai": collecting },
-                { "Komponen": "Processing", "Nilai": processing },
-                { "Komponen": "Biaya Rute BTM - CGK", "Nilai": biayaRute1 },
-                { "Komponen": "Biaya Rute CGK - Tujuan", "Nilai": biayaRute2 },
-                { "Komponen": "Delivery", "Nilai": delivery },
-                { "Komponen": "Total Optimalisasi", "Nilai": totalOptimalisasi },
-                { "Komponen": "Overhead (5%)", "Nilai": overhead },
-                { "Komponen": "COF (Cost of Fund)", "Nilai": cof },
-                { "Komponen": "Total Biaya", "Nilai": totalBiaya },
-                { "Komponen": "Laba", "Nilai": laba },
-                { "Komponen": "Margin (%)", "Nilai": marginPersen.toFixed(2) + "%" }
+                { "Komponen": "COLLECTING", "Nilai": collecting },
+                { "Komponen": "PROCESSING", "Nilai": processing },
+                { "Komponen": "BIAYA RUTE BATAM - JAKARTA", "Nilai": biayaRute1 },
+                { "Komponen": "BIAYA RUTE JAKARTA - KUPANG", "Nilai": biayaRute2 },
+                { "Komponen": "BIAYA TERSIER KUPANG", "Nilai": biayaTersier },
+                { "Komponen": "DELIVERY", "Nilai": delivery },
+                { "Komponen": "TOTAL OPTIMALISASI", "Nilai": totalOptimalisasi },
+                { "Komponen": "OVERHEAD (5%)", "Nilai": overhead },
+                { "Komponen": "COF (COST OF FUND)", "Nilai": cof },
+                { "Komponen": "TOTAL BIAYA", "Nilai": totalBiaya },
+                { "Komponen": "LABA", "Nilai": laba },
+                { "Komponen": "MARGIN (%)", "Nilai": marginPersen.toFixed(2) + "%" }
             ];
 
             // Render ke Tabel HTML
@@ -155,7 +182,7 @@
                     : item.Nilai;
                 
                 // Pengecualian format untuk baris Berat Kiriman
-                if(item.Komponen === "Berat Kiriman (Kg)") formattedValue = item.Nilai + " Kg";
+                if(item.Komponen === "BERAT KIRIMAN (KG)") formattedValue = item.Nilai + " Kg";
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -171,13 +198,13 @@
         function exportToExcel() {
             if (dataExport.length === 0) return;
 
-            // Buat Workbook & Worksheet menggunakan SheetJS
+            // Buat Workbook & Worksheet
             const ws = XLSX.utils.json_to_sheet(dataExport);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Optimalisasi Tarif");
+            XLSX.utils.book_append_sheet(wb, ws, "OPTIMALISASI TARIF");
 
             // Simpan File
-            XLSX.writeFile(wb, "Kalkulasi_Optimalisasi_PosIND.xlsx");
+            XLSX.writeFile(wb, "KALKULASI_OPTIMALISASI_POSIND.xlsx");
         }
     </script>
 </body>
