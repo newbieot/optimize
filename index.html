@@ -112,7 +112,7 @@
         <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10">
     </header>
 
-    <main class="max-w-6xl mx-auto space-y-4 md:space-y-6 px-4 md:px-0 pb-12">
+    <main class="max-w-6xl mx-auto space-y-4 md:space-y-6 px-4 md:px-0 pb-16">
         
         <div id="loadingStatus" class="bg-blue-100 border-l-4 border-posblue posblue p-4 rounded shadow mb-4 flex items-center">
             <svg class="animate-spin h-5 w-5 mr-3 flex-shrink-0" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -128,10 +128,8 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tujuan Akhir: Kantor Cabang (KC) / KCU</label>
-                    <select id="tujuanAkhir" class="w-full uppercase" placeholder="KETIK NAMA KC/KCU..." onchange="updateTarifTersier()">
-                        <option value="">KETIK KANTOR CABANG...</option>
-                    </select>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tujuan Akhir (Kabupaten/Kota)</label>
+                    <input type="text" id="tujuanAkhir" placeholder="CONTOH: CIMAHI" class="w-full border border-gray-300 p-2.5 rounded focus:ring-posorange font-bold uppercase">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Pilihan Moda Utama</label>
@@ -171,7 +169,7 @@
                     </tbody>
                 </table>
             </div>
-            <p class="text-xs text-gray-500 mt-3 font-semibold">*Chargeable Weight (Max dari Aktual & Volumetrik) dibulatkan ke atas jika desimal > 0.30 (300 gram).</p>
+            <p class="text-xs text-gray-500 mt-3 font-semibold">*Aturan BUMN: Chargeable Weight (Max dari Aktual & Volumetrik) dibulatkan ke atas jika desimal > 0.30 (300 gram).</p>
         </section>
 
         <!-- STEP 2: BUILDER RUTE -->
@@ -188,36 +186,38 @@
             </button>
         </section>
 
-        <!-- STEP 3: TERSIER (OTOMATIS) -->
+        <!-- STEP 3: TERSIER (WAJIB) -->
         <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-green-600 mb-6">
             <h2 class="text-base md:text-lg font-bold posblue mb-4 flex items-center">
                 <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs md:text-sm mr-2">3</span> 
-                Biaya Tersier (Otomatis)
+                Biaya Tersier (Wajib)
             </h2>
-            <p class="text-xs md:text-sm text-gray-500 mb-4">Biaya pengantaran otomatis menyesuaikan pilihan Kantor Cabang (KC) atau KCU tujuan di Langkah 1.</p>
+            <p class="text-xs md:text-sm text-gray-500 mb-4">Pilih KCU/KC pengantaran akhir. Silakan ketik nama kotanya untuk pencarian cepat (Termasuk Bandung, dsb).</p>
             
             <div class="flex flex-col md:flex-row gap-3 md:gap-4 items-center bg-gray-50 p-4 rounded border border-gray-200">
-                <div class="w-full md:w-2/3">
-                    <label class="text-[10px] text-gray-500 font-bold uppercase block mb-1">Kantor Cabang (KC) / KCU Tujuan</label>
-                    <input type="text" id="tersierTujuanDisplay" class="w-full bg-gray-200 border border-gray-300 p-2.5 rounded text-gray-700 font-bold uppercase cursor-not-allowed" placeholder="DIISI OTOMATIS DARI LANGKAH 1" readonly>
+                <div class="w-full md:w-auto text-left md:text-center font-bold text-gray-500 text-sm">KCU/KC :</div>
+                <div class="w-full flex-1">
+                    <select id="tersierSelect" class="w-full uppercase" placeholder="KETIK NAMA KCU/KC..." onchange="updateTarifTersier()">
+                        <option value="">KETIK KCU/KC TUJUAN...</option>
+                    </select>
                 </div>
-                <div class="relative w-full md:w-1/3">
-                    <label class="text-[10px] text-gray-500 font-bold uppercase block mb-1">Tarif / Kg</label>
-                    <span class="absolute left-3 top-8 md:top-8 text-gray-500 font-semibold">Rp</span>
+                <div class="relative w-full md:w-1/3 mt-2 md:mt-0">
+                    <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tarif / Kg</label>
+                    <span class="absolute left-3 top-8 md:top-3 text-gray-500 font-semibold">Rp</span>
                     <input type="text" id="tarifTersier" class="w-full bg-gray-200 border border-gray-300 p-2.5 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0">
                 </div>
             </div>
         </section>
 
         <!-- Tombol Kalkulasi -->
-        <div class="flex justify-end mb-10">
+        <div class="flex justify-end mb-12">
             <button onclick="hitungOptimalisasi()" id="btnHitung" class="bg-posorange hover:bg-red-600 text-white font-bold py-4 px-8 rounded shadow-lg text-lg w-full md:w-auto opacity-50 cursor-not-allowed transition-all" disabled>
-                KALKULASI BIAYA KORPORAT
+                KALKULASI TARIF OPTIMALISASI
             </button>
         </div>
 
         <!-- Tabel Output -->
-        <section id="hasil-container" class="hidden bg-white p-4 md:p-6 rounded-lg shadow-md border border-gray-200 mb-10">
+        <section id="hasil-container" class="hidden bg-white p-4 md:p-6 rounded-lg shadow-md border border-gray-200 mb-12">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b pb-4 mb-4 gap-4">
                 <div>
                     <h2 class="text-xl font-bold posblue">Tabel Rekapitulasi Optimalisasi</h2>
@@ -281,6 +281,7 @@
             "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=844283654&single=true&output=csv",
             "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=1040661244&single=true&output=csv"
         ];
+        // =================================================================================
 
         let matrixUdara = {}; 
         let matrixDarat = {}; 
@@ -288,6 +289,10 @@
         let matrixSekunder = {}; 
         let tersierMap = {}; 
         let ruteCount = 0;
+        let tsTersier; 
+        
+        let globalRutes = [];
+        let globalTersier = null;
 
         // ================= FUNGSI MULTI-PAKET (CHARGEABLE WEIGHT) =================
         function renderPaketRows() {
@@ -339,7 +344,7 @@
             row.querySelector('.paket-cw').value = cw;
         }
 
-        // ================= PARSER ANGKA & ALIAS =================
+        // ================= PARSER ANGKA (ANTI-ERROR BANDUNG RP 2) =================
         function parseRupiah(str) {
             if (str === null || str === undefined) return 0;
             let s = String(str).trim();
@@ -378,6 +383,7 @@
             return dest.replace(/[0-9]/g, '').trim(); 
         }
 
+        // ================= SCANNER MATRIKS UNIVERSAL =================
         function parseMatrixSheet(data, targetMatrixObj) {
             if (data.length < 2) return;
             let headerRowIdx = -1, maxCols = 0;
@@ -472,13 +478,12 @@
                             if(tarif > tersierMap[kcu]) tersierMap[kcu] = tarif;
                         }
 
-                        // Inisialisasi Tujuan Akhir TomSelect yang terhubung ke Tersier
                         let tersierOptions = Object.keys(tersierMap).sort().map(kcu => ({ value: kcu, text: kcu }));
-                        new TomSelect("#tujuanAkhir", {
+                        tsTersier = new TomSelect("#tersierSelect", {
                             options: tersierOptions,
                             create: false,
                             sortField: { field: "text", direction: "asc" },
-                            placeholder: "KETIK KANTOR CABANG (KC) / KCU TUJUAN..."
+                            placeholder: "KETIK KCU/KC TUJUAN..."
                         });
                     }
                 });
@@ -656,141 +661,135 @@
             });
         }
 
-        // ================= TERSIER OTOMATIS =================
         function updateTarifTersier() {
-            const valKcu = document.getElementById('tujuanAkhir').value;
+            const valKcu = document.getElementById('tersierSelect').value;
             const inp = document.getElementById('tarifTersier');
-            const disp = document.getElementById('tersierTujuanDisplay');
-
             if (valKcu && tersierMap[valKcu] !== undefined) {
                 let valTarif = tersierMap[valKcu];
                 inp.value = valTarif > 0 ? formatRupiahUI(valTarif) : '0 (GRATIS)'; 
                 inp.dataset.value = valTarif;
-                disp.value = valKcu;
             } else {
                 inp.value = ''; inp.dataset.value = 0;
-                disp.value = '';
             }
         }
 
-        // ================= KALKULASI & EXCEL EXPORT =================
-        let globalRutes = [];
-        let globalTersier = null;
-        
-        function getKalkulasiData() {
-            let tujuanAkhir = document.getElementById('tujuanAkhir').value;
-            
-            if (!tujuanAkhir || tujuanAkhir === "") {
-                alert("KANTOR CABANG (KC) / KCU TUJUAN AKHIR WAJIB DIPILIH pada Langkah 1.");
-                return null;
-            }
-
-            const berat = parseFloat(document.getElementById('berat').value) || 0;
-            if (berat <= 0) { alert("Masukkan berat kiriman."); return null; }
-
-            globalRutes = [];
-            document.querySelectorAll('.rute-baris').forEach((row) => {
-                let id = row.id.split('-')[2];
-                let moda = document.getElementById(`rute-moda-${id}`).value;
-                let origin = document.getElementById(`rute-origin-${id}`).value;
-                let dest = document.getElementById(`rute-dest-${id}`).value;
-                let tarif = parseFloat(document.getElementById(`rute-tarif-${id}`).dataset.value) || 0;
-                if (tarif > 0) globalRutes.push({ nama: `JALUR ${moda.split(' ')[1] || moda}: ${origin} ➔ ${dest}`, tarif: tarif });
-            });
-
-            globalTersier = { 
-                nama: `TERSIER KCU: ${tujuanAkhir}`, 
-                tarif: parseFloat(document.getElementById('tarifTersier').dataset.value) || 0 
-            };
-
-            return { tujuanAkhir: tujuanAkhir.toUpperCase(), berat: berat, arrRute: globalRutes, objTersier: globalTersier };
-        }
-
+        // ================= KALKULASI & EXCEL EXPORT (ANTI-BUG) =================
         function hitungOptimalisasi() {
-            let d = getKalkulasiData(); if (!d) return;
-
-            let headRow = document.getElementById('hasilHeaders');
-            headRow.innerHTML = `<th class="px-4 py-3 whitespace-nowrap">NAMA PAKET</th><th class="px-4 py-3 text-right">BERAT (KG)</th><th class="px-4 py-3 text-right">NILAI PROYEK</th><th class="px-4 py-3 text-right">DPP</th><th class="px-4 py-3 text-right">PPN</th><th class="px-4 py-3 text-right">COLLECTING</th><th class="px-4 py-3 text-right">PROCESSING</th>`;
-            d.arrRute.forEach(r => headRow.innerHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${r.nama}</th>`);
-            headRow.innerHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${d.objTersier.nama}</th><th class="px-4 py-3 text-right">DELIVERY</th><th class="px-4 py-3 text-right">TOTAL OPT</th><th class="px-4 py-3 text-right">OVERHEAD</th><th class="px-4 py-3 text-right">COF</th><th class="px-4 py-3 text-right text-posorange">TOTAL BIAYA</th><th class="px-4 py-3 text-right">LABA</th><th class="px-4 py-3 text-right">MARGIN</th>`;
-
-            let tbody = document.getElementById('tbodyHasil');
-            tbody.innerHTML = '';
-            
-            let sumBerat = 0, sumNP = 0, sumDPP = 0, sumPPN = 0, sumCol = 0, sumPro = 0;
-            let sumRoutes = Array(d.arrRute.length).fill(0);
-            let sumTer = 0, sumDeliv = 0, sumOpt = 0, sumOver = 0, sumCOF = 0, sumBiaya = 0, sumLaba = 0;
-
-            document.querySelectorAll('.paket-row').forEach((row) => {
-                let pNama = row.querySelector('.paket-nama').value || "PAKET";
-                let pCW = parseFloat(row.querySelector('.paket-cw').value) || 1;
+            try {
+                let tujuanAkhir = document.getElementById('tujuanAkhir').value.toUpperCase() || "TUJUAN TIDAK DITENTUKAN";
                 
-                let collecting = 1000;
-                let processing = 1000;
-                let costRoutes = d.arrRute.map(r => r.tarif * pCW);
-                let costTersier = d.objTersier.tarif * pCW;
-                let delivery = pCW <= 3 ? 2775 : 2775 + ((pCW - 3) * 2300);
+                let valTersier = document.getElementById('tersierSelect').value;
+                if (!valTersier || valTersier === "") {
+                    alert("PENGANTARAN TERSIER WAJIB DIPILIH! Silakan ketik nama KCU/KC tujuan pada langkah 3.");
+                    return;
+                }
+
+                globalRutes = [];
+                document.querySelectorAll('.rute-baris').forEach((row) => {
+                    let id = row.id.split('-')[2];
+                    let moda = document.getElementById(`rute-moda-${id}`).value;
+                    let origin = document.getElementById(`rute-origin-${id}`).value;
+                    let dest = document.getElementById(`rute-dest-${id}`).value;
+                    let tarif = parseFloat(document.getElementById(`rute-tarif-${id}`).dataset.value) || 0;
+                    if (tarif > 0) globalRutes.push({ nama: `JALUR ${moda.split(' ')[1] || moda}: ${origin} ➔ ${dest}`, tarif: tarif });
+                });
+
+                globalTersier = { 
+                    nama: `TERSIER KCU: ${valTersier}`, 
+                    tarif: parseFloat(document.getElementById('tarifTersier').dataset.value) || 0 
+                };
+
+                // Menyusun Table Header Menggunakan String Builder
+                let trHTML = `<tr><th class="px-4 py-3 whitespace-nowrap">NAMA PAKET</th><th class="px-4 py-3 text-right">BERAT (KG)</th><th class="px-4 py-3 text-right">NILAI PROYEK</th><th class="px-4 py-3 text-right">DPP</th><th class="px-4 py-3 text-right">PPN</th><th class="px-4 py-3 text-right">COLLECTING</th><th class="px-4 py-3 text-right">PROCESSING</th>`;
+                globalRutes.forEach(r => trHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${r.nama}</th>`);
+                trHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${globalTersier.nama}</th><th class="px-4 py-3 text-right">DELIVERY</th><th class="px-4 py-3 text-right">TOTAL OPT</th><th class="px-4 py-3 text-right">OVERHEAD</th><th class="px-4 py-3 text-right">COF</th><th class="px-4 py-3 text-right text-posorange">TOTAL BIAYA</th><th class="px-4 py-3 text-right">LABA</th><th class="px-4 py-3 text-right">MARGIN</th></tr>`;
+                document.getElementById('hasilHeaders').innerHTML = trHTML;
+
+                let tbodyHTML = '';
                 
-                let totalOpt = collecting + processing + costRoutes.reduce((a,b)=>a+b, 0) + costTersier + delivery;
-                let overhead = totalOpt * 0.05;
-                let cof = totalOpt * 30 / 365 * 0.08;
-                let totalBiaya = totalOpt + overhead + cof;
-                let laba = totalBiaya * 0.15;
-                let dpp = totalBiaya + laba;
-                let nilaiProyek = dpp * 101.1 / 100;
-                let ppn = dpp * 0.011;
-                let margin = (laba / totalBiaya) * 100;
+                let sumBerat = 0, sumNP = 0, sumDPP = 0, sumPPN = 0, sumCol = 0, sumPro = 0;
+                let sumRoutes = Array(globalRutes.length).fill(0);
+                let sumTer = 0, sumDeliv = 0, sumOpt = 0, sumOver = 0, sumCOF = 0, sumBiaya = 0, sumLaba = 0;
 
-                sumBerat += pCW; sumNP += nilaiProyek; sumDPP += dpp; sumPPN += ppn; sumCol += collecting; sumPro += processing;
-                costRoutes.forEach((cr, i) => sumRoutes[i] += cr);
-                sumTer += costTersier; sumDeliv += delivery; sumOpt += totalOpt; sumOver += overhead; sumCOF += cof; sumBiaya += totalBiaya; sumLaba += laba;
+                document.querySelectorAll('.paket-row').forEach((row) => {
+                    let pNama = row.querySelector('.paket-nama').value || "PAKET";
+                    let pCW = parseFloat(row.querySelector('.paket-cw').value) || 1;
+                    
+                    let collecting = 1000;
+                    let processing = 1000;
+                    let costRoutes = globalRutes.map(r => r.tarif * pCW);
+                    let costTersier = globalTersier.tarif * pCW;
+                    let delivery = pCW <= 3 ? 2775 : 2775 + ((pCW - 3) * 2300);
+                    
+                    let totalOpt = collecting + processing + costRoutes.reduce((a,b)=>a+b, 0) + costTersier + delivery;
+                    let overhead = totalOpt * 0.05;
+                    let cof = totalOpt * 30 / 365 * 0.08;
+                    let totalBiaya = totalOpt + overhead + cof;
+                    let laba = totalBiaya * 0.15;
+                    let dpp = totalBiaya + laba;
+                    let nilaiProyek = dpp * 101.1 / 100;
+                    let ppn = dpp * 0.011;
+                    let margin = (laba / totalBiaya) * 100;
 
-                let tr = `<tr class="hover:bg-gray-100">
-                    <td class="px-4 py-3 font-bold whitespace-nowrap text-gray-700">${pNama}</td>
-                    <td class="px-4 py-3 text-right font-semibold">${pCW}</td>
-                    <td class="px-4 py-3 text-right">${formatRupiahUI(nilaiProyek)}</td>
-                    <td class="px-4 py-3 text-right">${formatRupiahUI(dpp)}</td>
-                    <td class="px-4 py-3 text-right">${formatRupiahUI(ppn)}</td>
-                    <td class="px-4 py-3 text-right">${formatRupiahUI(collecting)}</td>
-                    <td class="px-4 py-3 text-right">${formatRupiahUI(processing)}</td>`;
-                costRoutes.forEach(cr => tr += `<td class="px-4 py-3 text-right">${formatRupiahUI(cr)}</td>`);
-                tr += `<td class="px-4 py-3 text-right">${formatRupiahUI(costTersier)}</td>
-                    <td class="px-4 py-3 text-right">${formatRupiahUI(delivery)}</td>
-                    <td class="px-4 py-3 text-right font-bold text-gray-800">${formatRupiahUI(totalOpt)}</td>
-                    <td class="px-4 py-3 text-right">${formatRupiahUI(overhead)}</td>
-                    <td class="px-4 py-3 text-right">${formatRupiahUI(cof)}</td>
-                    <td class="px-4 py-3 text-right font-bold text-posorange">${formatRupiahUI(totalBiaya)}</td>
-                    <td class="px-4 py-3 text-right">${formatRupiahUI(laba)}</td>
-                    <td class="px-4 py-3 text-right">${margin.toFixed(2)}%</td>
+                    sumBerat += pCW; sumNP += nilaiProyek; sumDPP += dpp; sumPPN += ppn; sumCol += collecting; sumPro += processing;
+                    costRoutes.forEach((cr, i) => sumRoutes[i] += cr);
+                    sumTer += costTersier; sumDeliv += delivery; sumOpt += totalOpt; sumOver += overhead; sumCOF += cof; sumBiaya += totalBiaya; sumLaba += laba;
+
+                    let tr = `<tr class="hover:bg-gray-100 border-b border-gray-200">
+                        <td class="px-4 py-3 font-bold whitespace-nowrap text-gray-700">${pNama}</td>
+                        <td class="px-4 py-3 text-right font-semibold">${pCW}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(nilaiProyek)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(dpp)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(ppn)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(collecting)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(processing)}</td>`;
+                    costRoutes.forEach(cr => tr += `<td class="px-4 py-3 text-right">${formatRupiahUI(cr)}</td>`);
+                    tr += `<td class="px-4 py-3 text-right">${formatRupiahUI(costTersier)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(delivery)}</td>
+                        <td class="px-4 py-3 text-right font-bold text-gray-800">${formatRupiahUI(totalOpt)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(overhead)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(cof)}</td>
+                        <td class="px-4 py-3 text-right font-bold text-posorange">${formatRupiahUI(totalBiaya)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(laba)}</td>
+                        <td class="px-4 py-3 text-right">${margin.toFixed(2)}%</td>
+                    </tr>`;
+                    tbodyHTML += tr;
+                });
+
+                document.getElementById('tbodyHasil').innerHTML = tbodyHTML;
+
+                let marginTotal = sumBiaya > 0 ? (sumLaba / sumBiaya) * 100 : 0;
+                let trFoot = `<tr>
+                    <td class="px-4 py-4 whitespace-nowrap font-bold">GRAND TOTAL</td>
+                    <td class="px-4 py-4 text-right">${sumBerat}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumNP)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumDPP)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumPPN)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumCol)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumPro)}</td>`;
+                sumRoutes.forEach(sr => trFoot += `<td class="px-4 py-4 text-right">${formatRupiahUI(sr)}</td>`);
+                trFoot += `<td class="px-4 py-4 text-right">${formatRupiahUI(sumTer)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumDeliv)}</td>
+                    <td class="px-4 py-4 text-right text-gray-800">${formatRupiahUI(sumOpt)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumOver)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumCOF)}</td>
+                    <td class="px-4 py-4 text-right text-posorange">${formatRupiahUI(sumBiaya)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumLaba)}</td>
+                    <td class="px-4 py-4 text-right">${marginTotal.toFixed(2)}%</td>
                 </tr>`;
-                tbody.innerHTML += tr;
-            });
+                document.getElementById('tfootHasil').innerHTML = trFoot;
 
-            let marginTotal = sumBiaya > 0 ? (sumLaba / sumBiaya) * 100 : 0;
-            let tfoot = document.getElementById('tfootHasil');
-            let trFoot = `<tr>
-                <td class="px-4 py-4 whitespace-nowrap font-bold">GRAND TOTAL</td>
-                <td class="px-4 py-4 text-right">${sumBerat}</td>
-                <td class="px-4 py-4 text-right">${formatRupiahUI(sumNP)}</td>
-                <td class="px-4 py-4 text-right">${formatRupiahUI(sumDPP)}</td>
-                <td class="px-4 py-4 text-right">${formatRupiahUI(sumPPN)}</td>
-                <td class="px-4 py-4 text-right">${formatRupiahUI(sumCol)}</td>
-                <td class="px-4 py-4 text-right">${formatRupiahUI(sumPro)}</td>`;
-            sumRoutes.forEach(sr => trFoot += `<td class="px-4 py-4 text-right">${formatRupiahUI(sr)}</td>`);
-            trFoot += `<td class="px-4 py-4 text-right">${formatRupiahUI(sumTer)}</td>
-                <td class="px-4 py-4 text-right">${formatRupiahUI(sumDeliv)}</td>
-                <td class="px-4 py-4 text-right text-gray-800">${formatRupiahUI(sumOpt)}</td>
-                <td class="px-4 py-4 text-right">${formatRupiahUI(sumOver)}</td>
-                <td class="px-4 py-4 text-right">${formatRupiahUI(sumCOF)}</td>
-                <td class="px-4 py-4 text-right text-posorange">${formatRupiahUI(sumBiaya)}</td>
-                <td class="px-4 py-4 text-right">${formatRupiahUI(sumLaba)}</td>
-                <td class="px-4 py-4 text-right">${marginTotal.toFixed(2)}%</td>
-            </tr>`;
-            tfoot.innerHTML = trFoot;
+                document.getElementById('labelTujuan').innerText = `Tujuan Akhir (Kabupaten/Kota): ${tujuanAkhir}`;
+                document.getElementById('hasil-container').classList.remove('hidden');
+                
+                setTimeout(() => {
+                    document.getElementById('hasil-container').scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }, 100);
 
-            document.getElementById('labelTujuan').innerText = `Tujuan Akhir (KC/KCU): ${d.tujuanAkhir}`;
-            document.getElementById('hasil-container').classList.remove('hidden');
-            document.getElementById('hasil-container').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                console.error("Kalkulasi Error:", error);
+                alert("Terjadi kesalahan sistem saat memproses kalkulasi: " + error.message);
+            }
         }
 
         function getColName(n) {
@@ -806,43 +805,86 @@
         }
 
         function exportToExcel() {
-            let d = getKalkulasiData(); if (!d) return;
-            let r = 1; 
-            let rowHeader = r++; let rowTujuan = r++; let rowBerat = r++; let rowNP = r++; let rowDPP = r++; let rowPPN = r++; let rowCol = r++; let rowProc = r++;
-            
-            let routeRows = d.arrRute.map(x => ({...x, row: r++}));
-            let tRow = {...d.objTersier, row: r++}; 
+            try {
+                if (globalRutes.length === 0 || !globalTersier) {
+                    alert("Harap kalkulasi optimalisasi terlebih dahulu sebelum mendownload Excel.");
+                    return;
+                }
 
-            let rowDeliv = r++; let rowTotalOpt = r++; let rowOverhead = r++; let rowCOF = r++; let rowTotalB = r++; let rowLaba = r++; let rowMargin = r++;
-            const rp = '#,##0'; 
-            
-            let wsData = [
-                ["DESKRIPSI KOMPONEN", "NILAI"],
-                ["TUJUAN AKHIR (KC/KCU)", d.tujuanAkhir],
-                ["BERAT KIRIMAN (KG)", { t: 'n', v: d.berat }],
-                ["NILAI PROYEK (MARGIN 15%)", { t: 'n', f: `B${rowDPP}*101.1/100`, z: rp }],
-                ["DPP", { t: 'n', f: `B${rowTotalB}+B${rowLaba}`, z: rp }],
-                ["PPN (1.1%)", { t: 'n', f: `B${rowDPP}*0.011`, z: rp }],
-                ["COLLECTING", { t: 'n', v: 1000, z: rp }],
-                ["PROCESSING", { t: 'n', v: 1000, z: rp }]
-            ];
+                let tujuanAkhir = document.getElementById('tujuanAkhir').value.toUpperCase() || "TUJUAN TIDAK DITENTUKAN";
+                const rpFmt = '#,##0'; 
+                let wsData = [];
+                
+                let headerRow = ["NAMA PAKET", "BERAT KIRIMAN (KG)", "NILAI PROYEK (MARGIN 15%)", "DPP", "PPN (1.1%)", "COLLECTING", "PROCESSING"];
+                globalRutes.forEach(r => headerRow.push(r.nama.toUpperCase()));
+                headerRow.push(globalTersier.nama.toUpperCase(), "DELIVERY", "TOTAL OPTIMALISASI", "OVERHEAD (5%)", "COF", "TOTAL BIAYA", "LABA", "MARGIN (%)");
+                wsData.push(headerRow);
 
-            routeRows.forEach(p => wsData.push([p.nama, { t: 'n', f: `${p.tarif}*B${rowBerat}`, z: rp }]));
-            wsData.push([tRow.nama, { t: 'n', f: `${tRow.tarif}*B${rowBerat}`, z: rp }]);
+                let iB = 1, iNP = 2, iDPP = 3, iPPN = 4, iCol = 5, iPro = 6;
+                let iFirstRute = 7;
+                let iTer = iFirstRute + globalRutes.length;
+                let iDeliv = iTer + 1;
+                let iOpt = iDeliv + 1;
+                let iOver = iOpt + 1;
+                let iCOF = iOpt + 2;
+                let iBiaya = iOpt + 3;
+                let iLaba = iOpt + 4;
+                let iMargin = iOpt + 5;
 
-            wsData.push(["DELIVERY", { t: 'n', f: `IF(B${rowBerat}<=3, 2775, 2775+(($B${R}-3)*2300))`, z: rp }]);
-            wsData.push(["TOTAL OPTIMALISASI", { t: 'n', f: `SUM(B${rowCol}:B${rowDeliv})`, z: rp }]);
-            wsData.push(["OVERHEAD (5%)", { t: 'n', f: `B${rowTotalOpt}*0.05`, z: rp }]);
-            wsData.push(["COF (COST OF FUND)", { t: 'n', f: `B${rowTotalOpt}*30/365*0.08`, z: rp }]);
-            wsData.push(["TOTAL BIAYA", { t: 'n', f: `B${rowTotalOpt}+B${rowOverhead}+B${rowCOF}`, z: rp }]);
-            wsData.push(["LABA", { t: 'n', f: `B${rowTotalB}*0.15`, z: rp }]);
-            wsData.push(["MARGIN (%)", { t: 'n', f: `B${rowLaba}/B${rowTotalB}`, z: '0.00%' }]);
+                let pkts = document.querySelectorAll('.paket-row');
+                pkts.forEach((row, index) => {
+                    let R = index + 2; 
+                    let pNama = row.querySelector('.paket-nama').value.toUpperCase() || `PAKET ${index+1}`;
+                    let pCW = parseFloat(row.querySelector('.paket-cw').value) || 1;
 
-            const ws = XLSX.utils.aoa_to_sheet(wsData);
-            ws['!cols'] = [{ wch: 55 }, { wch: 20 }];
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "OPTIMALISASI");
-            XLSX.writeFile(wb, `Kalkulasi_PosIND_${d.tujuanAkhir.replace(/\s+/g, '_')}.xlsx`);
+                    let rowData = [];
+                    rowData[0] = pNama;
+                    rowData[iB] = { t: 'n', v: pCW };
+                    rowData[iNP] = { t: 'n', f: `${getColName(iDPP)}${R}*101.1/100`, z: rpFmt };
+                    rowData[iDPP] = { t: 'n', f: `${getColName(iBiaya)}${R}+${getColName(iLaba)}${R}`, z: rpFmt };
+                    rowData[iPPN] = { t: 'n', f: `${getColName(iDPP)}${R}*0.011`, z: rpFmt };
+                    rowData[iCol] = { t: 'n', v: 1000, z: rpFmt };
+                    rowData[iPro] = { t: 'n', v: 1000, z: rpFmt };
+                    
+                    globalRutes.forEach((route, idx) => {
+                        rowData[iFirstRute + idx] = { t: 'n', f: `$B${R}*${route.tarif}`, z: rpFmt };
+                    });
+                    
+                    rowData[iTer] = { t: 'n', f: `$B${R}*${globalTersier.tarif}`, z: rpFmt };
+                    rowData[iDeliv] = { t: 'n', f: `IF($B${R}<=3, 2775, 2775+(($B${R}-3)*2300))`, z: rpFmt };
+                    rowData[iOpt] = { t: 'n', f: `SUM(${getColName(iCol)}${R}:${getColName(iDeliv)}${R})`, z: rpFmt };
+                    rowData[iOver] = { t: 'n', f: `${getColName(iOpt)}${R}*0.05`, z: rpFmt };
+                    rowData[iCOF] = { t: 'n', f: `${getColName(iOpt)}${R}*30/365*0.08`, z: rpFmt };
+                    rowData[iBiaya] = { t: 'n', f: `${getColName(iOpt)}${R}+${getColName(iOver)}${R}+${getColName(iCOF)}${R}`, z: rpFmt };
+                    rowData[iLaba] = { t: 'n', f: `${getColName(iBiaya)}${R}*0.15`, z: rpFmt };
+                    rowData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${R}/${getColName(iBiaya)}${R}`, z: '0.00%' };
+                    
+                    wsData.push(rowData);
+                });
+
+                let totalR = pkts.length + 2;
+                let footData = [];
+                footData[0] = "GRAND TOTAL";
+                for(let c = 1; c < iMargin; c++) {
+                    footData[c] = { t: 'n', f: `SUM(${getColName(c)}2:${getColName(c)}${totalR-1})`, z: rpFmt };
+                }
+                footData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${totalR}/${getColName(iBiaya)}${totalR}`, z: '0.00%' };
+                wsData.push(footData);
+
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+                
+                let colWidths = [{ wch: 30 }, { wch: 20 }];
+                for(let c=2; c<=iMargin; c++) colWidths.push({ wch: 20 });
+                ws['!cols'] = colWidths;
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "OPTIMALISASI MULTI PAKET");
+                XLSX.writeFile(wb, `Kalkulasi_PosIND_${tujuanAkhir.replace(/\s+/g, '_')}.xlsx`);
+
+            } catch (error) {
+                console.error("Excel Export Error:", error);
+                alert("Gagal mengunduh Excel karena format data korup atau tidak lengkap. Pesan: " + error.message);
+            }
         }
     </script>
 </body>
