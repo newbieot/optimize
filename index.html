@@ -31,12 +31,18 @@
             overflow-x: hidden !important;
         }
 
+        /* FIX UNTUK WHITE SPACE DI MOBILE */
+        html {
+            background-color: var(--bg);
+            overscroll-behavior-y: none;
+        }
+
         body {
             font-family: 'Gantari', sans-serif;
             background-color: var(--bg);
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            min-height: 100dvh; /* FIX UNTUK ADDRESS BAR MOBILE */
             color: #334155;
         }
         main { flex: 1; }
@@ -137,11 +143,11 @@
                     <div class="bg-gray-50 p-2.5 rounded border border-gray-200 flex flex-col space-y-3">
                         <label class="inline-flex items-center cursor-pointer">
                             <input type="radio" name="modaUtama" value="UDARA" class="text-posorange focus:ring-posorange w-4 h-4" onchange="renderDefaultRoutes()" checked>
-                            <span class="ml-2 text-sm font-bold text-gray-800">Udara (Batam ➔ Jakarta)</span>
+                            <span class="ml-2 text-sm font-bold text-gray-800">Udara (Batam âž” Jakarta)</span>
                         </label>
                         <label class="inline-flex items-center cursor-pointer">
                             <input type="radio" name="modaUtama" value="DARAT_LAUT" class="text-posorange focus:ring-posorange w-4 h-4" onchange="renderDefaultRoutes()">
-                            <span class="ml-2 text-sm font-bold text-gray-800">Darat/Laut (Batam ➔ T.Pinang ➔ Pekanbaru)</span>
+                            <span class="ml-2 text-sm font-bold text-gray-800">Darat/Laut (Batam âž” T.Pinang âž” Pekanbaru)</span>
                         </label>
                     </div>
                 </div>
@@ -556,7 +562,7 @@
                     <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Origin</label>
                     <input type="text" id="rute-origin-${ruteCount}" class="w-full bg-gray-200 border border-gray-300 p-2.5 rounded text-gray-700 font-bold uppercase cursor-not-allowed" value="${displayOrigin}" readonly>
                 </div>
-                <span class="hidden md:inline text-gray-400 font-bold text-xl">➔</span>
+                <span class="hidden md:inline text-gray-400 font-bold text-xl">âž”</span>
                 <div class="w-full flex-1">
                     <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tujuan (Ketik)</label>
                     <select id="rute-dest-${ruteCount}" class="w-full uppercase" placeholder="KETIK TUJUAN...">
@@ -583,7 +589,7 @@
 
         function onChangeModa(index, forcedDest = null, forcedOrigin = null) {
             const moda = document.getElementById(`rute-moda-${index}`).value;
-            let activeMatrix = moda === "PRIMER UDARA" ? matrixUdara : moda === "PRIMER DARAT" ? matrixDarat : moda === "PRIMER LAUT" ? matrixLaut : matrixSekunder;
+            let activeMatrix = moda === "PRIMER UDARA" ? matrixUdara : moda === "PRIMER DARAT" ? matrixDarat : moda === "PRIMER LAUT" ? matrixSekunder : matrixSekunder;
 
             if (index > 1 && !forcedOrigin) {
                 let prevDest = document.getElementById(`rute-dest-${index - 1}`).value;
@@ -667,7 +673,7 @@
                     let origin = document.getElementById(`rute-origin-${id}`).value;
                     let dest = document.getElementById(`rute-dest-${id}`).value;
                     let tarif = parseFloat(document.getElementById(`rute-tarif-${id}`).dataset.value) || 0;
-                    if (tarif > 0) globalRutes.push({ nama: `JALUR ${moda.split(' ')[1] || moda}: ${origin} ➔ ${dest}`, tarif: tarif });
+                    if (tarif > 0) globalRutes.push({ nama: `JALUR ${moda.split(' ')[1] || moda}: ${origin} âž” ${dest}`, tarif: tarif });
                 });
 
                 globalTersier = { 
