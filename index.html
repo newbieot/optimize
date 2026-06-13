@@ -25,13 +25,14 @@
             --bg: #F4F6F9; 
         }
         
-        /* Proteksi Overflow Mobile */
+        /* Proteksi Overflow & White Space Fix */
         html, body {
             max-width: 100vw !important;
             overflow-x: hidden !important;
+            margin: 0;
+            padding: 0;
         }
 
-        /* FIX UNTUK WHITE SPACE DI MOBILE */
         html {
             background-color: var(--bg);
             overscroll-behavior-y: none;
@@ -42,9 +43,10 @@
             background-color: var(--bg);
             display: flex;
             flex-direction: column;
-            min-height: 100dvh; /* FIX UNTUK ADDRESS BAR MOBILE */
+            min-height: 100dvh;
             color: #334155;
         }
+        
         main { flex: 1; }
 
         .posblue { color: #1C2D5A; }
@@ -56,7 +58,7 @@
         .focus\:ring-posorange:focus { --tw-ring-color: #EF4123; }
         .focus\:border-posorange:focus { border-color: #EF4123; }
         
-        /* TomSelect Style Override (Mobile Friendly) */
+        /* TomSelect Style Override */
         .ts-control {
             border-color: #D1D5DB !important;
             padding: 0.7rem !important;
@@ -75,7 +77,7 @@
             font-size: 0.875rem;
         }
 
-        /* Footer Khas PosNew Hub */
+        /* Footer */
         .dashboard-footer {
             width: 100%; box-sizing: border-box; background-color: #0f172a;
             border-top: 3px solid #EF4123; display: flex; justify-content: space-between;
@@ -110,7 +112,9 @@
         .min-w-input { min-width: 80px; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans pb-12 overflow-x-hidden w-full max-w-full">
+
+<!-- CLASS pb-12 DIHAPUS DARI BODY AGAR FOOTER MENTOK KE BAWAH -->
+<body class="bg-gray-100 min-h-screen font-sans overflow-x-hidden w-full max-w-full">
 
     <header class="bg-white shadow-md py-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4 sticky top-0 z-50">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12">
@@ -143,11 +147,11 @@
                     <div class="bg-gray-50 p-2.5 rounded border border-gray-200 flex flex-col space-y-3">
                         <label class="inline-flex items-center cursor-pointer">
                             <input type="radio" name="modaUtama" value="UDARA" class="text-posorange focus:ring-posorange w-4 h-4" onchange="renderDefaultRoutes()" checked>
-                            <span class="ml-2 text-sm font-bold text-gray-800">Udara (Batam âž” Jakarta)</span>
+                            <span class="ml-2 text-sm font-bold text-gray-800">Udara (Batam ➔ Jakarta)</span>
                         </label>
                         <label class="inline-flex items-center cursor-pointer">
                             <input type="radio" name="modaUtama" value="DARAT_LAUT" class="text-posorange focus:ring-posorange w-4 h-4" onchange="renderDefaultRoutes()">
-                            <span class="ml-2 text-sm font-bold text-gray-800">Darat/Laut (Batam âž” T.Pinang âž” Pekanbaru)</span>
+                            <span class="ml-2 text-sm font-bold text-gray-800">Darat/Laut (Batam ➔ T.Pinang ➔ Pekanbaru)</span>
                         </label>
                     </div>
                 </div>
@@ -562,7 +566,7 @@
                     <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Origin</label>
                     <input type="text" id="rute-origin-${ruteCount}" class="w-full bg-gray-200 border border-gray-300 p-2.5 rounded text-gray-700 font-bold uppercase cursor-not-allowed" value="${displayOrigin}" readonly>
                 </div>
-                <span class="hidden md:inline text-gray-400 font-bold text-xl">âž”</span>
+                <span class="hidden md:inline text-gray-400 font-bold text-xl">➔</span>
                 <div class="w-full flex-1">
                     <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tujuan (Ketik)</label>
                     <select id="rute-dest-${ruteCount}" class="w-full uppercase" placeholder="KETIK TUJUAN...">
@@ -589,7 +593,7 @@
 
         function onChangeModa(index, forcedDest = null, forcedOrigin = null) {
             const moda = document.getElementById(`rute-moda-${index}`).value;
-            let activeMatrix = moda === "PRIMER UDARA" ? matrixUdara : moda === "PRIMER DARAT" ? matrixDarat : moda === "PRIMER LAUT" ? matrixSekunder : matrixSekunder;
+            let activeMatrix = moda === "PRIMER UDARA" ? matrixUdara : moda === "PRIMER DARAT" ? matrixDarat : moda === "PRIMER LAUT" ? matrixLaut : matrixSekunder;
 
             if (index > 1 && !forcedOrigin) {
                 let prevDest = document.getElementById(`rute-dest-${index - 1}`).value;
@@ -673,7 +677,7 @@
                     let origin = document.getElementById(`rute-origin-${id}`).value;
                     let dest = document.getElementById(`rute-dest-${id}`).value;
                     let tarif = parseFloat(document.getElementById(`rute-tarif-${id}`).dataset.value) || 0;
-                    if (tarif > 0) globalRutes.push({ nama: `JALUR ${moda.split(' ')[1] || moda}: ${origin} âž” ${dest}`, tarif: tarif });
+                    if (tarif > 0) globalRutes.push({ nama: `JALUR ${moda.split(' ')[1] || moda}: ${origin} ➔ ${dest}`, tarif: tarif });
                 });
 
                 globalTersier = { 
