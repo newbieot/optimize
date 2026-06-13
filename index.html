@@ -8,11 +8,6 @@
     <meta name="description" content="Portal Kalkulasi dan Optimalisasi Tarif Pengiriman Pos Indonesia (PosIND). Sistem logistik multi-paket B2B dan Ritel untuk efisiensi jalur Udara, Darat, Laut, Sekunder, dan Tersier oleh Ikhsan Radiansyah.">
     <meta name="keywords" content="PosIND, Tarif Pos Indonesia, Kalkulator Logistik, Optimalisasi Pengiriman, Ikhsan Radiansyah, Rute Udara Darat Laut, PosNew Hub, Ekspedisi, Cargo">
     <meta name="author" content="Ikhsan Radiansyah">
-    <meta name="robots" content="index, follow">
-    
-    <meta property="og:title" content="Portal Optimalisasi Tarif Pengiriman PosIND by Ikhsan Radiansyah">
-    <meta property="og:description" content="Sistem utilitas canggih untuk optimalisasi efisiensi layanan logistik PosIND B2B dan Ritel. Terintegrasi dengan database rute nasional.">
-    <meta property="og:type" content="website">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -49,10 +44,10 @@
         .focus\:ring-posorange:focus { --tw-ring-color: #EF4123; }
         .focus\:border-posorange:focus { border-color: #EF4123; }
         
-        /* TomSelect Style Override */
+        /* TomSelect Style Override (Mobile Friendly) */
         .ts-control {
             border-color: #D1D5DB !important;
-            padding: 0.6rem !important;
+            padding: 0.7rem !important;
             border-radius: 0.375rem !important;
             font-family: inherit;
             font-weight: bold;
@@ -99,6 +94,9 @@
             .dashboard-footer { flex-direction: column; justify-content: center; gap: 8px; padding: 15px; height: auto; }
             .footer-desc { display: none; }
         }
+
+        /* Mobile Adjustments for Tables */
+        .min-w-input { min-width: 80px; }
     </style>
 </head>
 <body>
@@ -129,41 +127,41 @@
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Pilihan Moda Utama</label>
-                    <div class="bg-gray-50 p-2.5 rounded border border-gray-200 flex flex-col space-y-2">
+                    <div class="bg-gray-50 p-2.5 rounded border border-gray-200 flex flex-col space-y-3">
                         <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" name="modaUtama" value="UDARA" class="text-posorange focus:ring-posorange w-4 h-4" onchange="renderDefaultRoutes()" checked>
+                            <input type="radio" name="modaUtama" value="UDARA" class="text-posorange focus:ring-posorange w-5 h-5" onchange="renderDefaultRoutes()" checked>
                             <span class="ml-2 text-sm font-bold text-gray-800">Udara (Batam ➔ Jakarta)</span>
                         </label>
                         <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" name="modaUtama" value="DARAT_LAUT" class="text-posorange focus:ring-posorange w-4 h-4" onchange="renderDefaultRoutes()">
+                            <input type="radio" name="modaUtama" value="DARAT_LAUT" class="text-posorange focus:ring-posorange w-5 h-5" onchange="renderDefaultRoutes()">
                             <span class="ml-2 text-sm font-bold text-gray-800">Darat/Laut (Batam ➔ T.Pinang ➔ Pekanbaru)</span>
                         </label>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Jumlah Paket</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Jumlah Paket Kiriman</label>
                     <input type="number" id="jumlahPaket" class="w-full border border-gray-300 p-2.5 rounded focus:ring-posorange font-bold text-lg" value="1" min="1" onchange="renderPaketRows()">
                 </div>
             </div>
 
-            <div class="overflow-x-auto border border-gray-200 rounded-lg bg-gray-50">
+            <div class="overflow-x-auto border border-gray-200 rounded-lg bg-gray-50 pb-2">
                 <table class="w-full text-sm text-left whitespace-nowrap">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-200">
                         <tr>
                             <th class="px-3 py-3 w-1/4">Nama Paket (Ketik Bebas)</th>
-                            <th class="px-3 py-3 w-32">Aktual (Kg)</th>
-                            <th class="px-3 py-3 w-24">P (cm)</th>
-                            <th class="px-3 py-3 w-24">L (cm)</th>
-                            <th class="px-3 py-3 w-24">T (cm)</th>
-                            <th class="px-3 py-3 w-32">Vol (Kg)</th>
-                            <th class="px-3 py-3 w-32 text-posorange">Chargeable (Kg)</th>
+                            <th class="px-3 py-3 min-w-input">Aktual (Kg)</th>
+                            <th class="px-3 py-3 min-w-input">P (cm)</th>
+                            <th class="px-3 py-3 min-w-input">L (cm)</th>
+                            <th class="px-3 py-3 min-w-input">T (cm)</th>
+                            <th class="px-3 py-3 min-w-input">Vol (Kg)</th>
+                            <th class="px-3 py-3 min-w-input text-posorange">Chargeable (Kg)</th>
                         </tr>
                     </thead>
                     <tbody id="paketBody" class="divide-y divide-gray-200">
                         </tbody>
                 </table>
             </div>
-            <p class="text-xs text-gray-500 mt-2 italic">*Chargeable Weight dibulatkan ke atas jika lebih dari 300 gram (Desimal > 0.30).</p>
+            <p class="text-xs text-gray-500 mt-3 font-semibold">*Aturan BUMN: Chargeable Weight (Max dari Aktual & Volumetrik) dibulatkan ke atas jika desimal > 0.30 (300 gram).</p>
         </section>
 
         <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-posorange">
@@ -173,7 +171,7 @@
             </h2>
             <div id="ruteContainer" class="space-y-4"></div>
             
-            <button id="btnTambahRute" onclick="tambahRute()" class="mt-5 posblue font-bold text-sm md:text-base flex items-center hover:text-red-500 transition-colors opacity-50 cursor-not-allowed w-full md:w-auto justify-center md:justify-start" disabled>
+            <button id="btnTambahRute" onclick="tambahRute()" class="mt-5 posblue font-bold text-sm md:text-base flex items-center hover:text-red-500 transition-colors opacity-50 cursor-not-allowed w-full md:w-auto justify-center md:justify-start border-2 border-dashed border-gray-300 p-3 rounded-lg" disabled>
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
                 + TAMBAH RUTE LANJUTAN
             </button>
@@ -184,7 +182,7 @@
                 <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs md:text-sm mr-2">3</span> 
                 Biaya Tersier (Wajib)
             </h2>
-            <p class="text-xs md:text-sm text-gray-500 mb-4">Pilih KCU/KC pengantaran akhir paket-paket Anda. Ketik untuk mencari cepat.</p>
+            <p class="text-xs md:text-sm text-gray-500 mb-4">Pilih KCU/KC pengantaran akhir. Silakan ketik nama kotanya untuk pencarian cepat (Termasuk Bandung, dsb).</p>
             
             <div class="flex flex-col md:flex-row gap-3 md:gap-4 items-center bg-gray-50 p-4 rounded border border-gray-200">
                 <div class="w-full md:w-auto text-left md:text-center font-bold text-gray-500 text-sm">KCU/KC :</div>
@@ -195,7 +193,7 @@
                 </div>
                 <div class="relative w-full md:w-1/3 mt-2 md:mt-0">
                     <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tarif / Kg</label>
-                    <span class="absolute left-3 top-8 md:top-2 text-gray-500 font-semibold">Rp</span>
+                    <span class="absolute left-3 top-8 md:top-3 text-gray-500 font-semibold">Rp</span>
                     <input type="text" id="tarifTersier" class="w-full bg-gray-200 border border-gray-300 p-2.5 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0">
                 </div>
             </div>
@@ -219,9 +217,9 @@
                 </button>
             </div>
             
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-gray-700 border" id="tableHasil">
-                    <thead class="text-xs text-white uppercase bg-posblue border-b" id="hasilHeaders">
+            <div class="overflow-x-auto pb-2">
+                <table class="w-full text-sm md:text-base text-left text-gray-700 border" id="tableHasil">
+                    <thead class="text-xs md:text-sm text-white uppercase bg-posblue border-b" id="hasilHeaders">
                         </thead>
                     <tbody id="tbodyHasil" class="divide-y divide-gray-200 bg-gray-50">
                         </tbody>
@@ -266,6 +264,7 @@
             "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=844283654&single=true&output=csv",
             "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=1040661244&single=true&output=csv"
         ];
+        // =================================================================================
 
         let matrixUdara = {}; 
         let matrixDarat = {}; 
@@ -287,13 +286,13 @@
                 for (let i = currentCount; i < targetCount; i++) {
                     tbody.insertAdjacentHTML('beforeend', `
                         <tr class="paket-row hover:bg-gray-100 transition-colors">
-                            <td class="p-2"><input type="text" class="paket-nama w-full border border-gray-300 p-1.5 rounded uppercase font-bold text-gray-700" placeholder="PAKET ${i+1}" value="PAKET ${i+1}"></td>
-                            <td class="p-2"><input type="number" class="paket-aktual w-full border border-gray-300 p-1.5 rounded" min="0.1" step="0.1" value="10" oninput="calcCW(this)"></td>
-                            <td class="p-2"><input type="number" class="paket-p w-full border border-gray-300 p-1.5 rounded" min="1" value="20" oninput="calcCW(this)"></td>
-                            <td class="p-2"><input type="number" class="paket-l w-full border border-gray-300 p-1.5 rounded" min="1" value="20" oninput="calcCW(this)"></td>
-                            <td class="p-2"><input type="number" class="paket-t w-full border border-gray-300 p-1.5 rounded" min="1" value="20" oninput="calcCW(this)"></td>
-                            <td class="p-2"><input type="text" class="paket-vol w-full bg-gray-200 border border-gray-300 p-1.5 rounded text-center" readonly value="2.00"></td>
-                            <td class="p-2"><input type="text" class="paket-cw w-full bg-orange-100 border border-posorange p-1.5 rounded font-bold text-center text-posorange" readonly value="10"></td>
+                            <td class="p-2"><input type="text" class="paket-nama w-full border border-gray-300 p-2 rounded uppercase font-bold text-gray-700" placeholder="PAKET ${i+1}" value="PAKET ${i+1}"></td>
+                            <td class="p-2"><input type="number" class="paket-aktual w-full border border-gray-300 p-2 rounded" min="0.1" step="0.1" value="10" oninput="calcCW(this)"></td>
+                            <td class="p-2"><input type="number" class="paket-p w-full border border-gray-300 p-2 rounded" min="1" value="20" oninput="calcCW(this)"></td>
+                            <td class="p-2"><input type="number" class="paket-l w-full border border-gray-300 p-2 rounded" min="1" value="20" oninput="calcCW(this)"></td>
+                            <td class="p-2"><input type="number" class="paket-t w-full border border-gray-300 p-2 rounded" min="1" value="20" oninput="calcCW(this)"></td>
+                            <td class="p-2"><input type="text" class="paket-vol w-full bg-gray-200 border border-gray-300 p-2 rounded text-center" readonly value="2.00"></td>
+                            <td class="p-2"><input type="text" class="paket-cw w-full bg-orange-100 border border-posorange p-2 rounded font-bold text-center text-posorange" readonly value="10"></td>
                         </tr>
                     `);
                     calcCW(tbody.lastElementChild.querySelector('.paket-aktual'));
@@ -325,14 +324,32 @@
             row.querySelector('.paket-cw').value = cw;
         }
 
-        // ================= PARSER MATRIKS =================
+        // ================= PARSER ANGKA (ANTI-ERROR BANDUNG RP 2) =================
         function parseRupiah(str) {
-            if (!str) return 0;
+            if (str === null || str === undefined) return 0;
             let s = String(str).trim();
-            if (s === "-" || s === "" || s.toUpperCase() === "PRIMER") return 0;
+            if (s === "-" || s === "" || s.toUpperCase() === "PRIMER" || s.toUpperCase() === "NAN") return 0;
             s = s.replace(/Rp/gi, '').replace(/\s/g, '');
-            if (s.includes('.') && s.includes(',')) s = s.replace(/\./g, '').replace(/,/g, '.');
-            else s = s.replace(/,/g, ''); 
+            
+            let lastDot = s.lastIndexOf('.');
+            let lastComma = s.lastIndexOf(',');
+
+            if (lastDot > -1 && lastComma > -1) {
+                if (lastComma > lastDot) s = s.replace(/\./g, '').replace(',', '.');
+                else s = s.replace(/,/g, '');
+            } else if (lastComma > -1) {
+                let parts = s.split(',');
+                if (parts[parts.length-1].length === 2) s = s.replace(',', '.');
+                else s = s.replace(/,/g, '');
+            } else if (lastDot > -1) {
+                let parts = s.split('.');
+                let isThousand = true;
+                for(let i = 1; i < parts.length; i++) {
+                    if(parts[i].length !== 3) { isThousand = false; break; }
+                }
+                if (isThousand) s = s.replace(/\./g, '');
+            }
+            
             let val = parseFloat(s);
             return isNaN(val) ? 0 : Math.ceil(val); 
         }
@@ -346,6 +363,7 @@
             return dest.replace(/[0-9]/g, '').trim(); 
         }
 
+        // ================= SCANNER MATRIKS UNIVERSAL =================
         function parseMatrixSheet(data, targetMatrixObj) {
             if (data.length < 2) return;
             let headerRowIdx = -1, maxCols = 0;
@@ -353,7 +371,8 @@
                 let textCols = 0;
                 for (let c = 0; c < data[r].length; c++) {
                     let val = String(data[r][c]).trim().toUpperCase();
-                    if (val.length >= 3 && isNaN(parseFloat(val)) && !val.includes("---") && !val.startsWith("P0")) textCols++;
+                    let isText = isNaN(parseFloat(val));
+                    if (val.length >= 3 && isText && !val.includes("---") && !val.startsWith("P0")) textCols++;
                 }
                 if (textCols > maxCols) { maxCols = textCols; headerRowIdx = r; }
             }
@@ -366,7 +385,8 @@
                 for (let r = headerRowIdx + 1; r < Math.min(data.length, headerRowIdx + 20); r++) {
                     if (c >= data[r].length) continue;
                     let val = String(data[r][c]).trim().toUpperCase();
-                    if (val.length >= 3 && isNaN(parseFloat(val)) && !val.includes("---") && val !== "PRIMER" && !val.startsWith("P0")) matchCount++;
+                    let isText = isNaN(parseFloat(val));
+                    if (val.length >= 3 && isText && !val.includes("---") && val !== "PRIMER" && !val.startsWith("P0")) matchCount++;
                 }
                 if (matchCount >= 2) { originColIdx = c; break; }
             }
@@ -405,27 +425,36 @@
                 Papa.parse(responses[1], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixDarat) });
                 Papa.parse(responses[2], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixLaut) });
 
+                // PARSING TERSIER SPESIFIK & AKURAT
                 Papa.parse(responses[3], {
                     skipEmptyLines: true,
                     complete: function(results) {
                         const data = results.data;
-                        let headerRowIdx = 0;
-                        for(let r = 0; r < Math.min(data.length, 10); r++) {
-                            let rowStr = data[r].join("").toUpperCase();
-                            if(rowStr.includes("KCU") || rowStr.includes("KC")) { headerRowIdx = r; break; }
+                        let headerRowIdx = -1;
+                        for(let r = 0; r < Math.min(data.length, 15); r++) {
+                            let rowArr = data[r].map(x => String(x).toUpperCase().trim());
+                            if(rowArr.includes("KCU/KC") || rowArr.includes("KCU") || rowArr.includes("KC")) { 
+                                headerRowIdx = r; break; 
+                            }
                         }
+                        if (headerRowIdx === -1) headerRowIdx = 0;
                         
                         let headerTersier = data[headerRowIdx].map(x => String(x).trim().toUpperCase());
                         let kcuColIdx = headerTersier.findIndex(x => x === "KCU/KC" || x === "KCU" || x === "KC");
-                        let biayaColIdx = headerTersier.findIndex(x => x.includes("BIAYA PER KG") || x.includes("PER KG") || x === "BIAYA");
+                        let biayaColIdx = headerTersier.findIndex(x => x === "BIAYA PER KG" || x === "BIAYA / KG");
+                        if (biayaColIdx === -1) biayaColIdx = headerTersier.findIndex(x => x.includes("BIAYA PER KG") || x.includes("PER KG"));
+                        
                         if (kcuColIdx === -1) kcuColIdx = 2; 
                         if (biayaColIdx === -1) biayaColIdx = 10; 
 
                         for(let i = headerRowIdx + 1; i < data.length; i++) {
                             if(data[i].length <= kcuColIdx) continue;
                             let kcu = String(data[i][kcuColIdx]).trim().toUpperCase();
-                            if(!kcu || kcu === "" || kcu.includes("---") || kcu.includes("KANTOR") || kcu === "KCU/KC") continue;
+                            // Hapus KANTOR TUJUAN exception yg membuat Bandung hilang, sekarang hanya filter "KANTOR TUJUAN" murni
+                            if(!kcu || kcu === "" || kcu.includes("---") || kcu === "KANTOR TUJUAN" || kcu === "KCU/KC") continue;
+                            
                             let tarif = data[i].length > biayaColIdx ? parseRupiah(data[i][biayaColIdx]) : 0;
+                            
                             if(tersierMap[kcu] === undefined) tersierMap[kcu] = 0;
                             if(tarif > tersierMap[kcu]) tersierMap[kcu] = tarif;
                         }
@@ -446,7 +475,7 @@
 
                 const statusDiv = document.getElementById('loadingStatus');
                 statusDiv.className = "bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow mb-4 flex items-center";
-                document.getElementById('loadingText').innerHTML = `Sistem Siap! 10 Database Terintegrasi.`;
+                document.getElementById('loadingText').innerHTML = `Sistem Sukses! 10 Database Terintegrasi (208+ KCU Terdeteksi).`;
                 setTimeout(() => statusDiv.style.display = 'none', 3000);
 
                 document.getElementById('btnHitung').disabled = false;
@@ -503,7 +532,7 @@
             let displayOrigin = forcedOrigin || (ruteCount === 1 ? "BATAM" : "PILIH TUJUAN SEBELUMNYA");
 
             row.innerHTML = `
-                <div class="w-full md:w-8 text-left md:text-center font-bold text-posorange bg-orange-100 md:bg-transparent rounded px-2 py-1 md:p-0">#${ruteCount}</div>
+                <div class="w-full md:w-8 text-left md:text-center font-bold text-posorange bg-orange-100 md:bg-transparent rounded px-3 py-1.5 md:p-0">#${ruteCount}</div>
                 <div class="w-full md:w-1/5">
                     <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Moda</label>
                     <select id="rute-moda-${ruteCount}" class="w-full border border-gray-300 p-2.5 rounded focus:ring-posorange font-bold text-posblue bg-white" onchange="onChangeModa(${ruteCount})">
@@ -629,13 +658,13 @@
         let theRutes = [];
         let theTersier = null;
         
-        function hitungOptimalisasi() {
+        function getKalkulasiData() {
             let tujuanAkhir = document.getElementById('tujuanAkhir').value.toUpperCase() || "TUJUAN TIDAK DITENTUKAN";
             
             let valTersier = document.getElementById('tersierSelect').value;
             if (!valTersier || valTersier === "") {
                 alert("PENGANTARAN TERSIER WAJIB DIPILIH! Silakan ketik nama KCU/KC tujuan pada langkah 3.");
-                return;
+                return null;
             }
 
             theRutes = [];
@@ -653,16 +682,22 @@
                 tarif: parseFloat(document.getElementById('tarifTersier').dataset.value) || 0 
             };
 
+            return { tujuanAkhir, arrRute: theRutes, objTersier: theTersier };
+        }
+
+        function hitungOptimalisasi() {
+            let d = getKalkulasiData(); if (!d) return;
+
             let headRow = document.getElementById('hasilHeaders');
             headRow.innerHTML = `<th class="px-4 py-3 whitespace-nowrap">NAMA PAKET</th><th class="px-4 py-3 text-right">BERAT (KG)</th><th class="px-4 py-3 text-right">NILAI PROYEK</th><th class="px-4 py-3 text-right">DPP</th><th class="px-4 py-3 text-right">PPN</th><th class="px-4 py-3 text-right">COLLECTING</th><th class="px-4 py-3 text-right">PROCESSING</th>`;
-            theRutes.forEach(r => headRow.innerHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${r.nama}</th>`);
-            headRow.innerHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${theTersier.nama}</th><th class="px-4 py-3 text-right">DELIVERY</th><th class="px-4 py-3 text-right">TOTAL OPT</th><th class="px-4 py-3 text-right">OVERHEAD</th><th class="px-4 py-3 text-right">COF</th><th class="px-4 py-3 text-right text-posorange">TOTAL BIAYA</th><th class="px-4 py-3 text-right">LABA</th><th class="px-4 py-3 text-right">MARGIN</th>`;
+            d.arrRute.forEach(r => headRow.innerHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${r.nama}</th>`);
+            headRow.innerHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${d.objTersier.nama}</th><th class="px-4 py-3 text-right">DELIVERY</th><th class="px-4 py-3 text-right">TOTAL OPT</th><th class="px-4 py-3 text-right">OVERHEAD</th><th class="px-4 py-3 text-right">COF</th><th class="px-4 py-3 text-right text-posorange">TOTAL BIAYA</th><th class="px-4 py-3 text-right">LABA</th><th class="px-4 py-3 text-right">MARGIN</th>`;
 
             let tbody = document.getElementById('tbodyHasil');
             tbody.innerHTML = '';
             
             let sumBerat = 0, sumNP = 0, sumDPP = 0, sumPPN = 0, sumCol = 0, sumPro = 0;
-            let sumRoutes = Array(theRutes.length).fill(0);
+            let sumRoutes = Array(d.arrRute.length).fill(0);
             let sumTer = 0, sumDeliv = 0, sumOpt = 0, sumOver = 0, sumCOF = 0, sumBiaya = 0, sumLaba = 0;
 
             document.querySelectorAll('.paket-row').forEach((row) => {
@@ -671,8 +706,8 @@
                 
                 let collecting = 1000;
                 let processing = 1000;
-                let costRoutes = theRutes.map(r => r.tarif * pCW);
-                let costTersier = theTersier.tarif * pCW;
+                let costRoutes = d.arrRute.map(r => r.tarif * pCW);
+                let costTersier = d.objTersier.tarif * pCW;
                 let delivery = pCW <= 3 ? 2775 : 2775 + ((pCW - 3) * 2300);
                 
                 let totalOpt = collecting + processing + costRoutes.reduce((a,b)=>a+b, 0) + costTersier + delivery;
@@ -690,22 +725,22 @@
                 sumTer += costTersier; sumDeliv += delivery; sumOpt += totalOpt; sumOver += overhead; sumCOF += cof; sumBiaya += totalBiaya; sumLaba += laba;
 
                 let tr = `<tr class="hover:bg-gray-100">
-                    <td class="px-4 py-2 font-bold whitespace-nowrap text-gray-700">${pNama}</td>
-                    <td class="px-4 py-2 text-right font-semibold">${pCW}</td>
-                    <td class="px-4 py-2 text-right">${formatRupiahUI(nilaiProyek)}</td>
-                    <td class="px-4 py-2 text-right">${formatRupiahUI(dpp)}</td>
-                    <td class="px-4 py-2 text-right">${formatRupiahUI(ppn)}</td>
-                    <td class="px-4 py-2 text-right">${formatRupiahUI(collecting)}</td>
-                    <td class="px-4 py-2 text-right">${formatRupiahUI(processing)}</td>`;
-                costRoutes.forEach(cr => tr += `<td class="px-4 py-2 text-right">${formatRupiahUI(cr)}</td>`);
-                tr += `<td class="px-4 py-2 text-right">${formatRupiahUI(costTersier)}</td>
-                    <td class="px-4 py-2 text-right">${formatRupiahUI(delivery)}</td>
-                    <td class="px-4 py-2 text-right font-bold text-gray-800">${formatRupiahUI(totalOpt)}</td>
-                    <td class="px-4 py-2 text-right">${formatRupiahUI(overhead)}</td>
-                    <td class="px-4 py-2 text-right">${formatRupiahUI(cof)}</td>
-                    <td class="px-4 py-2 text-right font-bold text-posorange">${formatRupiahUI(totalBiaya)}</td>
-                    <td class="px-4 py-2 text-right">${formatRupiahUI(laba)}</td>
-                    <td class="px-4 py-2 text-right">${margin.toFixed(2)}%</td>
+                    <td class="px-4 py-3 font-bold whitespace-nowrap text-gray-700">${pNama}</td>
+                    <td class="px-4 py-3 text-right font-semibold">${pCW}</td>
+                    <td class="px-4 py-3 text-right">${formatRupiahUI(nilaiProyek)}</td>
+                    <td class="px-4 py-3 text-right">${formatRupiahUI(dpp)}</td>
+                    <td class="px-4 py-3 text-right">${formatRupiahUI(ppn)}</td>
+                    <td class="px-4 py-3 text-right">${formatRupiahUI(collecting)}</td>
+                    <td class="px-4 py-3 text-right">${formatRupiahUI(processing)}</td>`;
+                costRoutes.forEach(cr => tr += `<td class="px-4 py-3 text-right">${formatRupiahUI(cr)}</td>`);
+                tr += `<td class="px-4 py-3 text-right">${formatRupiahUI(costTersier)}</td>
+                    <td class="px-4 py-3 text-right">${formatRupiahUI(delivery)}</td>
+                    <td class="px-4 py-3 text-right font-bold text-gray-800">${formatRupiahUI(totalOpt)}</td>
+                    <td class="px-4 py-3 text-right">${formatRupiahUI(overhead)}</td>
+                    <td class="px-4 py-3 text-right">${formatRupiahUI(cof)}</td>
+                    <td class="px-4 py-3 text-right font-bold text-posorange">${formatRupiahUI(totalBiaya)}</td>
+                    <td class="px-4 py-3 text-right">${formatRupiahUI(laba)}</td>
+                    <td class="px-4 py-3 text-right">${margin.toFixed(2)}%</td>
                 </tr>`;
                 tbody.innerHTML += tr;
             });
@@ -732,7 +767,7 @@
             </tr>`;
             tfoot.innerHTML = trFoot;
 
-            document.getElementById('labelTujuan').innerText = `Tujuan Akhir (Kabupaten/Kota): ${tujuanAkhir}`;
+            document.getElementById('labelTujuan').innerText = `Tujuan Akhir (Kabupaten/Kota): ${d.tujuanAkhir}`;
             document.getElementById('hasil-container').classList.remove('hidden');
         }
 
@@ -749,73 +784,42 @@
         }
 
         function exportToExcel() {
-            const rpFmt = '#,##0'; 
-            let wsData = [];
+            let d = getKalkulasiData(); if (!d) return;
+            let r = 1; 
+            let rowHeader = r++; let rowTujuan = r++; let rowBerat = r++; let rowNP = r++; let rowDPP = r++; let rowPPN = r++; let rowCol = r++; let rowProc = r++;
             
-            let headerRow = ["NAMA PAKET", "BERAT KIRIMAN (KG)", "NILAI PROYEK (MARGIN 15%)", "DPP", "PPN (1.1%)", "COLLECTING", "PROCESSING"];
-            theRutes.forEach(r => headerRow.push(r.nama.toUpperCase()));
-            headerRow.push(theTersier.nama.toUpperCase(), "DELIVERY", "TOTAL OPTIMALISASI", "OVERHEAD (5%)", "COF", "TOTAL BIAYA", "LABA", "MARGIN (%)");
-            wsData.push(headerRow);
+            let routeRows = d.arrRute.map(x => ({...x, row: r++}));
+            let tRow = {...d.objTersier, row: r++}; 
 
-            let iB = 1, iNP = 2, iDPP = 3, iPPN = 4, iCol = 5, iPro = 6;
-            let iFirstRute = 7;
-            let iTer = iFirstRute + theRutes.length;
-            let iDeliv = iTer + 1;
-            let iOpt = iDeliv + 1;
-            let iOver = iOpt + 1;
-            let iCOF = iOpt + 2;
-            let iBiaya = iOpt + 3;
-            let iLaba = iOpt + 4;
-            let iMargin = iOpt + 5;
+            let rowDeliv = r++; let rowTotalOpt = r++; let rowOverhead = r++; let rowCOF = r++; let rowTotalB = r++; let rowLaba = r++; let rowMargin = r++;
+            const rp = '#,##0'; 
+            
+            let wsData = [
+                ["DESKRIPSI KOMPONEN", "NILAI"],
+                ["TUJUAN AKHIR (AKUN/CUSTOMER)", d.tujuanAkhir],
+                ["BERAT KIRIMAN (KG)", { t: 'n', v: d.berat }],
+                ["NILAI PROYEK (MARGIN 15%)", { t: 'n', f: `B${rowDPP}*101.1/100`, z: rp }],
+                ["DPP", { t: 'n', f: `B${rowTotalB}+B${rowLaba}`, z: rp }],
+                ["PPN (1.1%)", { t: 'n', f: `B${rowDPP}*0.011`, z: rp }],
+                ["COLLECTING", { t: 'n', v: 1000, z: rp }],
+                ["PROCESSING", { t: 'n', v: 1000, z: rp }]
+            ];
 
-            let pkts = document.querySelectorAll('.paket-row');
-            pkts.forEach((row, index) => {
-                let R = index + 2; 
-                let pNama = row.querySelector('.paket-nama').value.toUpperCase() || `PAKET ${index+1}`;
-                let pCW = parseFloat(row.querySelector('.paket-cw').value) || 1;
+            routeRows.forEach(p => wsData.push([p.nama, { t: 'n', f: `${p.tarif}*B${rowBerat}`, z: rp }]));
+            wsData.push([tRow.nama, { t: 'n', f: `${tRow.tarif}*B${rowBerat}`, z: rp }]);
 
-                let rowData = [];
-                rowData[0] = pNama;
-                rowData[iB] = { t: 'n', v: pCW };
-                rowData[iNP] = { t: 'n', f: `${getColName(iDPP)}${R}*101.1/100`, z: rpFmt };
-                rowData[iDPP] = { t: 'n', f: `${getColName(iBiaya)}${R}+${getColName(iLaba)}${R}`, z: rpFmt };
-                rowData[iPPN] = { t: 'n', f: `${getColName(iDPP)}${R}*0.011`, z: rpFmt };
-                rowData[iCol] = { t: 'n', v: 1000, z: rpFmt };
-                rowData[iPro] = { t: 'n', v: 1000, z: rpFmt };
-                
-                theRutes.forEach((route, idx) => {
-                    rowData[iFirstRute + idx] = { t: 'n', f: `$B${R}*${route.tarif}`, z: rpFmt };
-                });
-                
-                rowData[iTer] = { t: 'n', f: `$B${R}*${theTersier.tarif}`, z: rpFmt };
-                rowData[iDeliv] = { t: 'n', f: `IF($B${R}<=3, 2775, 2775+(($B${R}-3)*2300))`, z: rpFmt };
-                rowData[iOpt] = { t: 'n', f: `SUM(${getColName(iCol)}${R}:${getColName(iDeliv)}${R})`, z: rpFmt };
-                rowData[iOver] = { t: 'n', f: `${getColName(iOpt)}${R}*0.05`, z: rpFmt };
-                rowData[iCOF] = { t: 'n', f: `${getColName(iOpt)}${R}*30/365*0.08`, z: rpFmt };
-                rowData[iBiaya] = { t: 'n', f: `${getColName(iOpt)}${R}+${getColName(iOver)}${R}+${getColName(iCOF)}${R}`, z: rpFmt };
-                rowData[iLaba] = { t: 'n', f: `${getColName(iBiaya)}${R}*0.15`, z: rpFmt };
-                rowData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${R}/${getColName(iBiaya)}${R}`, z: '0.00%' };
-                
-                wsData.push(rowData);
-            });
-
-            let totalR = pkts.length + 2;
-            let footData = [];
-            footData[0] = "GRAND TOTAL";
-            for(let c = 1; c < iMargin; c++) {
-                footData[c] = { t: 'n', f: `SUM(${getColName(c)}2:${getColName(c)}${totalR-1})`, z: rpFmt };
-            }
-            footData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${totalR}/${getColName(iBiaya)}${totalR}`, z: '0.00%' };
-            wsData.push(footData);
+            wsData.push(["DELIVERY", { t: 'n', f: `IF(B${rowBerat}<=3, 2775, 2775+(($B${R}-3)*2300))`, z: rp }]);
+            wsData.push(["TOTAL OPTIMALISASI", { t: 'n', f: `SUM(B${rowCol}:B${rowDeliv})`, z: rp }]);
+            wsData.push(["OVERHEAD (5%)", { t: 'n', f: `B${rowTotalOpt}*0.05`, z: rp }]);
+            wsData.push(["COF", { t: 'n', f: `B${rowTotalOpt}*30/365*0.08`, z: rp }]);
+            wsData.push(["TOTAL BIAYA", { t: 'n', f: `B${rowTotalOpt}+B${rowOverhead}+B${rowCOF}`, z: rp }]);
+            wsData.push(["LABA", { t: 'n', f: `B${rowTotalB}*0.15`, z: rp }]);
+            wsData.push(["MARGIN (%)", { t: 'n', f: `B${rowLaba}/B${rowTotalB}`, z: '0.00%' }]);
 
             const ws = XLSX.utils.aoa_to_sheet(wsData);
-            
-            let colWidths = [{ wch: 30 }, { wch: 20 }];
-            for(let c=2; c<=iMargin; c++) colWidths.push({ wch: 25 });
-            ws['!cols'] = colWidths;
-
+            ws['!cols'] = [{ wch: 55 }, { wch: 20 }];
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "OPTIMALISASI MULTI PAKET");
+            XLSX.utils.book_append_sheet(wb, ws, "OPTIMALISASI");
             XLSX.writeFile(wb, "KALKULASI_OPTIMALISASI_POSIND.xlsx");
         }
     </script>
