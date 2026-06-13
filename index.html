@@ -6,7 +6,6 @@
     <title>Optimalisasi Pengiriman PosIND</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -20,52 +19,96 @@
         }
     </script>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans">
+<body class="bg-gray-100 min-h-screen font-sans pb-12">
 
-    <header class="bg-white shadow-md py-4 px-8 flex justify-between items-center">
+    <header class="bg-white shadow-md py-4 px-8 flex justify-between items-center mb-8">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-12">
         <h1 class="text-2xl font-bold text-posblue text-center flex-1">Portal Kalkulasi & Optimalisasi Tarif PosIND</h1>
         <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-10">
     </header>
 
-    <main class="max-w-6xl mx-auto mt-8 bg-white p-8 rounded-lg shadow">
+    <main class="max-w-5xl mx-auto space-y-6">
         
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div>
-                <label class="block text-sm font-semibold text-posblue mb-2">Berat Kiriman (Kg)</label>
-                <input type="number" id="berat" class="w-full border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange" value="10" min="1">
+        <section class="bg-white p-6 rounded-lg shadow-md border-t-4 border-posblue">
+            <h2 class="text-lg font-bold text-posblue mb-4 flex items-center">
+                <span class="bg-posblue text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">1</span> 
+                Tujuan & Berat Kiriman
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tujuan Akhir (Customer / Kota)</label>
+                    <input type="text" id="tujuanAkhir" placeholder="Contoh: KUPANG" class="w-full border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange uppercase">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Berat Kiriman (Kg)</label>
+                    <input type="number" id="berat" class="w-full border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange" value="10" min="1">
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-semibold text-posblue mb-2">Rute 1: Origin - Hub</label>
-                <select id="rute1" class="w-full border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange">
-                    <option value="13477">BATAM - JAKARTA : Rp 13.477/kg</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-posblue mb-2">Rute 2: Hub - Tujuan</label>
-                <select id="rute2" class="w-full border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange">
-                    <option value="34801">JAKARTA - KUPANG : Rp 34.801/kg</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-semibold text-posblue mb-2">Tersier: KCU/KC Tujuan</label>
-                <select id="tersier" class="w-full border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange">
-                    <option value="564">KCU KUPANG (MAX) : Rp 564/kg</option>
-                </select>
-            </div>
-        </div>
+        </section>
 
-        <div class="flex justify-between items-center mb-8">
-            <div class="text-sm text-gray-500 italic">
-                *Database terhubung dengan link CSV Primer Udara & All Tersier
+        <section class="bg-white p-6 rounded-lg shadow-md border-t-4 border-posorange">
+            <h2 class="text-lg font-bold text-posblue mb-4 flex items-center">
+                <span class="bg-posorange text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">2</span> 
+                Susun Rute Primer
+            </h2>
+            <p class="text-sm text-gray-500 mb-4">Masukkan rute dari Batam hingga ke hub/bandara terakhir sebelum tersier.</p>
+            
+            <div id="ruteContainer" class="space-y-3">
+                <div class="flex gap-4 items-center rute-baris">
+                    <div class="w-10 text-center font-bold text-gray-400">#1</div>
+                    <input type="text" placeholder="Rute (Misal: BATAM - CGK)" class="rute-nama uppercase flex-1 border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange">
+                    <div class="relative w-1/3">
+                        <span class="absolute left-3 top-2 text-gray-500">Rp</span>
+                        <input type="number" placeholder="Tarif per Kg" class="rute-tarif w-full border border-gray-300 p-2 pl-10 rounded focus:ring-posorange focus:border-posorange">
+                    </div>
+                </div>
             </div>
-            <button onclick="hitungOptimalisasi()" class="bg-posorange hover:bg-red-600 text-white font-bold py-2 px-6 rounded shadow">
-                Kalkulasi Tarif
+
+            <button onclick="tambahRute()" class="mt-4 text-posblue font-semibold text-sm flex items-center hover:text-posorange transition-colors">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                Tambah Rute Lanjutan
+            </button>
+        </section>
+
+        <section class="bg-white p-6 rounded-lg shadow-md border-t-4 border-gray-500">
+            <h2 class="text-lg font-bold text-posblue mb-4 flex items-center">
+                <span class="bg-gray-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">3</span> 
+                Biaya Tersier (Opsional)
+            </h2>
+            
+            <label class="flex items-center cursor-pointer mb-4">
+                <input type="checkbox" id="pakaiTersier" onchange="toggleTersier()" class="w-5 h-5 text-posorange focus:ring-posorange border-gray-300 rounded">
+                <span class="ml-2 text-gray-700 font-medium">Gunakan Jalur Tersier?</span>
+            </label>
+
+            <div id="tersierForm" class="hidden flex gap-4 items-center">
+                <div class="w-10"></div>
+                <input type="text" id="namaTersier" placeholder="Nama KCU/KC (Misal: KCU KUPANG)" class="uppercase flex-1 border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange">
+                <div class="relative w-1/3">
+                    <span class="absolute left-3 top-2 text-gray-500">Rp</span>
+                    <input type="number" id="tarifTersier" placeholder="Tarif Tersier per Kg" class="w-full border border-gray-300 p-2 pl-10 rounded focus:ring-posorange focus:border-posorange">
+                </div>
+            </div>
+        </section>
+
+        <div class="flex justify-end">
+            <button onclick="hitungOptimalisasi()" class="bg-posorange hover:bg-red-600 text-white font-bold py-3 px-8 rounded shadow-lg text-lg w-full md:w-auto">
+                Kalkulasi Total Tarif
             </button>
         </div>
 
-        <div id="hasil-container" class="hidden">
-            <h2 class="text-xl font-bold text-posblue mb-4 border-b pb-2">Hasil Kalkulasi Optimalisasi</h2>
+        <section id="hasil-container" class="hidden bg-white p-6 rounded-lg shadow-md mt-8 border border-gray-200">
+            <div class="flex justify-between items-end border-b pb-4 mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-posblue">Hasil Optimalisasi</h2>
+                    <p id="labelTujuan" class="text-gray-600 font-semibold mt-1 uppercase"></p>
+                </div>
+                <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Download .xlsx
+                </button>
+            </div>
+            
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left text-gray-700 border" id="tableHasil">
                     <thead class="text-xs text-white uppercase bg-posblue">
@@ -78,45 +121,61 @@
                         </tbody>
                 </table>
             </div>
-
-            <div class="mt-6 flex justify-end">
-                <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    Download .xlsx
-                </button>
-            </div>
-        </div>
+        </section>
 
     </main>
 
     <script>
-        // LINK DATABASE CSV DARI GOOGLE SHEETS
-        const urlPrimerUdara = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuYYRcuYa4ehq9NlTxSJlse6CMFLMrOWU5zHcaEdyj2k1VRKr-t7z52ua-5DrtA/pub?gid=1378317974&single=true&output=csv";
-        const urlAllTersier = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=1649129386&single=true&output=csv";
-
-        /*
-        // CONTOH FUNGSI BACA CSV OTOMATIS (Bisa diaktifkan jika nama kolom sudah dipastikan)
-        function loadDataTersier() {
-            Papa.parse(urlAllTersier, {
-                download: true,
-                header: true,
-                complete: function(results) {
-                    const data = results.data;
-                    // Logika filter data KCU/KC KUPANG dan mencari Math.max() dari Biaya per KG
-                    console.log("Data Tersier Berhasil Dimuat:", data);
-                }
-            });
-        }
-        // loadDataTersier();
-        */
-
+        let ruteCount = 1;
         let dataExport = [];
 
+        // Fungsi menampilkan/menyembunyikan form tersier
+        function toggleTersier() {
+            const checkbox = document.getElementById('pakaiTersier');
+            const form = document.getElementById('tersierForm');
+            if (checkbox.checked) {
+                form.classList.remove('hidden');
+            } else {
+                form.classList.add('hidden');
+                document.getElementById('namaTersier').value = '';
+                document.getElementById('tarifTersier').value = '';
+            }
+        }
+
+        // Fungsi menambah baris input rute primer dinamis
+        function tambahRute() {
+            ruteCount++;
+            const container = document.getElementById('ruteContainer');
+            const row = document.createElement('div');
+            row.className = 'flex gap-4 items-center rute-baris mt-3';
+            row.innerHTML = `
+                <div class="w-10 text-center font-bold text-gray-400">#${ruteCount}</div>
+                <input type="text" placeholder="Rute Lanjutan (Misal: CGK - KUPANG)" class="rute-nama uppercase flex-1 border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange">
+                <div class="relative w-1/3">
+                    <span class="absolute left-3 top-2 text-gray-500">Rp</span>
+                    <input type="number" placeholder="Tarif per Kg" class="rute-tarif w-full border border-gray-300 p-2 pl-10 rounded focus:ring-posorange focus:border-posorange">
+                </div>
+                <button onclick="hapusRute(this)" class="text-red-500 hover:text-red-700 font-bold px-2" title="Hapus Rute">X</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function hapusRute(btn) {
+            btn.parentElement.remove();
+            // Re-index number
+            ruteCount--;
+            const rows = document.querySelectorAll('.rute-baris');
+            rows.forEach((row, index) => {
+                row.querySelector('div').innerText = '#' + (index + 1);
+            });
+        }
+
         function hitungOptimalisasi() {
+            // Ambil dan pastikan format ALL CAPS untuk tujuan
+            let tujuanAkhir = document.getElementById('tujuanAkhir').value.toUpperCase();
+            if (!tujuanAkhir) tujuanAkhir = "TUJUAN TIDAK DITENTUKAN";
+            
             const berat = parseFloat(document.getElementById('berat').value);
-            const tarifRute1_perKg = parseFloat(document.getElementById('rute1').value);
-            const tarifRute2_perKg = parseFloat(document.getElementById('rute2').value);
-            const tarifTersier_perKg = parseFloat(document.getElementById('tersier').value);
 
             if (!berat || berat <= 0) {
                 alert("Masukkan berat kiriman yang valid.");
@@ -126,17 +185,44 @@
             // Komponen Dasar
             const collecting = 1000;
             const processing = 1000;
-            const biayaRute1 = tarifRute1_perKg * berat;
-            const biayaRute2 = tarifRute2_perKg * berat;
+            let totalBiayaPrimer = 0;
+            let arrayRutePrimerExport = [];
+
+            // Looping mengambil semua input rute primer
+            const barisRute = document.querySelectorAll('.rute-baris');
+            barisRute.forEach((baris, index) => {
+                let namaRute = baris.querySelector('.rute-nama').value.toUpperCase() || `RUTE ${index + 1}`;
+                let tarif = parseFloat(baris.querySelector('.rute-tarif').value) || 0;
+                let totalBaris = tarif * berat;
+                
+                totalBiayaPrimer += totalBaris;
+                arrayRutePrimerExport.push({
+                    "Komponen": `BIAYA PRIMER: ${namaRute}`,
+                    "Nilai": totalBaris
+                });
+            });
+
+            // Ambil Tersier jika dicentang
+            let biayaTersier = 0;
+            let arrayTersierExport = [];
+            const pakaiTersier = document.getElementById('pakaiTersier').checked;
             
-            // Komponen Tersier (Baru)
-            const biayaTersier = tarifTersier_perKg * berat;
-            
+            if (pakaiTersier) {
+                let namaTersier = document.getElementById('namaTersier').value.toUpperCase() || "TERSIER";
+                let tarifTersier = parseFloat(document.getElementById('tarifTersier').value) || 0;
+                biayaTersier = tarifTersier * berat;
+                
+                arrayTersierExport.push({
+                    "Komponen": `BIAYA TERSIER: ${namaTersier}`,
+                    "Nilai": biayaTersier
+                });
+            }
+
             // Delivery
             const delivery = 2775 + ((berat - 3) * 2300);
 
-            // Total Optimalisasi (Ditambah Biaya Tersier)
-            const totalOptimalisasi = collecting + processing + biayaRute1 + biayaRute2 + biayaTersier + delivery;
+            // Total Optimalisasi
+            const totalOptimalisasi = collecting + processing + totalBiayaPrimer + biayaTersier + delivery;
 
             // Overhead & COF
             const overhead = totalOptimalisasi * 0.05;
@@ -152,17 +238,27 @@
             const ppn = dpp * 0.011;
             const marginPersen = (laba / totalBiaya) * 100;
 
-            // Menyiapkan Data untuk Tabel HTML & Excel
+            // Reset dan bangun struktur dataExport
             dataExport = [
+                { "Komponen": "TUJUAN AKHIR (CUSTOMER)", "Nilai": tujuanAkhir },
                 { "Komponen": "BERAT KIRIMAN (KG)", "Nilai": berat },
-                { "Komponen": "NILAI PROYEK (OTOMATIS UNTUK MARGIN 15%)", "Nilai": nilaiProyek },
+                { "Komponen": "NILAI PROYEK (MARGIN 15%)", "Nilai": nilaiProyek },
                 { "Komponen": "DPP", "Nilai": dpp },
                 { "Komponen": "PPN (1.1%)", "Nilai": ppn },
                 { "Komponen": "COLLECTING", "Nilai": collecting },
-                { "Komponen": "PROCESSING", "Nilai": processing },
-                { "Komponen": "BIAYA RUTE BATAM - JAKARTA", "Nilai": biayaRute1 },
-                { "Komponen": "BIAYA RUTE JAKARTA - KUPANG", "Nilai": biayaRute2 },
-                { "Komponen": "BIAYA TERSIER KUPANG", "Nilai": biayaTersier },
+                { "Komponen": "PROCESSING", "Nilai": processing }
+            ];
+
+            // Masukkan dinamis data primer
+            dataExport = dataExport.concat(arrayRutePrimerExport);
+
+            // Masukkan dinamis data tersier (jika ada)
+            if (arrayTersierExport.length > 0) {
+                dataExport = dataExport.concat(arrayTersierExport);
+            }
+
+            // Lanjutkan data penutup
+            dataExport = dataExport.concat([
                 { "Komponen": "DELIVERY", "Nilai": delivery },
                 { "Komponen": "TOTAL OPTIMALISASI", "Nilai": totalOptimalisasi },
                 { "Komponen": "OVERHEAD (5%)", "Nilai": overhead },
@@ -170,19 +266,22 @@
                 { "Komponen": "TOTAL BIAYA", "Nilai": totalBiaya },
                 { "Komponen": "LABA", "Nilai": laba },
                 { "Komponen": "MARGIN (%)", "Nilai": marginPersen.toFixed(2) + "%" }
-            ];
+            ]);
 
-            // Render ke Tabel HTML
+            // Tampilkan ke UI
+            document.getElementById('labelTujuan').innerText = `Tujuan: ${tujuanAkhir} | Berat: ${berat} Kg`;
             const tbody = document.getElementById('tbodyHasil');
             tbody.innerHTML = '';
             
             dataExport.forEach(item => {
-                let formattedValue = typeof item.Nilai === 'number' 
-                    ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.Nilai) 
-                    : item.Nilai;
+                let formattedValue = item.Nilai;
                 
-                // Pengecualian format untuk baris Berat Kiriman
-                if(item.Komponen === "BERAT KIRIMAN (KG)") formattedValue = item.Nilai + " Kg";
+                // Format Currency untuk angka selain berat dan margin string
+                if (typeof item.Nilai === 'number' && item.Komponen !== "BERAT KIRIMAN (KG)") {
+                    formattedValue = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.Nilai);
+                } else if (item.Komponen === "BERAT KIRIMAN (KG)") {
+                    formattedValue = item.Nilai + " Kg";
+                }
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
