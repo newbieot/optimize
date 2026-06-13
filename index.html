@@ -32,7 +32,7 @@
         
         <div id="loadingStatus" class="bg-blue-100 border-l-4 border-posblue text-posblue p-4 rounded shadow mb-4 flex items-center">
             <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            Sedang menghubungkan ke Google Sheets Primer Udara & Tersier...
+            <span class="font-semibold">Sedang menarik tarif dari Google Sheets Primer Udara & Tersier...</span>
         </div>
 
         <section class="bg-white p-6 rounded-lg shadow-md border-t-4 border-posblue">
@@ -63,12 +63,11 @@
                 <div class="flex gap-4 items-center rute-baris">
                     <div class="w-10 text-center font-bold text-gray-400">#1</div>
                     <select class="rute-select uppercase flex-1 border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange" onchange="updateTarif(this)">
-                        <option value="0">Pilih Rute Primer...</option>
-                        <option value="13477">BATAM 29400 - JAKARTA 10000</option>
+                        <option value="0">PILIH RUTE PRIMER...</option>
                     </select>
                     <div class="relative w-1/3">
                         <span class="absolute left-3 top-2 text-gray-500">Rp</span>
-                        <input type="number" class="rute-tarif w-full bg-gray-100 border border-gray-300 p-2 pl-10 rounded text-gray-700 cursor-not-allowed" placeholder="Otomatis" readonly>
+                        <input type="number" class="rute-tarif w-full bg-gray-100 border border-gray-300 p-2 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="Otomatis" readonly>
                     </div>
                 </div>
             </div>
@@ -93,18 +92,17 @@
             <div id="tersierForm" class="hidden flex gap-4 items-center">
                 <div class="w-10 text-center font-bold text-gray-400">KC</div>
                 <select id="tersierSelect" class="uppercase flex-1 border border-gray-300 p-2 rounded focus:ring-posorange focus:border-posorange" onchange="updateTarifTersier(this)">
-                    <option value="0">Pilih KCU/KC Tujuan...</option>
-                    <option value="564">KCU KUPANG</option>
+                    <option value="0">PILIH KCU/KC TUJUAN...</option>
                 </select>
                 <div class="relative w-1/3">
                     <span class="absolute left-3 top-2 text-gray-500">Rp</span>
-                    <input type="number" id="tarifTersier" class="w-full bg-gray-100 border border-gray-300 p-2 pl-10 rounded text-gray-700 cursor-not-allowed" placeholder="Otomatis" readonly>
+                    <input type="number" id="tarifTersier" class="w-full bg-gray-100 border border-gray-300 p-2 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="Otomatis" readonly>
                 </div>
             </div>
         </section>
 
         <div class="flex justify-end">
-            <button onclick="hitungOptimalisasi()" id="btnHitung" class="bg-posorange hover:bg-red-600 text-white font-bold py-3 px-8 rounded shadow-lg text-lg w-full md:w-auto">
+            <button onclick="hitungOptimalisasi()" id="btnHitung" class="bg-posorange hover:bg-red-600 text-white font-bold py-3 px-8 rounded shadow-lg text-lg w-full md:w-auto opacity-50 cursor-not-allowed" disabled>
                 Kalkulasi Total Tarif
             </button>
         </div>
@@ -142,93 +140,116 @@
         const urlPrimerUdara = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuYYRcuYa4ehq9NlTxSJlse6CMFLMrOWU5zHcaEdyj2k1VRKr-t7z52ua-5DrtA/pub?gid=1378317974&single=true&output=csv";
         const urlAllTersier = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=1649129386&single=true&output=csv";
 
-        let optionsPrimerHTML = '<option value="0">Pilih Rute Primer...</option>';
-        let optionsTersierHTML = '<option value="0">Pilih KCU/KC Tujuan...</option>';
+        let optionsPrimerHTML = '<option value="0">PILIH RUTE PRIMER...</option>';
+        let optionsTersierHTML = '<option value="0">PILIH KCU/KC TUJUAN...</option>';
 
-        // Fungsi Membaca Primer Udara (Logika Matriks: Kolom Vertikal = Origin, Horizontal = Tujuan)
-        Papa.parse(urlPrimerUdara, {
-            download: true,
-            complete: function(results) {
-                const data = results.data;
-                const destinations = data[0]; // Baris 1 adalah tujuan (Jakarta 10000, dst)
-                
-                for(let i = 1; i < data.length; i++) {
-                    let origin = data[i][0]; // Kolom 1 adalah Origin (Batam 29400, dst)
-                    if(!origin) continue;
-                    
-                    for(let j = 1; j < destinations.length; j++) {
-                        let dest = destinations[j];
-                        let tarif = parseFloat(data[i][j]);
+        // Fungsi pembersih format angka (jaga-jaga jika di google sheet diketik "Rp 13.477" atau "13.477,00")
+        function parseRupiah(str) {
+            if (!str) return 0;
+            let cleanStr = String(str).replace(/\./g, '').replace(',', '.').replace(/[^0-9.-]/g, '');
+            return parseFloat(cleanStr) || 0;
+        }
+
+        // FUNGSI INTI PENARIK DATA API (ANTI-HANG)
+        async function initData() {
+            try {
+                const [resPrimer, resTersier] = await Promise.all([
+                    fetch(urlPrimerUdara),
+                    fetch(urlAllTersier)
+                ]);
+
+                if (!resPrimer.ok || !resTersier.ok) throw new Error("Gagal mengunduh CSV");
+
+                const textPrimer = await resPrimer.text();
+                const textTersier = await resTersier.text();
+
+                // Proses Sheet Primer Udara (Matriks Origin vs Tujuan)
+                Papa.parse(textPrimer, {
+                    complete: function(results) {
+                        const data = results.data;
+                        if (data.length < 2) return;
+                        const destinations = data[0]; 
                         
-                        // Buat list rute jika tarif berupa angka valid (bukan kosong/huruf)
-                        if(dest && !isNaN(tarif)) {
-                            optionsPrimerHTML += `<option value="${tarif}">${origin} - ${dest}</option>`;
+                        for(let i = 1; i < data.length; i++) {
+                            let origin = data[i][0]; 
+                            if(!origin) continue;
+                            
+                            for(let j = 1; j < destinations.length; j++) {
+                                let dest = destinations[j];
+                                let tarif = parseRupiah(data[i][j]);
+                                
+                                if(dest && tarif > 0) {
+                                    optionsPrimerHTML += `<option value="${tarif}">${String(origin).toUpperCase()} - ${String(dest).toUpperCase()}</option>`;
+                                }
+                            }
                         }
                     }
-                }
-                
-                // Update semua dropdown primer yang ada di UI
-                document.querySelectorAll('.rute-select').forEach(sel => {
-                    sel.innerHTML = optionsPrimerHTML;
                 });
-                cekLoadingStatus();
-            }
-        });
 
-        // Fungsi Membaca All Tersier (Mencari Tarif Tertinggi per KCU/KC)
-        let countTersierLoaded = false;
-        Papa.parse(urlAllTersier, {
-            download: true,
-            complete: function(results) {
-                const data = results.data;
-                // Asumsi data tersier adalah list biasa, kita kelompokkan berdasarkan KC untuk cari nilai MAX
-                let maxTersierMap = {};
-                
-                // Looping mengabaikan header (i=1)
-                for(let i = 1; i < data.length; i++) {
-                    let kcu = data[i][0]; // Kolom A = KCU/KC
-                    let tarifTersier = parseFloat(data[i][data[i].length - 1]); // Asumsi kolom terakhir adalah biaya per KG
-                    
-                    // Jika struktur CSV beda, fallback cari angka tertinggi di baris tersebut
-                    if(isNaN(tarifTersier)) {
-                        for(let col = 1; col < data[i].length; col++) {
-                            let temp = parseFloat(data[i][col]);
-                            if(!isNaN(temp) && temp > (tarifTersier || 0)) tarifTersier = temp;
+                // Proses Sheet All Tersier (Otomatis Ambil Nilai Tertinggi per KCU)
+                Papa.parse(textTersier, {
+                    complete: function(results) {
+                        const data = results.data;
+                        let maxTersierMap = {};
+                        
+                        for(let i = 1; i < data.length; i++) {
+                            let row = data[i];
+                            if(row.length < 2) continue;
+                            
+                            let kcu = row[0]; // Kolom A sebagai KCU
+                            if(!kcu) continue;
+
+                            let maxTarif = 0;
+                            for(let c = 1; c < row.length; c++) {
+                                let val = parseRupiah(row[c]);
+                                if(val > maxTarif) maxTarif = val;
+                            }
+
+                            if(maxTarif > 0) {
+                                if(!maxTersierMap[kcu] || maxTarif > maxTersierMap[kcu]) {
+                                    maxTersierMap[kcu] = maxTarif;
+                                }
+                            }
+                        }
+
+                        for (const [kcu, tarif] of Object.entries(maxTersierMap)) {
+                            optionsTersierHTML += `<option value="${tarif}">${String(kcu).toUpperCase()}</option>`;
                         }
                     }
+                });
 
-                    if(kcu && !isNaN(tarifTersier)) {
-                        if(!maxTersierMap[kcu] || tarifTersier > maxTersierMap[kcu]) {
-                            maxTersierMap[kcu] = tarifTersier;
-                        }
-                    }
-                }
-
-                // Masukkan ke dropdown Tersier
-                for (const [kcu, tarif] of Object.entries(maxTersierMap)) {
-                    optionsTersierHTML += `<option value="${tarif}">${kcu}</option>`;
-                }
+                // INJECT DATA KE DALAM FORMULIR UI
+                document.querySelectorAll('.rute-select').forEach(sel => sel.innerHTML = optionsPrimerHTML);
                 document.getElementById('tersierSelect').innerHTML = optionsTersierHTML;
-                countTersierLoaded = true;
-                cekLoadingStatus();
-            }
-        });
 
-        function cekLoadingStatus() {
-            if(optionsPrimerHTML.length > 100 && countTersierLoaded) {
-                document.getElementById('loadingStatus').innerHTML = `<svg class="h-5 w-5 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <span class="text-green-700 font-semibold">Database berhasil dimuat dari Google Sheets!</span>`;
-                setTimeout(() => document.getElementById('loadingStatus').style.display = 'none', 3000);
+                // UBAH TAMPILAN LOADING JADI SUKSES & AKTIFKAN TOMBOL
+                const statusDiv = document.getElementById('loadingStatus');
+                statusDiv.className = "bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow mb-4 flex items-center";
+                statusDiv.innerHTML = `<svg class="h-5 w-5 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> <span class="font-semibold">Database Tarif Berhasil Terhubung!</span>`;
+                setTimeout(() => statusDiv.style.display = 'none', 3500);
+
+                const btnHitung = document.getElementById('btnHitung');
+                btnHitung.disabled = false;
+                btnHitung.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            } catch (error) {
+                console.error("Gagal memuat data:", error);
+                const statusDiv = document.getElementById('loadingStatus');
+                statusDiv.className = "bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4 flex items-center";
+                statusDiv.innerHTML = `<span class="font-semibold">ERROR: Gagal menarik data dari Google Sheets. Pastikan format tabel tidak berubah.</span>`;
             }
         }
 
-        // Fungsi Auto-Populate Tarif Saat Rute Primer Dipilih
+        // Tembak fungsi saat web dimuat
+        window.onload = initData;
+
+        // Auto-Populate Form
         function updateTarif(selectElement) {
             const tarifInput = selectElement.parentElement.querySelector('.rute-tarif');
             const selectedTarif = selectElement.value;
             tarifInput.value = selectedTarif == 0 ? '' : selectedTarif;
         }
 
-        // Fungsi Auto-Populate Tarif Saat KC Tersier Dipilih
         function updateTarifTersier(selectElement) {
             const tarifInput = document.getElementById('tarifTersier');
             const selectedTarif = selectElement.value;
@@ -246,6 +267,7 @@
             }
         }
 
+        // Logika Dynamic Routing Builder
         let ruteCount = 1;
         function tambahRute() {
             ruteCount++;
@@ -259,7 +281,7 @@
                 </select>
                 <div class="relative w-1/3">
                     <span class="absolute left-3 top-2 text-gray-500">Rp</span>
-                    <input type="number" class="rute-tarif w-full bg-gray-100 border border-gray-300 p-2 pl-10 rounded text-gray-700 cursor-not-allowed" placeholder="Otomatis" readonly>
+                    <input type="number" class="rute-tarif w-full bg-gray-100 border border-gray-300 p-2 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="Otomatis" readonly>
                 </div>
                 <button onclick="hapusRute(this)" class="text-red-500 hover:text-red-700 font-bold px-2" title="Hapus Rute">X</button>
             `;
@@ -274,6 +296,7 @@
             });
         }
 
+        // Proses Kalkulasi Finansial
         let dataExport = [];
         function hitungOptimalisasi() {
             let tujuanAkhir = document.getElementById('tujuanAkhir').value.toUpperCase();
@@ -287,9 +310,10 @@
             let totalBiayaPrimer = 0;
             let arrayRutePrimerExport = [];
 
-            // Kalkulasi Semua Rute Primer
             document.querySelectorAll('.rute-baris').forEach((baris, index) => {
                 let selectElem = baris.querySelector('.rute-select');
+                if (selectElem.value == "0") return; // Abaikan jika rute belum dipilih
+                
                 let namaRute = selectElem.options[selectElem.selectedIndex].text;
                 let tarif = parseFloat(baris.querySelector('.rute-tarif').value) || 0;
                 
@@ -300,17 +324,18 @@
                 }
             });
 
-            // Kalkulasi Tersier
             let biayaTersier = 0;
             let arrayTersierExport = [];
             if (document.getElementById('pakaiTersier').checked) {
                 let selectTersier = document.getElementById('tersierSelect');
-                let namaTersier = selectTersier.options[selectTersier.selectedIndex].text;
-                let tarifTersier = parseFloat(document.getElementById('tarifTersier').value) || 0;
-                
-                if(tarifTersier > 0) {
-                    biayaTersier = tarifTersier * berat;
-                    arrayTersierExport.push({ "Komponen": `BIAYA TERSIER: ${namaTersier.toUpperCase()}`, "Nilai": biayaTersier });
+                if (selectTersier.value != "0") {
+                    let namaTersier = selectTersier.options[selectTersier.selectedIndex].text;
+                    let tarifTersier = parseFloat(document.getElementById('tarifTersier').value) || 0;
+                    
+                    if(tarifTersier > 0) {
+                        biayaTersier = tarifTersier * berat;
+                        arrayTersierExport.push({ "Komponen": `BIAYA TERSIER: ${namaTersier.toUpperCase()}`, "Nilai": biayaTersier });
+                    }
                 }
             }
 
