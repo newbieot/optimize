@@ -796,28 +796,29 @@
                 const rpFmt = '#,##0'; 
                 let wsData = [];
                 
-                // Setelan Styling xlsx-js-style
+                // Setelan Styling xlsx-js-style (DIPISAH AGAR TIDAK BOCOR REFERENSINYA)
+                const createBorder = () => ({
+                    top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }
+                });
+
                 const sHeader = {
                     fill: { fgColor: { rgb: "1C2D5A" } },
                     font: { color: { rgb: "FFFFFF" }, bold: true },
                     alignment: { horizontal: "center", vertical: "center", wrapText: true },
-                    border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } }
+                    border: createBorder()
                 };
-                const sDataText = {
-                    alignment: { vertical: "center" },
-                    border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } }
-                };
-                const sDataNum = {
-                    alignment: { horizontal: "right", vertical: "center" },
-                    border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } }
-                };
-                const sTotal = {
-                    fill: { fgColor: { rgb: "E2E8F0" } },
-                    font: { bold: true, color: { rgb: "1C2D5A" } },
-                    alignment: { horizontal: "right", vertical: "center" },
-                    border: { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } }
-                };
-                const sTotalText = { ...sTotal, alignment: { horizontal: "left", vertical: "center" } };
+                
+                const sDataText = { alignment: { vertical: "center" }, border: createBorder() };
+                const sDataPlain = { alignment: { horizontal: "right", vertical: "center" }, border: createBorder() };
+                const sDataRp = { alignment: { horizontal: "right", vertical: "center" }, border: createBorder() };
+                const sDataVol = { alignment: { horizontal: "right", vertical: "center" }, border: createBorder() };
+                const sDataPct = { alignment: { horizontal: "right", vertical: "center" }, border: createBorder() };
+
+                const sTotalText = { fill: { fgColor: { rgb: "E2E8F0" } }, font: { bold: true, color: { rgb: "1C2D5A" } }, alignment: { horizontal: "left", vertical: "center" }, border: createBorder() };
+                const sTotalPlain = { fill: { fgColor: { rgb: "E2E8F0" } }, font: { bold: true, color: { rgb: "1C2D5A" } }, alignment: { horizontal: "right", vertical: "center" }, border: createBorder() };
+                const sTotalRp = { fill: { fgColor: { rgb: "E2E8F0" } }, font: { bold: true, color: { rgb: "1C2D5A" } }, alignment: { horizontal: "right", vertical: "center" }, border: createBorder() };
+                const sTotalVol = { fill: { fgColor: { rgb: "E2E8F0" } }, font: { bold: true, color: { rgb: "1C2D5A" } }, alignment: { horizontal: "right", vertical: "center" }, border: createBorder() };
+                const sTotalPct = { fill: { fgColor: { rgb: "E2E8F0" } }, font: { bold: true, color: { rgb: "1C2D5A" } }, alignment: { horizontal: "right", vertical: "center" }, border: createBorder() };
 
                 // HEADER BARU SESUAI REQUEST
                 let headerRow = [
@@ -866,12 +867,11 @@
 
                     let rowData = [];
                     rowData[0] = { v: pNama, t: 's', s: sDataText };
-                    rowData[iAct] = { t: 'n', v: pAct, s: sDataNum };
-                    rowData[iP] = { t: 'n', v: pP, s: sDataNum };
-                    rowData[iL] = { t: 'n', v: pL, s: sDataNum };
-                    rowData[iT] = { t: 'n', v: pT, s: sDataNum };
+                    rowData[iAct] = { t: 'n', v: pAct, s: sDataPlain };
+                    rowData[iP] = { t: 'n', v: pP, s: sDataPlain };
+                    rowData[iL] = { t: 'n', v: pL, s: sDataPlain };
+                    rowData[iT] = { t: 'n', v: pT, s: sDataPlain };
 
-                    // Konversi index ke huruf kolom Excel (e.g., iAct=1 -> 'B', iVol=5 -> 'F')
                     let colAct = getColName(iAct); // B
                     let colP = getColName(iP); // C
                     let colL = getColName(iL); // D
@@ -880,31 +880,31 @@
                     let colCW = getColName(iCW); // G
 
                     // RUMUS VOLUMETRIK
-                    rowData[iVol] = { t: 'n', f: `${colP}${R}*${colL}${R}*${colT}${R}/4000`, z: '0.00', s: sDataNum };
+                    rowData[iVol] = { t: 'n', f: `${colP}${R}*${colL}${R}*${colT}${R}/4000`, z: '0.00', s: sDataVol };
                     
                     // RUMUS CHARGEABLE WEIGHT (Max Aktual/Volumetrik, pembulatan atas kelipatan 1 jika desimal > 0.3)
                     let maxStr = `MAX(${colAct}${R},${colVol}${R})`;
                     let formulaCW = `MAX(1, IF((${maxStr}-INT(${maxStr}))>0.3, INT(${maxStr})+1, INT(${maxStr})))`;
-                    rowData[iCW] = { t: 'n', f: formulaCW, s: sDataNum };
+                    rowData[iCW] = { t: 'n', f: formulaCW, s: sDataPlain };
 
-                    rowData[iNP] = { t: 'n', f: `${getColName(iDPP)}${R}*101.1/100`, z: rpFmt, s: sDataNum };
-                    rowData[iDPP] = { t: 'n', f: `${getColName(iBiaya)}${R}+${getColName(iLaba)}${R}`, z: rpFmt, s: sDataNum };
-                    rowData[iPPN] = { t: 'n', f: `${getColName(iDPP)}${R}*0.011`, z: rpFmt, s: sDataNum };
-                    rowData[iCol] = { t: 'n', v: 1000, z: rpFmt, s: sDataNum };
-                    rowData[iPro] = { t: 'n', v: 1000, z: rpFmt, s: sDataNum };
+                    rowData[iNP] = { t: 'n', f: `${getColName(iDPP)}${R}*101.1/100`, z: rpFmt, s: sDataRp };
+                    rowData[iDPP] = { t: 'n', f: `${getColName(iBiaya)}${R}+${getColName(iLaba)}${R}`, z: rpFmt, s: sDataRp };
+                    rowData[iPPN] = { t: 'n', f: `${getColName(iDPP)}${R}*0.011`, z: rpFmt, s: sDataRp };
+                    rowData[iCol] = { t: 'n', v: 1000, z: rpFmt, s: sDataRp };
+                    rowData[iPro] = { t: 'n', v: 1000, z: rpFmt, s: sDataRp };
                     
                     globalRutes.forEach((route, idx) => {
-                        rowData[iFirstRute + idx] = { t: 'n', f: `$${colCW}${R}*${route.tarif}`, z: rpFmt, s: sDataNum };
+                        rowData[iFirstRute + idx] = { t: 'n', f: `$${colCW}${R}*${route.tarif}`, z: rpFmt, s: sDataRp };
                     });
                     
-                    rowData[iTer] = { t: 'n', f: `$${colCW}${R}*${globalTersier.tarif}`, z: rpFmt, s: sDataNum };
-                    rowData[iDeliv] = { t: 'n', f: `IF($${colCW}${R}<=3, 2775, 2775+(($${colCW}${R}-3)*2300))`, z: rpFmt, s: sDataNum };
-                    rowData[iOpt] = { t: 'n', f: `SUM(${getColName(iCol)}${R}:${getColName(iDeliv)}${R})`, z: rpFmt, s: sDataNum };
-                    rowData[iOver] = { t: 'n', f: `${getColName(iOpt)}${R}*0.05`, z: rpFmt, s: sDataNum };
-                    rowData[iCOF] = { t: 'n', f: `${getColName(iOpt)}${R}*30/365*0.08`, z: rpFmt, s: sDataNum };
-                    rowData[iBiaya] = { t: 'n', f: `${getColName(iOpt)}${R}+${getColName(iOver)}${R}+${getColName(iCOF)}${R}`, z: rpFmt, s: sDataNum };
-                    rowData[iLaba] = { t: 'n', f: `${getColName(iBiaya)}${R}*0.15`, z: rpFmt, s: sDataNum };
-                    rowData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${R}/${getColName(iBiaya)}${R}`, z: '0.00%', s: sDataNum };
+                    rowData[iTer] = { t: 'n', f: `$${colCW}${R}*${globalTersier.tarif}`, z: rpFmt, s: sDataRp };
+                    rowData[iDeliv] = { t: 'n', f: `IF($${colCW}${R}<=3, 2775, 2775+(($${colCW}${R}-3)*2300))`, z: rpFmt, s: sDataRp };
+                    rowData[iOpt] = { t: 'n', f: `SUM(${getColName(iCol)}${R}:${getColName(iDeliv)}${R})`, z: rpFmt, s: sDataRp };
+                    rowData[iOver] = { t: 'n', f: `${getColName(iOpt)}${R}*0.05`, z: rpFmt, s: sDataRp };
+                    rowData[iCOF] = { t: 'n', f: `${getColName(iOpt)}${R}*30/365*0.08`, z: rpFmt, s: sDataRp };
+                    rowData[iBiaya] = { t: 'n', f: `${getColName(iOpt)}${R}+${getColName(iOver)}${R}+${getColName(iCOF)}${R}`, z: rpFmt, s: sDataRp };
+                    rowData[iLaba] = { t: 'n', f: `${getColName(iBiaya)}${R}*0.15`, z: rpFmt, s: sDataRp };
+                    rowData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${R}/${getColName(iBiaya)}${R}`, z: '0.00%', s: sDataPct };
                     
                     wsData.push(rowData);
                 });
@@ -916,16 +916,29 @@
                 // Proses sum kolom secara dinamis
                 let columnsToSum = [iAct, iVol, iCW].concat(Array.from({length: iMargin - iNP}, (_, i) => iNP + i));
                 columnsToSum.forEach(c => {
-                    let fmt = (c === iVol) ? '0.00' : rpFmt;
-                    footData[c] = { t: 'n', f: `SUM(${getColName(c)}2:${getColName(c)}${totalR-1})`, z: fmt, s: sTotal };
+                    let fmt, usedStyle;
+                    if (c === iVol) {
+                        fmt = '0.00';
+                        usedStyle = sTotalVol;
+                    } else if (c === iAct) {
+                        fmt = '0.##'; 
+                        usedStyle = sTotalPlain;
+                    } else if (c === iCW) {
+                        fmt = '0'; 
+                        usedStyle = sTotalPlain;
+                    } else {
+                        fmt = rpFmt; // '#,##0'
+                        usedStyle = sTotalRp;
+                    }
+                    footData[c] = { t: 'n', f: `SUM(${getColName(c)}2:${getColName(c)}${totalR-1})`, z: fmt, s: usedStyle };
                 });
 
                 // Kosongkan bagian P, L, T di Total Bawah
-                footData[iP] = { v: "", s: sTotal };
-                footData[iL] = { v: "", s: sTotal };
-                footData[iT] = { v: "", s: sTotal };
+                footData[iP] = { v: "", s: sTotalPlain };
+                footData[iL] = { v: "", s: sTotalPlain };
+                footData[iT] = { v: "", s: sTotalPlain };
 
-                footData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${totalR}/${getColName(iBiaya)}${totalR}`, z: '0.00%', s: sTotal };
+                footData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${totalR}/${getColName(iBiaya)}${totalR}`, z: '0.00%', s: sTotalPct };
                 wsData.push(footData);
 
                 const ws = XLSX.utils.aoa_to_sheet(wsData);
