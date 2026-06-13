@@ -3,18 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optimalisasi Pengiriman PosIND</title>
-    <!-- Tailwind CSS -->
+    
+    <title>Portal Optimalisasi Tarif Pengiriman PosIND by Ikhsan Radiansyah</title>
+    <meta name="description" content="Portal Kalkulasi dan Optimalisasi Tarif Pengiriman Pos Indonesia (PosIND). Sistem logistik multi-paket B2B dan Ritel untuk efisiensi jalur Udara, Darat, Laut, Sekunder, dan Tersier oleh Ikhsan Radiansyah.">
+    <meta name="keywords" content="PosIND, Tarif Pos Indonesia, Kalkulator Logistik, Optimalisasi Pengiriman, Ikhsan Radiansyah, Rute Udara Darat Laut, PosNew Hub, Ekspedisi, Cargo">
+    <meta name="author" content="Ikhsan Radiansyah">
+    <meta name="robots" content="index, follow">
+    
+    <meta property="og:title" content="Portal Optimalisasi Tarif Pengiriman PosIND by Ikhsan Radiansyah">
+    <meta property="og:description" content="Sistem utilitas canggih untuk optimalisasi efisiensi layanan logistik PosIND B2B dan Ritel. Terintegrasi dengan database rute nasional.">
+    <meta property="og:type" content="website">
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS untuk Export XLSX -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- PapaParse untuk membaca CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <!-- TomSelect CSS & JS -->
+    
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Gantari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
+        :root { 
+            --pos-blue: #1C2D5A; 
+            --pos-orange: #EF4123; 
+            --bg: #F4F6F9; 
+        }
+        
+        body {
+            font-family: 'Gantari', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #334155;
+        }
+        main { flex: 1; }
+
         .posblue { color: #1C2D5A; }
         .bg-posblue { background-color: #1C2D5A; }
         .posorange { color: #EF4123; }
@@ -24,6 +49,7 @@
         .focus\:ring-posorange:focus { --tw-ring-color: #EF4123; }
         .focus\:border-posorange:focus { border-color: #EF4123; }
         
+        /* TomSelect Style Override */
         .ts-control {
             border-color: #D1D5DB !important;
             padding: 0.6rem !important;
@@ -41,14 +67,45 @@
             text-transform: uppercase;
             font-size: 0.875rem;
         }
+
+        /* Footer Khas PosNew Hub */
+        .dashboard-footer {
+            width: 100%; box-sizing: border-box; background-color: #0f172a;
+            border-top: 3px solid #EF4123; display: flex; justify-content: space-between;
+            align-items: center; padding: 0 24px; margin-top: auto;
+            font-family: 'Gantari', 'Segoe UI', sans-serif; z-index: 20;
+            height: 60px; overflow: hidden;
+        }
+        .footer-brand {
+            display: flex; align-items: center; gap: 8px; color: #f8fafc; font-weight: 700; 
+            font-size: 0.95rem; letter-spacing: 0.5px; white-space: nowrap; font-family: 'Sora', sans-serif;
+        }
+        .footer-desc { 
+            color: #94a3b8; font-size: 0.8rem; margin: 0 15px; white-space: nowrap; 
+            overflow: hidden; text-overflow: ellipsis; text-align: center; flex: 1;
+        }
+        .footer-creator-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(239, 65, 35, 0.1); border: 1px solid rgba(239, 65, 35, 0.2);
+            padding: 5px 14px; border-radius: 20px; color: #e2e8f0; font-size: 0.75rem;
+            white-space: nowrap; transition: all 0.3s ease;
+        }
+        .footer-creator-badge:hover { 
+            background: rgba(239, 65, 35, 0.2); border-color: rgba(239, 65, 35, 0.5); 
+        }
+        .footer-creator-badge strong { color: #EF4123; font-weight: 600; }
+
+        @media (max-width: 850px) {
+            .dashboard-footer { flex-direction: column; justify-content: center; gap: 8px; padding: 15px; height: auto; }
+            .footer-desc { display: none; }
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans pb-12">
+<body>
 
-    <!-- Header -->
-    <header class="bg-white shadow-md py-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4">
+    <header class="bg-white shadow-md py-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4 sticky top-0 z-50">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12">
-        <h1 class="text-xl md:text-2xl font-bold posblue text-center flex-1">Portal Kalkulasi & Optimalisasi Tarif</h1>
+        <h1 class="text-xl md:text-2xl font-bold posblue text-center flex-1" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi & Optimalisasi Tarif</h1>
         <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10">
     </header>
 
@@ -59,7 +116,6 @@
             <span class="font-semibold text-sm md:text-base" id="loadingText">Menyedot 10 Database Google Sheets (Udara, Darat, Laut, 6 Sekunder, Tersier)...</span>
         </div>
 
-        <!-- STEP 1: TUJUAN, MODA & MULTI-PAKET -->
         <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-posblue">
             <h2 class="text-base md:text-lg font-bold posblue mb-4 flex items-center">
                 <span class="bg-posblue text-white rounded-full w-6 h-6 flex items-center justify-center text-xs md:text-sm mr-2">1</span> 
@@ -68,7 +124,7 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tujuan Akhir (Kota/Kabupaten)</label>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tujuan Akhir (Kabupaten/Kota)</label>
                     <input type="text" id="tujuanAkhir" placeholder="CONTOH: CIMAHI" class="w-full border border-gray-300 p-2.5 rounded focus:ring-posorange font-bold uppercase">
                 </div>
                 <div>
@@ -90,7 +146,6 @@
                 </div>
             </div>
 
-            <!-- TABEL RINCIAN PAKET -->
             <div class="overflow-x-auto border border-gray-200 rounded-lg bg-gray-50">
                 <table class="w-full text-sm text-left whitespace-nowrap">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-200">
@@ -105,14 +160,12 @@
                         </tr>
                     </thead>
                     <tbody id="paketBody" class="divide-y divide-gray-200">
-                        <!-- Paket Rows Dihasilkan Dinamis -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
             <p class="text-xs text-gray-500 mt-2 italic">*Chargeable Weight dibulatkan ke atas jika lebih dari 300 gram (Desimal > 0.30).</p>
         </section>
 
-        <!-- STEP 2: BUILDER RUTE -->
         <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-posorange">
             <h2 class="text-base md:text-lg font-bold posblue mb-4 flex items-center">
                 <span class="bg-posorange text-white rounded-full w-6 h-6 flex items-center justify-center text-xs md:text-sm mr-2">2</span> 
@@ -126,7 +179,6 @@
             </button>
         </section>
 
-        <!-- STEP 3: TERSIER (WAJIB) -->
         <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-green-600">
             <h2 class="text-base md:text-lg font-bold posblue mb-4 flex items-center">
                 <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs md:text-sm mr-2">3</span> 
@@ -149,15 +201,13 @@
             </div>
         </section>
 
-        <!-- Tombol Kalkulasi -->
         <div class="flex justify-end">
             <button onclick="hitungOptimalisasi()" id="btnHitung" class="bg-posorange hover:bg-red-600 text-white font-bold py-4 px-8 rounded shadow-lg text-lg w-full md:w-auto opacity-50 cursor-not-allowed transition-all" disabled>
                 KALKULASI BIAYA KORPORAT
             </button>
         </div>
 
-        <!-- Tabel Output -->
-        <section id="hasil-container" class="hidden bg-white p-4 md:p-6 rounded-lg shadow-md mt-8 border border-gray-200">
+        <section id="hasil-container" class="hidden bg-white p-4 md:p-6 rounded-lg shadow-md mt-8 border border-gray-200 mb-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b pb-4 mb-4 gap-4">
                 <div>
                     <h2 class="text-xl font-bold posblue">Tabel Rekapitulasi Optimalisasi</h2>
@@ -170,25 +220,38 @@
             </div>
             
             <div class="overflow-x-auto">
-                <!-- Tabel akan digenerate secara Dinamis dari JS -->
                 <table class="w-full text-sm text-left text-gray-700 border" id="tableHasil">
                     <thead class="text-xs text-white uppercase bg-posblue border-b" id="hasilHeaders">
-                        <!-- Headers diinjeksi JS -->
-                    </thead>
+                        </thead>
                     <tbody id="tbodyHasil" class="divide-y divide-gray-200 bg-gray-50">
-                        <!-- Baris Data Paket diinjeksi JS -->
-                    </tbody>
+                        </tbody>
                     <tfoot id="tfootHasil" class="bg-gray-200 font-bold text-posblue uppercase text-sm border-t-2 border-gray-400">
-                        <!-- Total Bawah diinjeksi JS -->
-                    </tfoot>
+                        </tfoot>
                 </table>
             </div>
         </section>
     </main>
 
+    <footer class="dashboard-footer">
+        <div class="footer-brand">
+            <i data-lucide="layers" style="color: #EF4123; width: 18px; height: 18px;"></i>
+            PosNew Hub
+        </div>
+        <p class="footer-desc">Sistem utilitas ini dikembangkan secara independen untuk optimalisasi efisiensi layanan logistik B2B dan Ritel.</p>
+        <div class="footer-creator-badge">
+            <i data-lucide="code-2" style="color: #EF4123; width: 14px; height: 14px;"></i>
+            Inovasi oleh <strong>Ikhsan Radiansyah</strong> &copy; 2026
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
         // =================================================================================
-        // SEMUA URL CSV DARI GOOGLE SHEETS BAPAK
+        // SEMUA URL CSV DARI GOOGLE SHEETS
         // =================================================================================
         const urlPrimerUdara = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuYYRcuYa4ehq9NlTxSJlse6CMFLMrOWU5zHcaEdyj2k1VRKr-t7z52ua-5DrtA/pub?gid=1378317974&single=true&output=csv";
         const urlPrimerDarat = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuYYRcuYa4ehq9NlTxSJlse6CMFLMrOWU5zHcaEdyj2k1VRKr-t7z52ua-5DrtA/pub?gid=1226896685&single=true&output=csv";
@@ -203,7 +266,6 @@
             "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=844283654&single=true&output=csv",
             "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=1040661244&single=true&output=csv"
         ];
-        // =================================================================================
 
         let matrixUdara = {}; 
         let matrixDarat = {}; 
@@ -225,7 +287,7 @@
                 for (let i = currentCount; i < targetCount; i++) {
                     tbody.insertAdjacentHTML('beforeend', `
                         <tr class="paket-row hover:bg-gray-100 transition-colors">
-                            <td class="p-2"><input type="text" class="paket-nama w-full border border-gray-300 p-1.5 rounded uppercase font-bold" placeholder="PAKET ${i+1}" value="PAKET ${i+1}"></td>
+                            <td class="p-2"><input type="text" class="paket-nama w-full border border-gray-300 p-1.5 rounded uppercase font-bold text-gray-700" placeholder="PAKET ${i+1}" value="PAKET ${i+1}"></td>
                             <td class="p-2"><input type="number" class="paket-aktual w-full border border-gray-300 p-1.5 rounded" min="0.1" step="0.1" value="10" oninput="calcCW(this)"></td>
                             <td class="p-2"><input type="number" class="paket-p w-full border border-gray-300 p-1.5 rounded" min="1" value="20" oninput="calcCW(this)"></td>
                             <td class="p-2"><input type="number" class="paket-l w-full border border-gray-300 p-1.5 rounded" min="1" value="20" oninput="calcCW(this)"></td>
@@ -257,9 +319,8 @@
             let intPart = Math.floor(maxWeight);
             let decPart = maxWeight - intPart;
             
-            // Aturan Wajib: Lebih dari 300 gram (> 0.3) dibulatkan ke atas.
             let cw = decPart > 0.30 ? intPart + 1 : intPart;
-            if (cw < 1) cw = 1; // Minimal berat selalu 1 Kg
+            if (cw < 1) cw = 1; 
             
             row.querySelector('.paket-cw').value = cw;
         }
@@ -393,7 +454,6 @@
                 document.getElementById('btnTambahRute').disabled = false;
                 document.getElementById('btnTambahRute').classList.remove('opacity-50', 'cursor-not-allowed');
 
-                // Generate 1 Row Paket Awal
                 renderPaketRows();
                 renderDefaultRoutes();
 
@@ -558,14 +618,14 @@
             const inp = document.getElementById('tarifTersier');
             if (valKcu && tersierMap[valKcu] !== undefined) {
                 let valTarif = tersierMap[valKcu];
-                inp.value = valTarif > 0 ? formatRupiahUI(valTarif) : '0'; 
+                inp.value = valTarif > 0 ? formatRupiahUI(valTarif) : '0 (GRATIS)'; 
                 inp.dataset.value = valTarif;
             } else {
                 inp.value = ''; inp.dataset.value = 0;
             }
         }
 
-        // ================= KALKULASI & EXCEL EXPORT MULTI-PAKET =================
+        // ================= KALKULASI & EXCEL EXPORT =================
         let theRutes = [];
         let theTersier = null;
         
@@ -585,7 +645,7 @@
                 let origin = document.getElementById(`rute-origin-${id}`).value;
                 let dest = document.getElementById(`rute-dest-${id}`).value;
                 let tarif = parseFloat(document.getElementById(`rute-tarif-${id}`).dataset.value) || 0;
-                if (tarif > 0) theRutes.push({ nama: `JALUR ${moda}: ${origin} ➔ ${dest}`, tarif });
+                if (tarif > 0) theRutes.push({ nama: `JALUR ${moda.split(' ')[1] || moda}: ${origin} ➔ ${dest}`, tarif });
             });
 
             theTersier = { 
@@ -593,7 +653,6 @@
                 tarif: parseFloat(document.getElementById('tarifTersier').dataset.value) || 0 
             };
 
-            // Bangun Tabel UI Horizontal
             let headRow = document.getElementById('hasilHeaders');
             headRow.innerHTML = `<th class="px-4 py-3 whitespace-nowrap">NAMA PAKET</th><th class="px-4 py-3 text-right">BERAT (KG)</th><th class="px-4 py-3 text-right">NILAI PROYEK</th><th class="px-4 py-3 text-right">DPP</th><th class="px-4 py-3 text-right">PPN</th><th class="px-4 py-3 text-right">COLLECTING</th><th class="px-4 py-3 text-right">PROCESSING</th>`;
             theRutes.forEach(r => headRow.innerHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${r.nama}</th>`);
@@ -602,7 +661,6 @@
             let tbody = document.getElementById('tbodyHasil');
             tbody.innerHTML = '';
             
-            // Variabel untuk menampung Summary Grand Total UI
             let sumBerat = 0, sumNP = 0, sumDPP = 0, sumPPN = 0, sumCol = 0, sumPro = 0;
             let sumRoutes = Array(theRutes.length).fill(0);
             let sumTer = 0, sumDeliv = 0, sumOpt = 0, sumOver = 0, sumCOF = 0, sumBiaya = 0, sumLaba = 0;
@@ -627,13 +685,12 @@
                 let ppn = dpp * 0.011;
                 let margin = (laba / totalBiaya) * 100;
 
-                // Hitung kumulatif
                 sumBerat += pCW; sumNP += nilaiProyek; sumDPP += dpp; sumPPN += ppn; sumCol += collecting; sumPro += processing;
                 costRoutes.forEach((cr, i) => sumRoutes[i] += cr);
                 sumTer += costTersier; sumDeliv += delivery; sumOpt += totalOpt; sumOver += overhead; sumCOF += cof; sumBiaya += totalBiaya; sumLaba += laba;
 
                 let tr = `<tr class="hover:bg-gray-100">
-                    <td class="px-4 py-2 font-bold whitespace-nowrap">${pNama}</td>
+                    <td class="px-4 py-2 font-bold whitespace-nowrap text-gray-700">${pNama}</td>
                     <td class="px-4 py-2 text-right font-semibold">${pCW}</td>
                     <td class="px-4 py-2 text-right">${formatRupiahUI(nilaiProyek)}</td>
                     <td class="px-4 py-2 text-right">${formatRupiahUI(dpp)}</td>
@@ -653,11 +710,10 @@
                 tbody.innerHTML += tr;
             });
 
-            // Tampilkan Baris Grand Total
             let marginTotal = sumBiaya > 0 ? (sumLaba / sumBiaya) * 100 : 0;
             let tfoot = document.getElementById('tfootHasil');
             let trFoot = `<tr>
-                <td class="px-4 py-4 whitespace-nowrap">GRAND TOTAL</td>
+                <td class="px-4 py-4 whitespace-nowrap font-bold">GRAND TOTAL</td>
                 <td class="px-4 py-4 text-right">${sumBerat}</td>
                 <td class="px-4 py-4 text-right">${formatRupiahUI(sumNP)}</td>
                 <td class="px-4 py-4 text-right">${formatRupiahUI(sumDPP)}</td>
@@ -676,11 +732,10 @@
             </tr>`;
             tfoot.innerHTML = trFoot;
 
-            document.getElementById('labelTujuan').innerText = `Tujuan Utama: ${tujuanAkhir}`;
+            document.getElementById('labelTujuan').innerText = `Tujuan Akhir (Kabupaten/Kota): ${tujuanAkhir}`;
             document.getElementById('hasil-container').classList.remove('hidden');
         }
 
-        // FUNGSI KONVERSI INDEX KE ABJAD EXCEL (0=A, 1=B, 26=AA)
         function getColName(n) {
             let ordA = 'A'.charCodeAt(0);
             let ordZ = 'Z'.charCodeAt(0);
@@ -693,18 +748,15 @@
             return s;
         }
 
-        // MESIN INJEKSI RUMUS EXCEL HORIZONTAL-VERTIKAL
         function exportToExcel() {
             const rpFmt = '#,##0'; 
             let wsData = [];
             
-            // Susun Header
             let headerRow = ["NAMA PAKET", "BERAT KIRIMAN (KG)", "NILAI PROYEK (MARGIN 15%)", "DPP", "PPN (1.1%)", "COLLECTING", "PROCESSING"];
-            theRutes.forEach(r => headerRow.push(r.nama));
-            headerRow.push(theTersier.nama, "DELIVERY", "TOTAL OPTIMALISASI", "OVERHEAD (5%)", "COF (COST OF FUND)", "TOTAL BIAYA", "LABA", "MARGIN (%)");
+            theRutes.forEach(r => headerRow.push(r.nama.toUpperCase()));
+            headerRow.push(theTersier.nama.toUpperCase(), "DELIVERY", "TOTAL OPTIMALISASI", "OVERHEAD (5%)", "COF", "TOTAL BIAYA", "LABA", "MARGIN (%)");
             wsData.push(headerRow);
 
-            // Index Kolom untuk Formula Dinamis (0-based)
             let iB = 1, iNP = 2, iDPP = 3, iPPN = 4, iCol = 5, iPro = 6;
             let iFirstRute = 7;
             let iTer = iFirstRute + theRutes.length;
@@ -716,11 +768,10 @@
             let iLaba = iOpt + 4;
             let iMargin = iOpt + 5;
 
-            // Masukkan Paket per baris
             let pkts = document.querySelectorAll('.paket-row');
             pkts.forEach((row, index) => {
-                let R = index + 2; // Baris Excel (1-based), data mulai di baris 2
-                let pNama = row.querySelector('.paket-nama').value || `PAKET ${index+1}`;
+                let R = index + 2; 
+                let pNama = row.querySelector('.paket-nama').value.toUpperCase() || `PAKET ${index+1}`;
                 let pCW = parseFloat(row.querySelector('.paket-cw').value) || 1;
 
                 let rowData = [];
@@ -748,20 +799,17 @@
                 wsData.push(rowData);
             });
 
-            // Injeksi Baris Grand Total di bawah
             let totalR = pkts.length + 2;
             let footData = [];
             footData[0] = "GRAND TOTAL";
             for(let c = 1; c < iMargin; c++) {
                 footData[c] = { t: 'n', f: `SUM(${getColName(c)}2:${getColName(c)}${totalR-1})`, z: rpFmt };
             }
-            // Margin formula untuk total
             footData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${totalR}/${getColName(iBiaya)}${totalR}`, z: '0.00%' };
             wsData.push(footData);
 
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             
-            // Percantik lebar kolom
             let colWidths = [{ wch: 30 }, { wch: 20 }];
             for(let c=2; c<=iMargin; c++) colWidths.push({ wch: 25 });
             ws['!cols'] = colWidths;
