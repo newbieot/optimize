@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Optimalisasi Pengiriman PosIND</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS untuk Export XLSX -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- PapaParse untuk membaca CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         .posblue { color: #1C2D5A; }
@@ -33,6 +36,7 @@
             <span class="font-semibold" id="loadingText">Menyedot 10 Database Google Sheets (Udara, Darat, Laut, 6 Sekunder, Tersier)...</span>
         </div>
 
+        <!-- STEP 1 -->
         <section class="bg-white p-6 rounded-lg shadow-md border-t-4 border-posblue">
             <h2 class="text-lg font-bold posblue mb-4 flex items-center">
                 <span class="bg-posblue text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">1</span> 
@@ -63,6 +67,7 @@
             </div>
         </section>
 
+        <!-- STEP 2 (Universal Builder) -->
         <section class="bg-white p-6 rounded-lg shadow-md border-t-4 border-posorange">
             <h2 class="text-lg font-bold posblue mb-4 flex items-center">
                 <span class="bg-posorange text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">2</span> 
@@ -78,6 +83,7 @@
             </button>
         </section>
 
+        <!-- STEP 3 (Tersier) -->
         <section class="bg-white p-6 rounded-lg shadow-md border-t-4 border-gray-500">
             <h2 class="text-lg font-bold posblue mb-4 flex items-center">
                 <span class="bg-gray-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2">3</span> 
@@ -99,12 +105,14 @@
             </div>
         </section>
 
+        <!-- Tombol Kalkulasi -->
         <div class="flex justify-end">
             <button onclick="hitungOptimalisasi()" id="btnHitung" class="bg-posorange hover:bg-red-600 text-white font-bold py-3 px-8 rounded shadow-lg text-lg w-full md:w-auto opacity-50 cursor-not-allowed" disabled>
                 Kalkulasi Total Tarif
             </button>
         </div>
 
+        <!-- Tabel Output -->
         <section id="hasil-container" class="hidden bg-white p-6 rounded-lg shadow-md mt-8 border border-gray-200">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b pb-4 mb-4 gap-4">
                 <div>
@@ -132,7 +140,7 @@
 
     <script>
         // =================================================================================
-        // SEMUA URL CSV DARI GOOGLE SHEETS
+        // SEMUA URL CSV DARI GOOGLE SHEETS BAPAK
         // =================================================================================
         const urlPrimerUdara = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuYYRcuYa4ehq9NlTxSJlse6CMFLMrOWU5zHcaEdyj2k1VRKr-t7z52ua-5DrtA/pub?gid=1378317974&single=true&output=csv";
         const urlPrimerDarat = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuYYRcuYa4ehq9NlTxSJlse6CMFLMrOWU5zHcaEdyj2k1VRKr-t7z52ua-5DrtA/pub?gid=1226896685&single=true&output=csv";
@@ -159,44 +167,80 @@
             if (!str) return 0;
             let s = String(str).trim();
             if (s === "-" || s === "" || s.toUpperCase() === "PRIMER") return 0;
+            // Bersihkan Rp, spasi, koma
             s = s.replace(/Rp/gi, '').replace(/\s/g, '').replace(/,/g, '');
             let val = parseFloat(s);
+            // Bulatkan ke atas jika ada desimal seperti 1237.5 di Primer Darat
             return isNaN(val) ? 0 : Math.ceil(val); 
         }
 
         function formatRupiahUI(number) { return new Intl.NumberFormat('id-ID').format(number); }
 
-        // SCANNER MATRIKS UNIVERSAL
+        // MATA PEMINDAI SUPER CANGGIH (Kebal terhadap kode P0, Kolom Kosong, dll)
         function parseMatrixSheet(data, targetMatrixObj) {
             if (data.length < 2) return;
             
-            let headerRowIdx = 0, maxCols = 0;
-            for(let r = 0; r < Math.min(data.length, 15); r++) {
-                let textOnlyCols = data[r].filter(x => x && isNaN(parseFloat(x)) && String(x).trim().length > 2).length;
-                if(textOnlyCols > maxCols) { maxCols = textOnlyCols; headerRowIdx = r; }
+            let headerRowIdx = -1;
+            let maxCols = 0;
+            
+            // 1. Temukan baris yang paling banyak mengandung Teks Nama Kota (bukan angka/kode P0)
+            for (let r = 0; r < Math.min(data.length, 15); r++) {
+                let textCols = 0;
+                for (let c = 0; c < data[r].length; c++) {
+                    let val = String(data[r][c]).trim().toUpperCase();
+                    let isText = isNaN(parseFloat(val));
+                    // Syarat: Minimal 3 huruf, BUKAN angka, BUKAN garis, BUKAN "P0..."
+                    if (val.length >= 3 && isText && !val.includes("---") && !val.startsWith("P0")) {
+                        textCols++;
+                    }
+                }
+                if (textCols > maxCols) {
+                    maxCols = textCols;
+                    headerRowIdx = r;
+                }
             }
+            
+            if (headerRowIdx === -1) return;
             let headers = data[headerRowIdx].map(x => String(x).trim().toUpperCase());
-
-            let originColIdx = 2; // Default
+            
+            // 2. Cari Kolom Asal (Origin Column) dengan cara memindai ke bawah
+            let originColIdx = -1;
             for (let c = 0; c < Math.min(headers.length, 10); c++) {
                 let matchCount = 0;
-                for(let r = headerRowIdx + 1; r < Math.min(data.length, headerRowIdx + 20); r++) {
+                for (let r = headerRowIdx + 1; r < Math.min(data.length, headerRowIdx + 20); r++) {
+                    if (c >= data[r].length) continue;
                     let val = String(data[r][c]).trim().toUpperCase();
-                    if (val.length > 3 && isNaN(parseFloat(val)) && !val.includes("---")) matchCount++;
+                    let isText = isNaN(parseFloat(val));
+                    // Harus murni huruf dan tidak berawalan P0
+                    if (val.length >= 3 && isText && !val.includes("---") && val !== "PRIMER" && !val.startsWith("P0")) {
+                        matchCount++;
+                    }
                 }
-                if (matchCount > 3) { originColIdx = c; break; }
+                // Jika kolom ini berisi minimal 2 nama kota yang valid, maka inilah kolom Origin-nya!
+                if (matchCount >= 2) {
+                    originColIdx = c;
+                    break;
+                }
             }
+            
+            // Fallback (Biasanya di kolom ke-3)
+            if (originColIdx === -1) originColIdx = 2; 
 
+            // 3. Ekstrak Semua Tarif
             for(let i = headerRowIdx + 1; i < data.length; i++) {
+                if (data[i].length <= originColIdx) continue;
+                
                 let origin = String(data[i][originColIdx]).trim().toUpperCase(); 
-                if(!origin || origin === "" || origin.includes("---") || origin === "NAN") continue;
+                if(!origin || origin === "" || origin.includes("---") || origin === "NAN" || origin.startsWith("P0")) continue;
+                
                 if(!targetMatrixObj[origin]) targetMatrixObj[origin] = {};
                 
                 for(let j = originColIdx + 1; j < data[i].length; j++) {
                     if (j < headers.length) {
                         let dest = headers[j];
                         let tarif = parseRupiah(data[i][j]);
-                        if(dest && dest !== "" && !dest.includes("---") && tarif > 0) {
+                        // Hanya daftarkan rute jika dest valid dan tarif ada
+                        if(dest && dest !== "" && !dest.includes("---") && !dest.startsWith("P0") && tarif > 0) {
                             targetMatrixObj[origin][dest] = tarif;
                         }
                     }
@@ -206,23 +250,22 @@
 
         async function initData() {
             try {
-                // Fetch 10 URL Serentak 
+                // Kumpulkan 10 URL Serentak 
                 let requests = [
                     fetch(urlPrimerUdara).then(r => r.text()),
                     fetch(urlPrimerDarat).then(r => r.text()),
                     fetch(urlPrimerLaut).then(r => r.text()),
                     fetch(urlTersier).then(r => r.text())
                 ];
-                
                 urlSekunderList.forEach(url => requests.push(fetch(url).then(r => r.text())));
                 const responses = await Promise.all(requests);
                 
-                // Parsing Udara, Darat, Laut
+                // Eksekusi Udara, Darat, Laut
                 Papa.parse(responses[0], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixUdara) });
                 Papa.parse(responses[1], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixDarat) });
                 Papa.parse(responses[2], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixLaut) });
 
-                // Parsing Tersier
+                // Eksekusi Tersier (Lebih Spesifik)
                 Papa.parse(responses[3], {
                     skipEmptyLines: true,
                     complete: function(results) {
@@ -236,6 +279,7 @@
                         let headerTersier = data[headerRowIdx].map(x => String(x).trim().toUpperCase());
                         let kcuColIdx = headerTersier.findIndex(x => x.includes("KCU") || x === "KC");
                         let biayaColIdx = headerTersier.findIndex(x => x.includes("BIAYA PER KG") || x.includes("PER KG"));
+                        
                         if (kcuColIdx === -1) kcuColIdx = 2; 
                         if (biayaColIdx === -1) biayaColIdx = 10; 
 
@@ -255,7 +299,7 @@
                     }
                 });
 
-                // Parsing 6 Sekunder (Merge ke 1 Matrix Sekunder)
+                // Eksekusi 6 Sekunder (Merge jadi 1 Mega Matriks)
                 for (let i = 4; i < responses.length; i++) {
                     Papa.parse(responses[i], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixSekunder) });
                 }
@@ -270,7 +314,6 @@
                 document.getElementById('btnTambahRute').disabled = false;
                 document.getElementById('btnTambahRute').classList.remove('opacity-50', 'cursor-not-allowed');
 
-                // Tembak UI Default Rute berdasarkan Radio Button
                 renderDefaultRoutes();
 
             } catch (error) {
@@ -282,7 +325,7 @@
 
         window.onload = initData;
 
-        // FUNGSI PENCARI KOTA (Fuzzy Matcher)
+        // FUNGSI PENCARI KOTA FLEKSIBEL
         function findKey(matrix, keyword) {
             return Object.keys(matrix).find(k => k.includes(keyword)) || "";
         }
@@ -301,7 +344,7 @@
                 let origin = findKey(matrixUdara, "BATAM") || "BATAM 29400";
                 let dest = findDestKey(matrixUdara, origin, "JAKARTA") || "JAKARTA 10000";
                 tambahRute("UDARA", origin, dest);
-            } else { // DARAT_LAUT
+            } else { 
                 let origin1 = findKey(matrixSekunder, "BATAM") || "BATAM";
                 let dest1 = findDestKey(matrixSekunder, origin1, "TANJUNGPINANG") || "TANJUNGPINANG";
                 tambahRute("SEKUNDER", origin1, dest1);
@@ -370,11 +413,11 @@
             
             destSelect.innerHTML = destOptions;
             
-            if (forcedDest) {
+            if (forcedDest && activeMatrix[origin] && activeMatrix[origin][forcedDest]) {
                 destSelect.value = forcedDest;
             }
             
-            onChangeDest(index); // Trigger kalkulasi
+            onChangeDest(index);
         }
 
         function onChangeDest(index) {
@@ -386,8 +429,12 @@
             
             if (dest && activeMatrix[origin] && activeMatrix[origin][dest]) {
                 let trueVal = activeMatrix[origin][dest];
-                tarifInput.value = formatRupiahUI(trueVal); tarifInput.dataset.value = trueVal;         
-            } else { tarifInput.value = ''; tarifInput.dataset.value = 0; }
+                tarifInput.value = formatRupiahUI(trueVal); 
+                tarifInput.dataset.value = trueVal;         
+            } else { 
+                tarifInput.value = ''; 
+                tarifInput.dataset.value = 0; 
+            }
             if (document.getElementById(`rute-origin-${index + 1}`)) updateChainSubsequent(index);
         }
 
