@@ -32,7 +32,7 @@
         
         <div id="loadingStatus" class="bg-blue-100 border-l-4 border-posblue text-posblue p-4 rounded shadow mb-4 flex items-center">
             <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <span class="font-semibold" id="loadingText">Sedang merakit matriks tarif dari Google Sheets...</span>
+            <span class="font-semibold" id="loadingText">Menghubungkan dan membaca struktur matriks Google Sheets...</span>
         </div>
 
         <section class="bg-white p-6 rounded-lg shadow-md border-t-4 border-posblue">
@@ -134,15 +134,21 @@
         let optionsTersierHTML = '<option value="0">PILIH KCU/KC TUJUAN...</option>';
         let ruteCount = 0;
 
-        // PARSER ANGKA MUTLAK: Buang titik (13.477 jadi 13477)
+        // FUNGSI PEMBERSIH ANGKA TERAKURAT
         function parseRupiah(str) {
             if (str === null || str === undefined) return 0;
             let s = String(str).trim();
-            s = s.replace(/[,.]00$/, ''); // Buang desimal jika terbawa
-            let cleanStr = s.replace(/[^0-9]/g, ''); // Ambil murni angkanya saja
-            return parseInt(cleanStr, 10) || 0;
+            if (s === "-" || s === "") return 0;
+            
+            // Bersihkan string dari simbol Rp, spasi, dan koma (jika ada format luar)
+            s = s.replace(/Rp/gi, '').replace(/\s/g, '').replace(/,/g, '');
+            
+            let val = parseFloat(s);
+            if (isNaN(val)) return 0;
+            return Math.ceil(val); // Membulatkan desimal seperti 803.633 menjadi presisi ke atas
         }
 
+        // FUNGSI TAMPILAN RUPIAH
         function formatRupiahUI(number) {
             return new Intl.NumberFormat('id-ID').format(number);
         }
@@ -155,43 +161,56 @@
                 const textPrimer = await resPrimer.text();
                 const textTersier = await resTersier.text();
 
-                // 1. PROSES MATRIKS PRIMER UDARA (SCAN SELURUH KOLOM PAKSA)
+                // 1. PROSES MATRIKS PRIMER UDARA (Deteksi Otomatis Kolom Tujuan & Origin)
                 Papa.parse(textPrimer, {
-                    skipEmptyLines: true, // Abaikan baris kosong
+                    skipEmptyLines: true,
                     complete: function(results) {
                         const data = results.data;
                         if (data.length < 2) return;
                         
-                        // Scanner Dinamis: Cari baris mana yang merupakan deretan Nama Kota (Header)
+                        // Cari baris Header Tujuan (Baris dengan jumlah kolom terisi paling banyak)
                         let headerRowIdx = 0;
                         let maxCols = 0;
-                        for(let r = 0; r < Math.min(data.length, 15); r++) {
-                            let cols = data[r].filter(x => x && String(x).trim() !== "").length;
-                            if(cols > maxCols) {
-                                maxCols = cols;
+                        for(let r = 0; r < Math.min(data.length, 10); r++) {
+                            let colsTerisi = data[r].filter(x => x && String(x).trim() !== "").length;
+                            if(colsTerisi > maxCols) {
+                                maxCols = colsTerisi;
                                 headerRowIdx = r;
                             }
                         }
 
-                        // Petakan Semua Header Tujuan yang ditemukan
                         let headers = data[headerRowIdx].map(x => String(x).trim().toUpperCase());
 
-                        // Petakan Matriks Harga (Loop Ekstrim Tanpa Batas Kolom)
+                        // Cari kolom Origin (Kolom yang berisi nama-nama kota, bukan angka tarif)
+                        let originColIdx = 2; // Default di CSV Bapak ada di indeks 2 (Kolom C)
+                        for (let c = 0; c < Math.min(headers.length, 10); c++) {
+                            let matchCount = 0;
+                            for(let r = headerRowIdx + 1; r < Math.min(data.length, headerRowIdx + 20); r++) {
+                                let val = String(data[r][c]).trim().toUpperCase();
+                                if (val.length > 3 && isNaN(parseFloat(val)) && !val.includes("---")) {
+                                     matchCount++;
+                                }
+                            }
+                            if (matchCount > 5) {
+                                originColIdx = c;
+                                break;
+                            }
+                        }
+
+                        // Petakan harga matriks
                         for(let i = headerRowIdx + 1; i < data.length; i++) {
-                            let origin = String(data[i][0]).trim().toUpperCase(); 
-                            if(!origin || origin.includes("---") || origin.length < 3) continue;
+                            let origin = String(data[i][originColIdx]).trim().toUpperCase(); 
+                            if(!origin || origin === "" || origin.includes("---")) continue;
                             
-                            // Gunakan Merging Matrix jika ada nama kota ganda
                             if(!dataMatrix[origin]) dataMatrix[origin] = {};
                             
-                            for(let j = 1; j < data[i].length; j++) {
-                                // Pastikan index tujuan tidak melebihi panjang header
+                            for(let j = originColIdx + 1; j < data[i].length; j++) {
                                 if (j < headers.length) {
                                     let dest = headers[j];
                                     let tarif = parseRupiah(data[i][j]);
                                     
-                                    // Hanya simpan yang namanya valid dan tarifnya lebih dari 0
-                                    if(dest && !dest.includes("---") && dest.length > 2 && tarif > 0) {
+                                    // Simpan hanya jika tujuan jelas & ada harganya
+                                    if(dest && dest !== "" && !dest.includes("---") && tarif > 0) {
                                         dataMatrix[origin][dest] = tarif;
                                     }
                                 }
@@ -200,33 +219,56 @@
                     }
                 });
 
-                // 2. PROSES TERSIER
+                // 2. PROSES TERSIER (Deteksi Presisi Tinggi Kolom KCU & Biaya Per Kg)
                 Papa.parse(textTersier, {
                     skipEmptyLines: true,
                     complete: function(results) {
                         const data = results.data;
                         let maxTersierMap = {};
                         
-                        for(let i = 0; i < data.length; i++) {
+                        // Cari baris Header Tersier
+                        let headerRowIdx = 0;
+                        let maxCols = 0;
+                        for(let r = 0; r < Math.min(data.length, 10); r++) {
+                            let colsTerisi = data[r].filter(x => x && String(x).trim() !== "").length;
+                            if(colsTerisi > maxCols) {
+                                maxCols = colsTerisi;
+                                headerRowIdx = r;
+                            }
+                        }
+
+                        let headerTersier = data[headerRowIdx].map(x => String(x).trim().toUpperCase());
+                        
+                        // Kunci mutlak posisi "KCU" dan "BIAYA" dari nama headernya
+                        let kcuColIdx = headerTersier.findIndex(x => x.includes("KCU") || x === "KC");
+                        let biayaColIdx = headerTersier.findIndex(x => x.includes("BIAYA PER KG") || x.includes("PER KG"));
+
+                        // Jaga-jaga jika teks header salah ketik di spreadsheet
+                        if (kcuColIdx === -1) kcuColIdx = 2; // Default (Kolom C)
+                        if (biayaColIdx === -1) biayaColIdx = 10; // Default (Kolom K)
+
+                        for(let i = headerRowIdx + 1; i < data.length; i++) {
                             let row = data[i];
-                            if(row.length < 2) continue;
+                            if(row.length <= kcuColIdx) continue;
                             
-                            let kcu = String(row[0]).trim().toUpperCase();
+                            let kcu = String(row[kcuColIdx]).trim().toUpperCase();
+                            // Jangan ambil baris KCU kosong atau garis-garis
                             if(!kcu || kcu.includes("---") || kcu.includes("KANTOR") || kcu === "") continue;
 
-                            let maxTarif = 0;
-                            for(let c = 1; c < row.length; c++) {
-                                let val = parseRupiah(row[c]);
-                                if(val > maxTarif) maxTarif = val;
+                            let tarif = 0;
+                            if (row.length > biayaColIdx) {
+                                tarif = parseRupiah(row[biayaColIdx]);
                             }
 
-                            if(maxTarif > 0) {
-                                if(!maxTersierMap[kcu] || maxTarif > maxTersierMap[kcu]) {
-                                    maxTersierMap[kcu] = maxTarif;
+                            // Hanya simpan biaya tertinggi di masing-masing KCU
+                            if(tarif > 0) {
+                                if(!maxTersierMap[kcu] || tarif > maxTersierMap[kcu]) {
+                                    maxTersierMap[kcu] = tarif;
                                 }
                             }
                         }
 
+                        // Tampilkan ke Dropdown UI sesuai alfabet
                         Object.keys(maxTersierMap).sort().forEach(kcu => {
                             optionsTersierHTML += `<option value="${maxTersierMap[kcu]}">${kcu}</option>`;
                         });
@@ -234,26 +276,32 @@
                     }
                 });
 
-                // Buka Kunci UI 
+                // Cek finalisasi apakah ada data yg ditarik
+                let totalOrigins = Object.keys(dataMatrix).length;
+                if(totalOrigins === 0) throw new Error("Matriks kosong");
+
                 const statusDiv = document.getElementById('loadingStatus');
                 statusDiv.className = "bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow mb-4 flex items-center";
-                document.getElementById('loadingText').innerHTML = "Matriks Terbaca Sempurna! Jakarta siap dipilih.";
-                setTimeout(() => statusDiv.style.display = 'none', 3000);
+                document.getElementById('loadingText').innerHTML = `Sistem Sukses Terhubung! Tersedia ${totalOrigins} Origin Primer dan data KCU Tersier terbaru.`;
+                setTimeout(() => statusDiv.style.display = 'none', 4000);
 
                 document.getElementById('btnHitung').disabled = false;
                 document.getElementById('btnHitung').classList.remove('opacity-50', 'cursor-not-allowed');
                 document.getElementById('btnTambahRute').disabled = false;
                 document.getElementById('btnTambahRute').classList.remove('opacity-50', 'cursor-not-allowed');
 
-                // MUNCULKAN RUTE PERTAMA (LOCK BATAM)
-                let batamKey = Object.keys(dataMatrix).find(k => k.includes("BATAM")) || "BATAM 29400";
+                // MUNCULKAN RUTE PERTAMA (LOCK BATAM OTOMATIS)
+                let batamKey = Object.keys(dataMatrix).find(k => k.includes("BATAM"));
+                if (!batamKey) {
+                    batamKey = Object.keys(dataMatrix)[0]; 
+                }
                 tambahRute(batamKey);
 
             } catch (error) {
                 console.error("Gagal memuat data:", error);
                 const statusDiv = document.getElementById('loadingStatus');
                 statusDiv.className = "bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4 flex items-center";
-                document.getElementById('loadingText').innerHTML = "ERROR: Koneksi ke Google Sheets Gagal. Coba Refresh Halaman.";
+                document.getElementById('loadingText').innerHTML = "ERROR: Format CSV tidak sesuai atau gagal terkoneksi dengan Google Sheets.";
             }
         }
 
