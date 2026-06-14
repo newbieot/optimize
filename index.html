@@ -6,11 +6,12 @@
     
     <title>Portal Optimalisasi Tarif Pengiriman PosIND by Ikhsan Radiansyah</title>
     <meta name="description" content="Portal Kalkulasi dan Optimalisasi Tarif Pengiriman Pos Indonesia (PosIND). Sistem logistik multi-paket B2B dan Ritel untuk efisiensi jalur Udara, Darat, Laut, Sekunder, dan Tersier oleh Ikhsan Radiansyah.">
-    <meta name="keywords" content="PosIND, Tarif Pos Indonesia, Kalkulator Logistik, Optimalisasi Pengiriman, Ikhsan Radiansyah, Rute Udara Darat Laut, PosNew Hub, Ekspedisi, Cargo">
-    <meta name="author" content="Ikhsan Radiansyah">
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
     
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -27,10 +28,7 @@
             --bg: #F4F6F9; 
         }
         
-        /* Proteksi Overflow & Scroll Fix */
-        html {
-            background-color: var(--bg);
-        }
+        html { background-color: var(--bg); overscroll-behavior-y: none; }
 
         body {
             font-family: 'Gantari', sans-serif;
@@ -50,10 +48,6 @@
         .bg-posblue { background-color: #1C2D5A; }
         .posorange { color: #EF4123; }
         .bg-posorange { background-color: #EF4123; }
-        .border-posblue { border-color: #1C2D5A; }
-        .border-posorange { border-color: #EF4123; }
-        .focus\:ring-posorange:focus { --tw-ring-color: #EF4123; }
-        .focus\:border-posorange:focus { border-color: #EF4123; }
         
         /* TomSelect Style Override */
         .ts-control {
@@ -68,20 +62,15 @@
             border-color: #EF4123 !important;
             box-shadow: 0 0 0 1px #EF4123 !important;
         }
-        .ts-dropdown {
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.875rem;
-        }
+        .ts-dropdown { font-weight: bold; text-transform: uppercase; font-size: 0.875rem; }
 
-        /* Footer Khas PosNew Hub */
+        /* Footer */
         .dashboard-footer {
             width: 100%; box-sizing: border-box; background-color: #0f172a;
             border-top: 3px solid #EF4123; display: flex; justify-content: space-between;
             align-items: center; padding: 0 24px; margin-top: auto;
             font-family: 'Gantari', 'Segoe UI', sans-serif; z-index: 20;
             height: 60px; overflow: hidden;
-            /* Hack untuk menutupi whitespace/bounce scroll tanpa merusak mouse wheel */
             box-shadow: 0 50vh 0 50vh #0f172a; 
         }
         .footer-brand {
@@ -98,32 +87,84 @@
             padding: 5px 14px; border-radius: 20px; color: #e2e8f0; font-size: 0.75rem;
             white-space: nowrap; transition: all 0.3s ease;
         }
-        .footer-creator-badge:hover { 
-            background: rgba(239, 65, 35, 0.2); border-color: rgba(239, 65, 35, 0.5); 
-        }
-        .footer-creator-badge strong { color: #EF4123; font-weight: 600; }
 
         @media (max-width: 850px) {
             .dashboard-footer { flex-direction: column; justify-content: center; gap: 8px; padding: 15px; height: auto; }
             .footer-desc { display: none; }
         }
-
         .min-w-input { min-width: 80px; }
+
+        /* TAMPILAN LOGIN OVERLAY */
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #1C2D5A 0%, #0f172a 100%);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+        }
+        .login-card {
+            background: white; padding: 2.5rem; border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            width: 100%; max-width: 400px; text-align: center;
+        }
+        .login-card img { height: 50px; margin: 0 auto 1.5rem auto; }
+        .login-card h2 { font-family: 'Sora', sans-serif; color: #1C2D5A; font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .login-card p { color: #64748b; font-size: 0.9rem; margin-bottom: 2rem; }
+        .input-group { margin-bottom: 1.2rem; text-align: left; }
+        .input-group label { display: block; font-size: 0.8rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem; }
+        .input-group input { 
+            width: 100%; padding: 0.75rem 1rem; border: 1px solid #cbd5e1; 
+            border-radius: 0.5rem; outline: none; font-family: 'Gantari', sans-serif;
+            transition: all 0.3s;
+        }
+        .input-group input:focus { border-color: #EF4123; box-shadow: 0 0 0 3px rgba(239, 65, 35, 0.1); }
+        .btn-login {
+            width: 100%; background-color: #EF4123; color: white; border: none;
+            padding: 0.8rem; border-radius: 0.5rem; font-weight: 700; font-size: 1rem;
+            cursor: pointer; transition: background-color 0.3s; margin-top: 0.5rem;
+        }
+        .btn-login:hover { background-color: #d1341a; }
+        #loginError { color: #ef4444; font-size: 0.85rem; font-weight: 600; margin-top: 1rem; display: none; }
     </style>
 </head>
 
-<body class="font-sans w-full max-w-full">
+<body>
 
-    <header class="bg-white shadow-md py-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4 sticky top-0 z-50">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12">
-        <div class="flex items-center gap-3 flex-1 justify-center">
-            <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi & Optimalisasi Tarif</h1>
-            <span class="text-[10px] md:text-xs font-bold text-white bg-posorange px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v2.2 PRO</span>
+    <div id="loginOverlay">
+        <div class="login-card">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara">
+            <h2>PosNew Hub SECURE</h2>
+            <p>Otentikasi Internal diperlukan untuk mengakses Portal Kalkulasi B2B & Ritel.</p>
+            
+            <form id="loginForm">
+                <div class="input-group">
+                    <label>Corporate Email</label>
+                    <input type="email" id="userEmail" placeholder="admin@posindonesia.co.id" required autocomplete="email">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="userPass" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-login" id="loginBtnText">LOGIN SISTEM</button>
+                <div id="loginError">Email atau Password salah!</div>
+            </form>
         </div>
-        <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10">
+    </div>
+
+    <header id="appHeader" class="bg-white shadow-md py-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4 sticky top-0 z-50" style="display: none;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12 hidden md:block">
+        <div class="flex items-center gap-3 flex-1 justify-center">
+            <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi Tarif</h1>
+            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v3.1 SECURE</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10 hidden md:block">
+            <button onclick="logoutFirebase()" class="bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2">
+                <i data-lucide="log-out" class="w-4 h-4"></i> Keluar
+            </button>
+        </div>
     </header>
 
-    <main class="w-full max-w-6xl mx-auto space-y-4 md:space-y-6 px-4 md:px-0 pb-16">
+    <main id="appMain" class="w-full max-w-6xl mx-auto space-y-4 md:space-y-6 px-4 md:px-0 pb-16" style="display: none;">
         
         <div id="loadingStatus" class="bg-blue-100 border-l-4 border-posblue posblue p-4 rounded shadow mb-4 flex items-center">
             <svg class="animate-spin h-5 w-5 mr-3 flex-shrink-0" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -280,7 +321,7 @@
         </section>
     </main>
 
-    <footer class="dashboard-footer">
+    <footer id="appFooter" class="dashboard-footer" style="display: none;">
         <div class="footer-brand">
             <i data-lucide="layers" style="color: #EF4123; width: 18px; height: 18px;"></i>
             PosNew Hub
@@ -299,7 +340,77 @@
         }
 
         // =================================================================================
-        // SMART COPY-PASTE DARI EXCEL (FITUR V2.1 PRO)
+        // INISIALISASI FIREBASE & SISTEM LOGIN
+        // =================================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfgKIOdlC8JEWZGBtUauDQa3tC1PYNj94",
+            authDomain: "web-optimalisasi.firebaseapp.com",
+            projectId: "web-optimalisasi",
+            storageBucket: "web-optimalisasi.firebasestorage.app",
+            messagingSenderId: "1080281321221",
+            appId: "1:1080281321221:web:da78144e52be1d9429716c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        const loginOverlay = document.getElementById('loginOverlay');
+        const appHeader = document.getElementById('appHeader');
+        const appMain = document.getElementById('appMain');
+        const appFooter = document.getElementById('appFooter');
+
+        // Listener Status Login
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // Jika sudah login, hilangkan gembok overlay, munculkan aplikasi
+                loginOverlay.style.display = 'none';
+                appHeader.style.display = 'flex';
+                appMain.style.display = 'block';
+                appFooter.style.display = 'flex';
+                
+                // Jalankan fungsi memuat database Google Sheets setelah login sukses
+                if(Object.keys(matrixUdara).length === 0) initData(); 
+            } else {
+                // Jika belum login, tampilkan gembok, sembunyikan aplikasi
+                loginOverlay.style.display = 'flex';
+                appHeader.style.display = 'none';
+                appMain.style.display = 'none';
+                appFooter.style.display = 'none';
+            }
+        });
+
+        // Proses Tombol Login
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('userEmail').value;
+            const pass = document.getElementById('userPass').value;
+            const btn = document.getElementById('loginBtnText');
+            
+            btn.innerText = "Memeriksa...";
+            document.getElementById('loginError').style.display = 'none';
+
+            auth.signInWithEmailAndPassword(email, pass)
+                .then(() => {
+                    btn.innerText = "LOGIN SISTEM";
+                })
+                .catch((error) => {
+                    btn.innerText = "LOGIN SISTEM";
+                    document.getElementById('loginError').style.display = 'block';
+                    console.error("Login Gagal:", error);
+                });
+        });
+
+        // Proses Tombol Logout
+        function logoutFirebase() {
+            auth.signOut().then(() => {
+                // Kosongkan form agar aman saat dilogout
+                document.getElementById('userEmail').value = '';
+                document.getElementById('userPass').value = '';
+            });
+        }
+
+
+        // =================================================================================
+        // SMART COPY-PASTE DARI EXCEL
         // =================================================================================
         document.addEventListener('DOMContentLoaded', () => {
             const tableBody = document.getElementById('paketBody');
@@ -307,7 +418,6 @@
             tableBody.addEventListener('paste', function(e) {
                 let target = e.target;
                 
-                // Menambahkan 'paket-nama' agar blok paste berfungsi di kolom nama paket
                 let allowedClasses = ['paket-nama', 'paket-aktual', 'paket-p', 'paket-l', 'paket-t'];
                 let isAllowed = allowedClasses.some(cls => target.classList.contains(cls));
                 
@@ -316,12 +426,9 @@
                 let pasteData = (e.clipboardData || window.clipboardData).getData('text');
                 let rows = pasteData.trim().split(/\r\n|\n|\r/);
                 
-                // Jika hanya 1 sel yang di-paste, biarkan perilaku default
-                if (rows.length <= 1 && rows[0].split('\t').length <= 1) {
-                    return; 
-                }
+                if (rows.length <= 1 && rows[0].split('\t').length <= 1) return; 
 
-                e.preventDefault(); // Blokir perilaku bawaan
+                e.preventDefault();
                 
                 let tr = target.closest('tr');
                 let allTrs = Array.from(tableBody.querySelectorAll('tr'));
@@ -332,7 +439,7 @@
                 
                 if (requiredRows > parseInt(jumlahPaketInput.value)) {
                     jumlahPaketInput.value = requiredRows;
-                    renderPaketRows(); // Ekspan baris otomatis
+                    renderPaketRows();
                     allTrs = Array.from(tableBody.querySelectorAll('tr'));
                 }
 
@@ -350,15 +457,11 @@
                             let input = currentRow.querySelector('.' + allowedClasses[currentTargetCol]);
                             if (input) {
                                 if (allowedClasses[currentTargetCol] === 'paket-nama') {
-                                    // Paste sebagai Teks (Huruf Kapital)
                                     input.value = cells[j].trim().toUpperCase();
                                 } else {
-                                    // Konversi koma Excel menjadi titik JS
                                     let cleanVal = cells[j].trim().replace(/,/g, '.'); 
                                     let num = parseFloat(cleanVal);
-                                    if (!isNaN(num)) {
-                                        input.value = num;
-                                    }
+                                    if (!isNaN(num)) input.value = num;
                                 }
                             }
                         }
@@ -627,8 +730,6 @@
             }
         }
 
-        window.onload = initData;
-
         function findKey(matrix, keyword) { return Object.keys(matrix).find(k => k.includes(keyword)) || ""; }
         function findDestKey(matrix, origin, keyword) {
             if (!matrix[origin]) return "";
@@ -667,9 +768,6 @@
             }
         }
 
-        // =================================================================================
-        // PERBAIKAN LOGIKA RUTE (DOM Traversal)
-        // =================================================================================
         function tambahRute(forcedModa = null, forcedOrigin = null, forcedDest = null) {
             let allRows = document.querySelectorAll('.rute-baris');
             let prevDestVal = "";
@@ -820,9 +918,6 @@
             }
         }
 
-        // =================================================================================
-        // LOGIKA PERHITUNGAN (MARGIN 100% AKURAT)
-        // =================================================================================
         function hitungOptimalisasi() {
             try {
                 let tujuanAkhir = document.getElementById('tujuanAkhirSelect').value;
@@ -966,9 +1061,6 @@
             return s;
         }
 
-        // =================================================================================
-        // EKSPOR EXCEL (FUNGSI GETSTYLE TERISOLASI)
-        // =================================================================================
         function exportToExcel() {
             try {
                 if (globalRutes.length === 0 || !globalTersier) {
@@ -1038,7 +1130,6 @@
                     let rowData = [];
                     rowData[0] = { v: pNama, t: 's', s: getStyleText() };
                     
-                    // FIX MENGHILANGKAN KOMA PADA AKTUAL DAN DIMENSI DENGAN z: '0'
                     rowData[iAct] = { t: 'n', v: pAct, z: '0', s: getStylePlain() };
                     rowData[iP] = { t: 'n', v: pP, z: '0', s: getStylePlain() };
                     rowData[iL] = { t: 'n', v: pL, z: '0', s: getStylePlain() };
@@ -1050,7 +1141,7 @@
                     rowData[iVol] = { t: 'n', f: `${colP}${R}*${colL}${R}*${colT}${R}/4000`, z: '0.00', s: getStylePlain() };
                     let maxStr = `MAX(${colAct}${R},${colVol}${R})`;
                     let formulaCW = `MAX(1, IF((${maxStr}-INT(${maxStr}))>0.3, INT(${maxStr})+1, INT(${maxStr})))`;
-                    rowData[iCW] = { t: 'n', f: formulaCW, z: '0', s: getStylePlain() }; // Tanpa koma di CW
+                    rowData[iCW] = { t: 'n', f: formulaCW, z: '0', s: getStylePlain() }; 
 
                     let fDPP = `((SUM(${colBiaya}$2:${colBiaya}$${totalR-1}) + Perhitungan!$I$2) / (1 - ${marginDec})) * (${colBiaya}${R} / SUM(${colBiaya}$2:${colBiaya}$${totalR-1}))`;
                     rowData[iDPP] = { t: 'n', f: fDPP, z: rpFmt, s: getStyleRp() };
@@ -1082,7 +1173,6 @@
 
                 let columnsToSum = [iAct, iVol, iCW].concat(Array.from({length: iMargin - iNP}, (_, i) => iNP + i));
                 columnsToSum.forEach(c => {
-                    // FIX MENGHILANGKAN KOMA PADA GRAND TOTAL
                     let fmt = (c === iVol) ? '0.00' : (c === iAct || c === iCW) ? '0' : rpFmt;
                     let usedStyle = (c === iVol || c === iAct || c === iCW) ? getStyleTotalPlain() : getStyleTotalRp();
                     footData2[c] = { t: 'n', f: `SUM(${getColName(c)}2:${getColName(c)}${totalR-1})`, z: fmt, s: usedStyle };
@@ -1109,7 +1199,7 @@
                 rowData1[0] = { v: 1, t: 'n', s: getStylePlain() };
                 rowData1[1] = { v: "BATAM", t: 's', s: getStyleText() }; 
                 rowData1[2] = { v: tujuanAkhir, t: 's', s: getStyleText() }; 
-                rowData1[3] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iCW)}${totalR}`, z: '0', s: getStylePlain() }; // Tanpa koma
+                rowData1[3] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iCW)}${totalR}`, z: '0', s: getStylePlain() }; 
                 rowData1[4] = { v: pkts.length, t: 'n', s: getStylePlain() }; 
                 rowData1[5] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iNP)}${totalR}`, z: rpFmt, s: getStyleRp() }; 
                 rowData1[6] = { t: 'n', f: `F2*100/101.1`, z: rpFmt, s: getStyleRp() }; 
