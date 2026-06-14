@@ -191,7 +191,7 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12 hidden md:block">
         <div class="flex items-center gap-3 flex-1 justify-center">
             <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi Tarif</h1>
-            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v3.9 SECURE PRO</span>
+            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v4.1 BYPASS LOGIN</span>
         </div>
         <div class="flex items-center gap-4">
             <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10 hidden md:block">
@@ -401,6 +401,7 @@
 
         auth.onAuthStateChanged(user => {
             if (user) {
+                // DOMAIN DAN EMAIL YANG DIIZINKAN (WHITELIST)
                 const allowedDomain = "@posindonesia.co.id";
                 const allowedEmails = [
                     "ikhsanradiansyah@gmail.com", 
@@ -408,6 +409,7 @@
                 ];
 
                 if (user.email.endsWith(allowedDomain) || allowedEmails.includes(user.email)) {
+                    // Jika lolos whitelist, buka aplikasi
                     loginOverlay.style.display = 'none';
                     appHeader.style.display = 'flex';
                     appMain.style.display = 'block';
@@ -416,6 +418,7 @@
                     if(Object.keys(matrixUdara).length === 0) initData(); 
 
                 } else {
+                    // Jika email asing mencoba masuk, tolak dan logout paksa
                     auth.signOut().then(() => {
                         loginOverlay.style.display = 'flex';
                         document.getElementById('loginError').innerText = "Akses ditolak! Gunakan email korporat resmi PosIND.";
@@ -423,6 +426,7 @@
                     });
                 }
             } else {
+                // Jika belum login, tampilkan layar login
                 loginOverlay.style.display = 'flex';
                 appHeader.style.display = 'none';
                 appMain.style.display = 'none';
@@ -1055,6 +1059,7 @@
                         <option value="PRIMER DARAT" ${modaVal==='PRIMER DARAT'?'selected':''}>PRIMER DARAT</option>
                         <option value="PRIMER LAUT" ${modaVal==='PRIMER LAUT'?'selected':''}>PRIMER LAUT</option>
                         <option value="SEKUNDER" ${modaVal==='SEKUNDER'?'selected':''}>SEKUNDER</option>
+                        <option value="SEKUNDER SETEMPAT" ${modaVal==='SEKUNDER SETEMPAT'?'selected':''}>SEKUNDER POS SETEMPAT</option>
                         <option value="LION PARCEL" ${modaVal==='LION PARCEL'?'selected':''}>LION PARCEL (VENDOR)</option>
                     </select>
                 </div>
@@ -1064,15 +1069,17 @@
                 </div>
                 <span class="hidden md:inline text-gray-400 font-bold text-xl">➔</span>
                 <div class="w-full flex-1">
-                    <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tujuan (Ketik)</label>
-                    <select id="rute-dest-${ruteCount}" class="w-full uppercase" placeholder="KETIK TUJUAN...">
-                        <option value="">PILIH TUJUAN...</option>
-                    </select>
+                    <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tujuan (Ketik/Pilih)</label>
+                    <div id="rute-dest-wrapper-${ruteCount}">
+                        <select id="rute-dest-${ruteCount}" class="w-full uppercase" placeholder="KETIK TUJUAN...">
+                            <option value="">PILIH TUJUAN...</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="w-full md:w-1/6 relative mt-2 md:mt-0">
                     <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tarif / Kg</label>
                     <span class="absolute left-3 top-8 md:top-2.5 text-gray-500 font-semibold">Rp</span>
-                    <input type="text" id="rute-tarif-${ruteCount}" class="w-full bg-gray-200 border border-gray-300 p-2.5 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0">
+                    <input type="text" id="rute-tarif-${ruteCount}" class="w-full bg-gray-200 border border-gray-300 p-2.5 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0" oninput="formatRupiahInput(this); this.dataset.value = unformatRupiah(this.value);">
                 </div>
                 ${allRows.length > 0 ? `<button onclick="hapusRute(this)" class="w-full md:w-auto mt-2 md:mt-0 text-red-500 border border-red-200 md:border-none rounded py-2 md:py-0 font-bold hover:bg-red-50" title="Hapus">HAPUS</button>` : `<div class="hidden md:block w-4"></div>`}
             `;
@@ -1100,9 +1107,75 @@
             let prevRow = rowElem.previousElementSibling;
             let isFirstRow = (!prevRow || !prevRow.classList.contains('rute-baris'));
 
+            let originInput = document.getElementById(`rute-origin-${index}`);
+            let tarifInput = document.getElementById(`rute-tarif-${index}`);
+            let wrapper = document.getElementById(`rute-dest-wrapper-${index}`);
+
+            // === PENANGANAN SEKUNDER SETEMPAT (MANUAL INPUT) ===
+            if (moda === "SEKUNDER SETEMPAT") {
+                if(document.getElementById(`rute-dest-${index}`) && document.getElementById(`rute-dest-${index}`).tomselect) {
+                    document.getElementById(`rute-dest-${index}`).tomselect.destroy();
+                }
+                wrapper.innerHTML = `
+                    <div class="flex flex-col xl:flex-row gap-2">
+                        <input type="text" id="rute-dest-custom-${index}" class="w-full border border-gray-300 p-2.5 rounded font-bold uppercase text-gray-700" placeholder="Ketik Tujuan Manual..." value="${forcedDest || ''}">
+                        <select id="rute-basis-${index}" class="w-full xl:w-1/2 border border-gray-300 p-2.5 rounded font-bold text-posblue bg-white text-xs">
+                            <option value="KG">PER KG</option>
+                            <option value="KOLI">PER KOLI (Maks 30Kg)</option>
+                        </select>
+                    </div>
+                `;
+                
+                // Buat Tarif jadi bisa di-edit (Un-readonly)
+                tarifInput.removeAttribute('readonly');
+                tarifInput.classList.remove('bg-gray-200', 'cursor-not-allowed');
+                tarifInput.classList.add('bg-white', 'focus:ring-posorange');
+                tarifInput.value = '';
+                tarifInput.dataset.value = 0;
+                tarifInput.placeholder = "Ketik Nominal...";
+
+                // Tetapkan Origin otomatis (atau bebas)
+                if (!isFirstRow && !forcedOrigin) {
+                    let prevDestVal = "";
+                    if (prevRow.querySelector(`select[id^="rute-dest-"]`)) {
+                        prevDestVal = prevRow.querySelector(`select[id^="rute-dest-"]`).value;
+                    } else if (prevRow.querySelector(`input[id^="rute-dest-custom-"]`)) {
+                        prevDestVal = prevRow.querySelector(`input[id^="rute-dest-custom-"]`).value;
+                    }
+                    originInput.value = prevDestVal ? String(prevDestVal).toUpperCase() : "";
+                } else if (forcedOrigin) {
+                    originInput.value = forcedOrigin;
+                }
+                
+                return; // STOP di sini, tidak perlu bangun opsi dropdown matrix
+            }
+
+            // === KEMBALIKAN KE MODE DROPDOWN MATRIKS NORMAL ===
+            if(document.getElementById(`rute-dest-custom-${index}`)) {
+                wrapper.innerHTML = `
+                    <select id="rute-dest-${index}" class="w-full uppercase" placeholder="KETIK TUJUAN...">
+                        <option value="">PILIH TUJUAN...</option>
+                    </select>
+                `;
+                new TomSelect(`#rute-dest-${index}`, {
+                    create: false,
+                    sortField: { field: "text", direction: "asc" },
+                    onChange: function() { onChangeDest(index); }
+                });
+            }
+
+            // Kunci lagi Tarif Input (Readonly)
+            tarifInput.setAttribute('readonly', true);
+            tarifInput.classList.add('bg-gray-200', 'cursor-not-allowed');
+            tarifInput.classList.remove('bg-white', 'focus:ring-posorange');
+            tarifInput.value = '';
+            tarifInput.dataset.value = 0;
+            tarifInput.placeholder = "0";
+
             if (!isFirstRow && !forcedOrigin) {
                 let prevDestSelect = prevRow.querySelector('select[id^="rute-dest-"]');
-                let prevDest = prevDestSelect ? prevDestSelect.value : "";
+                let prevDestCustom = prevRow.querySelector('input[id^="rute-dest-custom-"]');
+                let prevDest = prevDestSelect ? prevDestSelect.value : (prevDestCustom ? prevDestCustom.value : "");
                 
                 if (prevDest) {
                     let aliasOrigin = getAliasOrigin(moda, prevDest);
@@ -1114,13 +1187,13 @@
                         let cleanPrev = String(prevDest).toUpperCase().replace(/[0-9]/g, '').trim();
                         matchedKey = Object.keys(activeMatrix).find(k => k.includes(cleanPrev));
                     }
-                    document.getElementById(`rute-origin-${index}`).value = matchedKey || prevDest;
+                    originInput.value = matchedKey || prevDest;
                 }
             } else if (forcedOrigin) {
-                document.getElementById(`rute-origin-${index}`).value = forcedOrigin;
+                originInput.value = forcedOrigin;
             }
 
-            const origin = document.getElementById(`rute-origin-${index}`).value;
+            const origin = originInput.value;
             let tsControl = document.getElementById(`rute-dest-${index}`).tomselect;
             
             tsControl.clear(true);
@@ -1205,9 +1278,26 @@
                     let id = row.id.split('-')[2];
                     let moda = document.getElementById(`rute-moda-${id}`).value;
                     let origin = document.getElementById(`rute-origin-${id}`).value;
-                    let dest = document.getElementById(`rute-dest-${id}`).value;
-                    let tarif = parseFloat(document.getElementById(`rute-tarif-${id}`).dataset.value) || 0;
-                    if (tarif > 0) globalRutes.push({ nama: `JALUR ${moda.split(' ')[1] || moda}: ${origin} ➔ ${dest}`, tarif: tarif });
+                    
+                    let dest, tarif, basis = 'KG';
+                    if (moda === 'SEKUNDER SETEMPAT') {
+                        dest = document.getElementById(`rute-dest-custom-${id}`).value.toUpperCase() || "CUSTOM";
+                        basis = document.getElementById(`rute-basis-${id}`).value;
+                        tarif = parseFloat(document.getElementById(`rute-tarif-${id}`).dataset.value) || 0;
+                    } else {
+                        dest = document.getElementById(`rute-dest-${id}`).value;
+                        tarif = parseFloat(document.getElementById(`rute-tarif-${id}`).dataset.value) || 0;
+                    }
+                    
+                    if (tarif > 0) {
+                        let namaJalur = moda === 'SEKUNDER SETEMPAT' ? `SEKUNDER POS SETEMPAT (${basis})` : (moda.split(' ')[1] || moda);
+                        globalRutes.push({ 
+                            nama: `JALUR ${namaJalur}: ${origin} ➔ ${dest}`, 
+                            tarif: tarif,
+                            moda: moda,
+                            basis: basis
+                        });
+                    }
                 });
 
                 globalTersier = { 
@@ -1229,7 +1319,14 @@
                     
                     let collecting = 1000;
                     let processing = 1000;
-                    let costRoutes = globalRutes.map(r => r.tarif * pCW);
+                    let costRoutes = globalRutes.map(r => {
+                        if (r.basis === 'KOLI') {
+                            let koliMultiplier = Math.ceil(pCW / 30);
+                            return r.tarif * koliMultiplier;
+                        } else {
+                            return r.tarif * pCW;
+                        }
+                    });
                     let costTersier = globalTersier.tarif * pCW;
                     
                     // UPDATE v3.8: Delivery menggunakan flat rate 2875 per kg
@@ -1426,7 +1523,11 @@
                     rowData[iPro] = { t: 'n', v: 1000, z: rpFmt, s: getStyleRp() };
                     
                     globalRutes.forEach((route, idx) => {
-                        rowData[iFirstRute + idx] = { t: 'n', f: `$${colCW}${R}*${route.tarif}`, z: rpFmt, s: getStyleRp() };
+                        if (route.basis === 'KOLI') {
+                            rowData[iFirstRute + idx] = { t: 'n', f: `ROUNDUP($${colCW}${R}/30,0)*${route.tarif}`, z: rpFmt, s: getStyleRp() };
+                        } else {
+                            rowData[iFirstRute + idx] = { t: 'n', f: `$${colCW}${R}*${route.tarif}`, z: rpFmt, s: getStyleRp() };
+                        }
                     });
                     
                     rowData[iTer] = { t: 'n', f: `$${colCW}${R}*${globalTersier.tarif}`, z: rpFmt, s: getStyleRp() };
