@@ -191,7 +191,7 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12 hidden md:block">
         <div class="flex items-center gap-3 flex-1 justify-center">
             <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi Tarif</h1>
-            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v3.8 SECURE PRO</span>
+            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v3.9 SECURE PRO</span>
         </div>
         <div class="flex items-center gap-4">
             <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10 hidden md:block">
@@ -699,6 +699,7 @@
         
         // PARSER KHUSUS LION PARCEL
         function parseLionSheet(data, targetMatrixObj) {
+            try {
             if (data.length < 2) return;
             let originCol = -1, destCol = -1, rateCol = -1;
             for (let r = 0; r < Math.min(data.length, 5); r++) {
@@ -727,7 +728,11 @@
 
         
         // PARSER GARUDA INDONESIA
+            } catch(e) { console.error('Lion Parser Error:', e); }
+        }
+
         function parseGaruda(data) {
+            try {
             if (data.length < 2) return;
             let hOrigin = -1, hDest = -1, hBiaya = -1;
             for(let r=0; r<Math.min(data.length, 5); r++){
@@ -765,7 +770,11 @@
         }
 
         // PARSER REGIONAL 1 - 6 (Handling)
+            } catch(e) { console.error('Garuda Parser Error:', e); }
+        }
+
         function parseRegional(data) {
+            try {
             if (data.length < 2) return;
             let hBandara = -1, hOut = -1, hInAdmin = -1, hInGudang = -1;
 
@@ -803,6 +812,9 @@
 
         
         // BUILDER MATRIKS UDARA
+            } catch(e) { console.error('Regional Parser Error:', e); }
+        }
+
         function buildMatrixUdara() {
             matrixUdara = {};
             for (let originKey in garudaMatrix) {
@@ -830,7 +842,13 @@
             }
         }
 
+            } catch(e) { console.error('Matrix Parser Error:', e); }
+        }
+
+        let isInitializingData = false;
         async function initData() {
+            if(isInitializingData) return;
+            isInitializingData = true;
             try {
                 let requests = [
                     fetch(urlGaruda).then(r => r.text()), // 0
@@ -861,6 +879,7 @@
                 Papa.parse(responses[8], {
                     skipEmptyLines: true,
                     complete: function(results) {
+                        try {
                         const data = results.data;
                         let headerRowIdx = -1;
                         for(let r = 0; r < Math.min(data.length, 15); r++) {
@@ -891,12 +910,14 @@
                         }
 
                         let tersierOptions = Object.keys(tersierMap).sort().map(kcu => ({ value: kcu, text: kcu }));
-                        tsTujuan = new TomSelect("#tujuanAkhirSelect", {
-                            options: tersierOptions,
-                            create: false,
-                            sortField: { field: "text", direction: "asc" },
-                            placeholder: "KETIK KCU/KC TUJUAN AKHIR..."
-                        });
+                                                    if(tsTujuan) tsTujuan.destroy();
+                            tsTujuan = new TomSelect("#tujuanAkhirSelect", {
+                                options: tersierOptions,
+                                create: false,
+                                sortField: { field: "text", direction: "asc" },
+                                placeholder: "KETIK KCU/KC TUJUAN AKHIR..."
+                            });
+                        } catch(e) { console.error("Tersier Error:", e); }
                     }
                 });
 
@@ -916,11 +937,13 @@
 
                 renderPaketRows();
                 renderDefaultRoutes();
+                isInitializingData = false;
 
             } catch (error) {
                 console.error(error);
-                document.getElementById('loadingStatus').className = "bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4 flex items-center";
-                document.getElementById('loadingText').innerHTML = "ERROR: Gagal terkoneksi dengan link Google Sheets.";
+                const statusDiv = document.getElementById('loadingStatus');
+                statusDiv.className = "bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4 flex items-center";
+                document.getElementById('loadingText').innerHTML = `<b>ERROR SISTEM:</b> <br><span class='text-xs font-mono bg-red-200 px-1 rounded'>${error.message}</span> <br>Gagal menyedot atau memproses Google Sheets. Mohon refresh halaman.`;
             }
         }
 
@@ -1243,8 +1266,10 @@
                 }, 100);
 
             } catch (error) {
-                console.error("Kalkulasi Error:", error);
-                alert("Terjadi kesalahan sistem saat memproses kalkulasi: " + error.message);
+                console.error(error);
+                const statusDiv = document.getElementById('loadingStatus');
+                statusDiv.className = "bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4 flex items-center";
+                document.getElementById('loadingText').innerHTML = `<b>ERROR SISTEM:</b> <br><span class='text-xs font-mono bg-red-200 px-1 rounded'>${error.message}</span> <br>Gagal menyedot atau memproses Google Sheets. Mohon refresh halaman.`;
             }
         }
 
@@ -1445,8 +1470,10 @@
                 XLSX.writeFile(wb, `Kalkulasi_PosIND_${cleanFileName}.xlsx`);
 
             } catch (error) {
-                console.error("Excel Export Error:", error);
-                alert("Gagal mengunduh Excel: " + error.message);
+                console.error(error);
+                const statusDiv = document.getElementById('loadingStatus');
+                statusDiv.className = "bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4 flex items-center";
+                document.getElementById('loadingText').innerHTML = `<b>ERROR SISTEM:</b> <br><span class='text-xs font-mono bg-red-200 px-1 rounded'>${error.message}</span> <br>Gagal menyedot atau memproses Google Sheets. Mohon refresh halaman.`;
             }
         }
     </script>
