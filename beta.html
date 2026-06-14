@@ -191,7 +191,7 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12 hidden md:block">
         <div class="flex items-center gap-3 flex-1 justify-center">
             <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi Tarif</h1>
-            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v3.5 SECURE PRO</span>
+            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v3.6 SECURE PRO</span>
         </div>
         <div class="flex items-center gap-4">
             <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10 hidden md:block">
@@ -205,7 +205,7 @@
         
         <div id="loadingStatus" class="bg-blue-100 border-l-4 border-posblue posblue p-4 rounded shadow mb-4 flex items-center">
             <svg class="animate-spin h-5 w-5 mr-3 flex-shrink-0" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <span class="font-semibold text-sm md:text-base" id="loadingText">Menyedot 11 Database Google Sheets (Termasuk Lion Parcel)...</span>
+            <span class="font-semibold text-sm md:text-base" id="loadingText">Menyedot 16 Database Google Sheets (Garuda, Regional, Lion Parcel, dll)...</span>
         </div>
 
         <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-posblue max-w-full overflow-hidden">
@@ -567,11 +567,18 @@
         // =================================================================================
         // SEMUA URL CSV DARI GOOGLE SHEETS
         // =================================================================================
-        const urlPrimerUdara = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuYYRcuYa4ehq9NlTxSJlse6CMFLMrOWU5zHcaEdyj2k1VRKr-t7z52ua-5DrtA/pub?gid=1378317974&single=true&output=csv";
+        // URL DATABASE BARU v3.6
+        const urlGaruda      = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWQUlgZAwei-KhsKknZWiRMd5pPTGG6A0Y6yGx3N4uhJZGLNFoY76vNTqj-S9DoA/pub?gid=757372231&single=true&output=csv";
+        const urlReg1        = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWQUlgZAwei-KhsKknZWiRMd5pPTGG6A0Y6yGx3N4uhJZGLNFoY76vNTqj-S9DoA/pub?gid=615154213&single=true&output=csv";
+        const urlReg2        = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWQUlgZAwei-KhsKknZWiRMd5pPTGG6A0Y6yGx3N4uhJZGLNFoY76vNTqj-S9DoA/pub?gid=122444008&single=true&output=csv";
+        const urlReg4        = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWQUlgZAwei-KhsKknZWiRMd5pPTGG6A0Y6yGx3N4uhJZGLNFoY76vNTqj-S9DoA/pub?gid=1813154874&single=true&output=csv";
+        const urlReg5        = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWQUlgZAwei-KhsKknZWiRMd5pPTGG6A0Y6yGx3N4uhJZGLNFoY76vNTqj-S9DoA/pub?gid=1619823732&single=true&output=csv";
+        const urlReg6        = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWQUlgZAwei-KhsKknZWiRMd5pPTGG6A0Y6yGx3N4uhJZGLNFoY76vNTqj-S9DoA/pub?gid=1069579888&single=true&output=csv";
+        const urlLionParcel  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTY1ZYwkN75fRtyx9rJnJolO1Jivpp4VgITusmT3vP_pkiPIPgjcyTk2fuWFLrzSw/pub?gid=1278404874&single=true&output=csv";
+        
         const urlPrimerDarat = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuYYRcuYa4ehq9NlTxSJlse6CMFLMrOWU5zHcaEdyj2k1VRKr-t7z52ua-5DrtA/pub?gid=1226896685&single=true&output=csv";
         const urlPrimerLaut  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuYYRcuYa4ehq9NlTxSJlse6CMFLMrOWU5zHcaEdyj2k1VRKr-t7z52ua-5DrtA/pub?gid=1554248724&single=true&output=csv";
         const urlTersier     = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=1649129386&single=true&output=csv";
-        const urlLionParcel = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTY1ZYwkN75fRtyx9rJnJolO1Jivpp4VgITusmT3vP_pkiPIPgjcyTk2fuWFLrzSw/pub?gid=1278404874&single=true&output=csv";
         
         const urlSekunderList = [
             "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=1000630291&single=true&output=csv",
@@ -583,10 +590,12 @@
         ];
 
         let matrixUdara = {}; 
+        let garudaMatrix = {};
+        let regionalFees = {};
+        let matrixLion = {};
         let matrixDarat = {}; 
         let matrixLaut = {}; 
         let matrixSekunder = {}; 
-        let matrixLion = {}; 
         let tersierMap = {}; 
         let ruteCount = 0;
         let tsTujuan; 
@@ -681,6 +690,126 @@
             return dest.replace(/[0-9]/g, '').trim(); 
         }
 
+        
+        // PARSER KHUSUS LION PARCEL
+        function parseLionSheet(data, targetMatrixObj) {
+            if (data.length < 2) return;
+            let originCol = -1, destCol = -1, rateCol = -1;
+            for (let r = 0; r < Math.min(data.length, 5); r++) {
+                let row = data[r].map(x => String(x).toUpperCase().trim());
+                originCol = row.findIndex(x => x === "ORIGIN" || x.includes("ORIGIN") || x.includes("ASAL"));
+                destCol = row.findIndex(x => x === "DESTINATION" || x.includes("DESTINATION") || x.includes("TUJUAN"));
+                rateCol = row.findIndex(x => x === "RATE / KG" || x.includes("RATE") || x.includes("HARGA") || x.includes("TARIF"));
+                if (originCol > -1 && destCol > -1 && rateCol > -1) break;
+            }
+            if (originCol === -1) originCol = 0;
+            if (destCol === -1) destCol = 1;
+            if (rateCol === -1) rateCol = 2;
+
+            for (let i = 1; i < data.length; i++) {
+                if (data[i].length <= Math.max(originCol, destCol, rateCol)) continue;
+                let origin = String(data[i][originCol]).toUpperCase().trim().replace(/\s*\([^)]*\)/g, '').trim();
+                let dest = String(data[i][destCol]).toUpperCase().trim().replace(/\s*\([^)]*\)/g, '').trim();
+                if (!origin || !dest || origin === "ORIGIN" || origin === "---") continue;
+                let harga = parseRupiah(data[i][rateCol]);
+                if (harga > 0) {
+                    if (!targetMatrixObj[origin]) targetMatrixObj[origin] = {};
+                    if (!targetMatrixObj[origin][dest] || harga < targetMatrixObj[origin][dest]) targetMatrixObj[origin][dest] = harga;
+                }
+            }
+        }
+
+        // PARSER GARUDA INDONESIA
+        function parseGaruda(data) {
+            if (data.length < 2) return;
+            let hOrigin = -1, hDest = -1, hBiaya = -1;
+            for(let r=0; r<Math.min(data.length, 5); r++){
+                let row = data[r].map(x=>String(x).toUpperCase().trim());
+                if(hOrigin === -1) hOrigin = row.findIndex(x=>x.includes("ORIGIN"));
+                if(hDest === -1) hDest = row.findIndex(x=>x.includes("DESTINASI") || x.includes("DESTINATION"));
+                if(hBiaya === -1) hBiaya = row.findIndex(x=>x.includes("BIAYA PER KG") || x.includes("RATE"));
+                if(hOrigin > -1 && hDest > -1 && hBiaya > -1) break;
+            }
+            if(hOrigin === -1) { hOrigin=1; hDest=2; hBiaya=3; }
+
+            for(let i=1; i<data.length; i++) {
+                if(data[i].length <= Math.max(hOrigin, hDest, hBiaya)) continue;
+                let oRaw = String(data[i][hOrigin]).trim();
+                let dRaw = String(data[i][hDest]).trim();
+                if(!oRaw || !dRaw || oRaw.toUpperCase().includes("ORIGIN") || oRaw.toUpperCase() === "NAN") continue;
+
+                let origin = oRaw.split('-')[0].trim().toUpperCase();
+                let dest = dRaw.split('-')[0].trim().toUpperCase();
+
+                let biaya = parseRupiah(data[i][hBiaya]);
+                if(biaya > 0) {
+                    if(!garudaMatrix[origin]) garudaMatrix[origin] = {};
+                    if(!garudaMatrix[origin][dest] || biaya > garudaMatrix[origin][dest]) garudaMatrix[origin][dest] = biaya;
+                }
+            }
+        }
+
+        // PARSER REGIONAL 1 - 6 (Handling)
+        function parseRegional(data) {
+            if (data.length < 2) return;
+            let hBandara = -1, hOut = -1, hInAdmin = -1, hInGudang = -1;
+
+            for(let r=0; r<Math.min(data.length, 10); r++) {
+                for(let c=0; c<data[r].length; c++) {
+                    let val = String(data[r][c]).toUpperCase().trim();
+                    if(val === "BANDARA" || val === "BANDARA ") hBandara = c;
+                    
+                    if(val.includes("TOTAL BIAYA OUTGOING")) hOut = c;
+                    else if(val.includes("JLH BIAYA HANDLING DARAT") && hOut === -1) hOut = c;
+                    else if(val.includes("BIAYA HANDLING OUTGOING") && hOut === -1) hOut = c;
+                    
+                    if(val.includes("BIAYA ADMIN/ SMU") || val.includes("BIAYA ADMIN/SMU")) hInAdmin = c;
+                    if(val.includes("SEWA GUDANG INCOMING")) hInGudang = c;
+                }
+            }
+
+            for(let i=1; i<data.length; i++) {
+                if(hBandara === -1 || data[i].length <= hBandara) continue;
+                let bandaraRaw = String(data[i][hBandara]).trim().toUpperCase();
+                if(!bandaraRaw || bandaraRaw === "NAN" || bandaraRaw.length < 3 || bandaraRaw.includes("BANDARA")) continue;
+                
+                let bandara = bandaraRaw.split(' ')[0].trim(); 
+                
+                let outFee = hOut > -1 ? parseRupiah(data[i][hOut]) : 0;
+                let inAdmin = hInAdmin > -1 ? parseRupiah(data[i][hInAdmin]) : 0;
+                let inGudang = hInGudang > -1 ? parseRupiah(data[i][hInGudang]) : 0;
+                let inFee = inAdmin + inGudang;
+
+                if(!regionalFees[bandara]) regionalFees[bandara] = { out: 0, in: 0 };
+                if(outFee > regionalFees[bandara].out) regionalFees[bandara].out = outFee;
+                if(inFee > regionalFees[bandara].in) regionalFees[bandara].in = inFee;
+            }
+        }
+
+        // BUILDER MATRIKS UDARA
+        function buildMatrixUdara() {
+            matrixUdara = {};
+            for (let origin in garudaMatrix) {
+                matrixUdara[origin] = {};
+                for (let dest in garudaMatrix[origin]) {
+                    let base = garudaMatrix[origin][dest];
+                    let outFee = regionalFees[origin] ? regionalFees[origin].out : 0;
+                    
+                    let inFee = 0;
+                    // Deteksi singkatan ganda seperti CGK <-> KTSH
+                    let destAlias = dest === "CGK" ? "KTSH" : (dest === "KTSH" ? "CGK" : dest);
+                    
+                    if (regionalFees[dest]) {
+                        inFee = regionalFees[dest].in;
+                    } else if (regionalFees[destAlias]) {
+                        inFee = regionalFees[destAlias].in;
+                    }
+
+                    matrixUdara[origin][dest] = base + outFee + inFee;
+                }
+            }
+        }
+
         function parseMatrixSheet(data, targetMatrixObj) {
             if (data.length < 2) return;
             let headerRowIdx = -1, maxCols = 0;
@@ -727,72 +856,35 @@
             }
         }
 
-        
-        // PARSER KHUSUS LION PARCEL (Format: Origin, Destination, Rate / Kg)
-        function parseLionSheet(data, targetMatrixObj) {
-            if (data.length < 2) return;
-
-            let originCol = -1, destCol = -1, rateCol = -1;
-
-            // 1. Cari index kolom dari baris-baris awal
-            for (let r = 0; r < Math.min(data.length, 5); r++) {
-                let row = data[r].map(x => String(x).toUpperCase().trim());
-                
-                originCol = row.findIndex(x => x === "ORIGIN" || x.includes("ORIGIN") || x.includes("ASAL"));
-                destCol = row.findIndex(x => x === "DESTINATION" || x.includes("DESTINATION") || x.includes("TUJUAN"));
-                rateCol = row.findIndex(x => x === "RATE / KG" || x.includes("RATE") || x.includes("HARGA") || x.includes("TARIF"));
-                
-                if (originCol > -1 && destCol > -1 && rateCol > -1) break;
-            }
-
-            // Fallback default jika header tidak sengaja bergeser
-            if (originCol === -1) originCol = 0;
-            if (destCol === -1) destCol = 1;
-            if (rateCol === -1) rateCol = 2;
-
-            // 2. Ekstrak baris data
-            for (let i = 1; i < data.length; i++) {
-                if (data[i].length <= Math.max(originCol, destCol, rateCol)) continue;
-                
-                let origin = String(data[i][originCol]).toUpperCase().trim();
-                let dest = String(data[i][destCol]).toUpperCase().trim();
-
-                // Bersihkan kode bandara (contoh: "BATAM (BTH)" menjadi "BATAM")
-                origin = origin.replace(/\s*\([^)]*\)/g, '').trim();
-                dest = dest.replace(/\s*\([^)]*\)/g, '').trim();
-
-                if (!origin || !dest || origin === "ORIGIN" || origin === "---") continue;
-
-                let harga = parseRupiah(data[i][rateCol]);
-
-                if (harga > 0) {
-                    if (!targetMatrixObj[origin]) targetMatrixObj[origin] = {};
-                    // Ambil harga terendah jika ada redundansi data rute
-                    if (!targetMatrixObj[origin][dest] || harga < targetMatrixObj[origin][dest]) {
-                        targetMatrixObj[origin][dest] = harga;
-                    }
-                }
-            }
-        }
-
         async function initData() {
             try {
                 let requests = [
-                    fetch(urlPrimerUdara).then(r => r.text()),
-                    fetch(urlPrimerDarat).then(r => r.text()),
-                    fetch(urlPrimerLaut).then(r => r.text()),
-                    fetch(urlTersier).then(r => r.text()),
-                    fetch(urlLionParcel).then(r => r.text()) // INDEX 4
+                    fetch(urlGaruda).then(r => r.text()), // 0
+                    fetch(urlReg1).then(r => r.text()), // 1
+                    fetch(urlReg2).then(r => r.text()), // 2
+                    fetch(urlReg4).then(r => r.text()), // 3
+                    fetch(urlReg5).then(r => r.text()), // 4
+                    fetch(urlReg6).then(r => r.text()), // 5
+                    fetch(urlPrimerDarat).then(r => r.text()), // 6
+                    fetch(urlPrimerLaut).then(r => r.text()), // 7
+                    fetch(urlTersier).then(r => r.text()), // 8
+                    fetch(urlLionParcel).then(r => r.text()) // 9
                 ];
                 urlSekunderList.forEach(url => requests.push(fetch(url).then(r => r.text())));
                 const responses = await Promise.all(requests);
                 
-                Papa.parse(responses[0], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixUdara) });
-                Papa.parse(responses[1], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixDarat) });
-                Papa.parse(responses[2], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixLaut) });
-                Papa.parse(responses[4], { skipEmptyLines: true, complete: res => parseLionSheet(res.data, matrixLion) });
+                // Parse Udara (Garuda + Regs)
+                Papa.parse(responses[0], { skipEmptyLines: true, complete: res => parseGaruda(res.data) });
+                for(let i=1; i<=5; i++) {
+                    Papa.parse(responses[i], { skipEmptyLines: true, complete: res => parseRegional(res.data) });
+                }
+                buildMatrixUdara(); // Rangkai rumus Primer Udara
 
-                Papa.parse(responses[3], {
+                Papa.parse(responses[6], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixDarat) });
+                Papa.parse(responses[7], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixLaut) });
+                Papa.parse(responses[9], { skipEmptyLines: true, complete: res => parseLionSheet(res.data, matrixLion) });
+
+                Papa.parse(responses[8], {
                     skipEmptyLines: true,
                     complete: function(results) {
                         const data = results.data;
@@ -834,13 +926,13 @@
                     }
                 });
 
-                for (let i = 5; i < responses.length; i++) {
+                for (let i = 10; i < responses.length; i++) {
                     Papa.parse(responses[i], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixSekunder) });
                 }
 
                 const statusDiv = document.getElementById('loadingStatus');
                 statusDiv.className = "bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow mb-4 flex items-center";
-                document.getElementById('loadingText').innerHTML = `Sistem Sukses! 11 Database Terintegrasi (Vendor Lion Parcel Aktif).`;
+                document.getElementById('loadingText').innerHTML = `Sistem Sukses! 16 Database Terintegrasi (Primer Udara Dinamis & Lion Parcel Aktif).`;
                 setTimeout(() => statusDiv.style.display = 'none', 3000);
 
                 document.getElementById('btnHitung').disabled = false;
