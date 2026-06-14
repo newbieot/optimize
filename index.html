@@ -807,9 +807,11 @@
                     let val = String(data[r][c]).toUpperCase().trim();
                     if(val === "BANDARA" || val === "BANDARA ") hBandara = c;
                     
+                    // PERBAIKAN 1: Hapus kata 'else' agar skrip selalu mengambil kolom paling KANAN 
+                    // (Otomatis membaca tarif handling 2026, bukan 2025)
                     if(val.includes("TOTAL BIAYA OUTGOING")) hOut = c;
-                    else if(val.includes("JLH BIAYA HANDLING DARAT") && hOut === -1) hOut = c;
-                    else if(val.includes("BIAYA HANDLING OUTGOING") && hOut === -1) hOut = c;
+                    if(val.includes("JLH BIAYA HANDLING DARAT")) hOut = c;
+                    if(val.includes("BIAYA HANDLING OUTGOING") && hOut === -1) hOut = c;
                     
                     if(val.includes("BIAYA ADMIN/ SMU") || val.includes("BIAYA ADMIN/SMU")) hInAdmin = c;
                     if(val.includes("SEWA GUDANG INCOMING")) hInGudang = c;
@@ -829,8 +831,12 @@
                 let inFee = inAdmin + inGudang;
 
                 if(!regionalFees[bandara]) regionalFees[bandara] = { out: 0, in: 0 };
-                if(outFee > regionalFees[bandara].out) regionalFees[bandara].out = outFee;
-                if(inFee > regionalFees[bandara].in) regionalFees[bandara].in = inFee;
+                
+                // PERBAIKAN 2: Jangan gunakan "MAX" (>). Gunakan "Kunci Pertama" (=== 0). 
+                // Karena Reg 1 (Sumatera) di-load duluan, BTH akan mengunci di angka 3.500 secara permanen.
+                // Jika ada BTH siluman di Reg 4, ia akan ditolak/diabaikan otomatis!
+                if(outFee > 0 && regionalFees[bandara].out === 0) regionalFees[bandara].out = outFee;
+                if(inFee > 0 && regionalFees[bandara].in === 0) regionalFees[bandara].in = inFee;
             }
         }
 
