@@ -7,10 +7,8 @@
     <title>Portal Optimalisasi Tarif Pengiriman PosIND by Ikhsan Radiansyah</title>
     <meta name="description" content="Portal Kalkulasi dan Optimalisasi Tarif Pengiriman Pos Indonesia (PosIND). Sistem logistik multi-paket B2B dan Ritel untuk efisiensi jalur Udara, Darat, Laut, Sekunder, dan Tersier oleh Ikhsan Radiansyah.">
     
-    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
     
-    <!-- Firebase SDK (Wajib untuk Login) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
 
@@ -131,7 +129,6 @@
 
 <body>
 
-    <!-- OVERLAY LOGIN KEAMANAN -->
     <div id="loginOverlay">
         <div class="login-card">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara">
@@ -153,12 +150,11 @@
         </div>
     </div>
 
-    <!-- MAIN APP HIDDEN BY DEFAULT -->
     <header id="appHeader" class="bg-white shadow-md py-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4 sticky top-0 z-50" style="display: none;">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12 hidden md:block">
         <div class="flex items-center gap-3 flex-1 justify-center">
             <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi Tarif</h1>
-            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v3.0 SECURE</span>
+            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v3.1 SECURE</span>
         </div>
         <div class="flex items-center gap-4">
             <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10 hidden md:block">
@@ -347,7 +343,7 @@
         // INISIALISASI FIREBASE & SISTEM LOGIN
         // =================================================================================
         const firebaseConfig = {
-            apiKey: "AIzaSyDfgKlODlC8JEWZGBtUauDQa3tClPYNj94",
+            apiKey: "AIzaSyDfgKIOdlC8JEWZGBtUauDQa3tC1PYNj94",
             authDomain: "web-optimalisasi.firebaseapp.com",
             projectId: "web-optimalisasi",
             storageBucket: "web-optimalisasi.firebasestorage.app",
@@ -922,9 +918,6 @@
             }
         }
 
-        // =================================================================================
-        // LOGIKA PERHITUNGAN
-        // =================================================================================
         function hitungOptimalisasi() {
             try {
                 let tujuanAkhir = document.getElementById('tujuanAkhirSelect').value;
@@ -1068,9 +1061,6 @@
             return s;
         }
 
-        // =================================================================================
-        // EKSPOR EXCEL (FUNGSI GETSTYLE TERISOLASI)
-        // =================================================================================
         function exportToExcel() {
             try {
                 if (globalRutes.length === 0 || !globalTersier) {
@@ -1209,7 +1199,7 @@
                 rowData1[0] = { v: 1, t: 'n', s: getStylePlain() };
                 rowData1[1] = { v: "BATAM", t: 's', s: getStyleText() }; 
                 rowData1[2] = { v: tujuanAkhir, t: 's', s: getStyleText() }; 
-                rowData1[3] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iCW)}${totalR}`, z: '0', s: getStylePlain() }; // Tanpa koma
+                rowData1[3] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iCW)}${totalR}`, z: '0', s: getStylePlain() }; 
                 rowData1[4] = { v: pkts.length, t: 'n', s: getStylePlain() }; 
                 rowData1[5] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iNP)}${totalR}`, z: rpFmt, s: getStyleRp() }; 
                 rowData1[6] = { t: 'n', f: `F2*100/101.1`, z: rpFmt, s: getStyleRp() }; 
