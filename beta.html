@@ -191,7 +191,7 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12 hidden md:block">
         <div class="flex items-center gap-3 flex-1 justify-center">
             <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi Tarif</h1>
-            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v3.7 SECURE PRO</span>
+            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v4.0 SECURE PRO</span>
         </div>
         <div class="flex items-center gap-4">
             <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10 hidden md:block">
@@ -371,6 +371,7 @@
     </footer>
 
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
@@ -387,7 +388,9 @@
             messagingSenderId: "1080281321221",
             appId: "1:1080281321221:web:da78144e52be1d9429716c"
         };
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const auth = firebase.auth();
         const googleProvider = new firebase.auth.GoogleAuthProvider();
 
@@ -396,30 +399,23 @@
         const appMain = document.getElementById('appMain');
         const appFooter = document.getElementById('appFooter');
 
-        // Listener Status Login (DILENGKAPI SATPAM WHITELIST)
         auth.onAuthStateChanged(user => {
             if (user) {
-                // 1. DAFTAR DOMAIN & EMAIL YANG DIIZINKAN (Whitelist)
                 const allowedDomain = "@posindonesia.co.id";
                 const allowedEmails = [
                     "ikhsanradiansyah@gmail.com", 
                     "ikhsan@posnew.com"
                 ];
 
-                // 2. LOGIKA SATPAM: Cek apakah email user berakhiran domain resmi ATAU ada di daftar khusus
                 if (user.email.endsWith(allowedDomain) || allowedEmails.includes(user.email)) {
-                    
-                    // JIKA LOLOS: Buka gembok dan tampilkan aplikasi
                     loginOverlay.style.display = 'none';
                     appHeader.style.display = 'flex';
                     appMain.style.display = 'block';
                     appFooter.style.display = 'flex';
                     
-                    // Jalankan fungsi memuat database Google Sheets setelah login sukses
                     if(Object.keys(matrixUdara).length === 0) initData(); 
 
                 } else {
-                    // JIKA ILEGAL: Langsung tendang keluar (Logout Paksa)
                     auth.signOut().then(() => {
                         loginOverlay.style.display = 'flex';
                         document.getElementById('loginError').innerText = "Akses ditolak! Gunakan email korporat resmi PosIND.";
@@ -427,7 +423,6 @@
                     });
                 }
             } else {
-                // Jika belum login, tampilkan gembok, sembunyikan aplikasi
                 loginOverlay.style.display = 'flex';
                 appHeader.style.display = 'none';
                 appMain.style.display = 'none';
@@ -435,7 +430,6 @@
             }
         });
 
-        // Proses Login Email/Password
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('userEmail').value;
@@ -453,11 +447,9 @@
                     btn.innerText = "LOGIN SISTEM";
                     document.getElementById('loginError').innerText = "Email atau Password salah!";
                     document.getElementById('loginError').style.display = 'block';
-                    console.error("Login Gagal:", error);
                 });
         });
 
-        // Proses Login via Google
         function loginWithGoogle() {
             const btn = document.getElementById('btnGoogle');
             const originalContent = btn.innerHTML;
@@ -472,11 +464,9 @@
                     btn.innerHTML = originalContent;
                     document.getElementById('loginError').innerText = "Gagal login dengan akun Google.";
                     document.getElementById('loginError').style.display = 'block';
-                    console.error("Google Login Gagal:", error);
                 });
         }
 
-        // Proses Tombol Logout
         function logoutFirebase() {
             auth.signOut().then(() => {
                 document.getElementById('userEmail').value = '';
@@ -484,16 +474,14 @@
             });
         }
 
-
         // =================================================================================
-        // SMART COPY-PASTE DARI EXCEL (FITUR V2.1 PRO)
+        // SMART COPY-PASTE DARI EXCEL
         // =================================================================================
         document.addEventListener('DOMContentLoaded', () => {
             const tableBody = document.getElementById('paketBody');
             
             tableBody.addEventListener('paste', function(e) {
                 let target = e.target;
-                
                 let allowedClasses = ['paket-nama', 'paket-aktual', 'paket-p', 'paket-l', 'paket-t'];
                 let isAllowed = allowedClasses.some(cls => target.classList.contains(cls));
                 
@@ -547,9 +535,6 @@
             });
         });
 
-        // =================================================================================
-        // FORMAT RUPIAH PADA INPUT (BIAYA LANGSUNG)
-        // =================================================================================
         function formatRupiahInput(elem) {
             let val = elem.value.replace(/[^,\d]/g, '');
             if(val === '') { elem.value = ''; return; }
@@ -567,7 +552,6 @@
         // =================================================================================
         // SEMUA URL CSV DARI GOOGLE SHEETS
         // =================================================================================
-        // URL DATABASE BARU v3.6
         const urlGaruda      = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWQUlgZAwei-KhsKknZWiRMd5pPTGG6A0Y6yGx3N4uhJZGLNFoY76vNTqj-S9DoA/pub?gid=757372231&single=true&output=csv";
         const urlReg1        = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWQUlgZAwei-KhsKknZWiRMd5pPTGG6A0Y6yGx3N4uhJZGLNFoY76vNTqj-S9DoA/pub?gid=615154213&single=true&output=csv";
         const urlReg2        = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTWQUlgZAwei-KhsKknZWiRMd5pPTGG6A0Y6yGx3N4uhJZGLNFoY76vNTqj-S9DoA/pub?gid=122444008&single=true&output=csv";
@@ -632,14 +616,17 @@
             }
         }
 
+        // UPDATE v3.8: Pembagi Volumetrik Dinamis (6000 atau 4000)
         function calcCW(elem) {
             let row = elem.closest('.paket-row');
+            if(!row) return;
             let a = parseFloat(row.querySelector('.paket-aktual').value) || 0;
             let p = parseFloat(row.querySelector('.paket-p').value) || 0;
             let l = parseFloat(row.querySelector('.paket-l').value) || 0;
             let t = parseFloat(row.querySelector('.paket-t').value) || 0;
             
-            let modaVal = document.querySelector('input[name="modaUtama"]:checked').value;
+            let modaInput = document.querySelector('input[name="modaUtama"]:checked');
+            let modaVal = modaInput ? modaInput.value : 'UDARA';
             let pembagi = modaVal === 'UDARA' ? 6000 : 4000;
             
             let vol = (p * l * t) / pembagi;
@@ -690,7 +677,6 @@
             if (!prevDest) return "";
             let dest = String(prevDest).toUpperCase().trim();
             
-            // Jika dest dari Primer Udara memiliki format "CGK - JAKARTA", ambil nama kotanya saja
             if (dest.includes(" - ")) {
                 dest = dest.split(" - ")[1].trim();
             }
@@ -699,8 +685,55 @@
             return dest.replace(/[0-9]/g, '').trim(); 
         }
 
-        
-        // PARSER KHUSUS LION PARCEL
+        // =================================================================================
+        // KUMPULAN FUNGSI PARSER
+        // =================================================================================
+        function parseMatrixSheet(data, targetMatrixObj) {
+            if (data.length < 2) return;
+            let headerRowIdx = -1, maxCols = 0;
+            for (let r = 0; r < Math.min(data.length, 15); r++) {
+                let textCols = 0;
+                for (let c = 0; c < data[r].length; c++) {
+                    let val = String(data[r][c]).trim().toUpperCase();
+                    let isText = isNaN(parseFloat(val));
+                    if (val.length >= 3 && isText && !val.includes("---") && !val.startsWith("P0")) textCols++;
+                }
+                if (textCols > maxCols) { maxCols = textCols; headerRowIdx = r; }
+            }
+            if (headerRowIdx === -1) return;
+            let headers = data[headerRowIdx].map(x => String(x).trim().toUpperCase());
+            
+            let originColIdx = -1;
+            for (let c = 0; c < Math.min(headers.length, 10); c++) {
+                let matchCount = 0;
+                for (let r = headerRowIdx + 1; r < Math.min(data.length, headerRowIdx + 20); r++) {
+                    if (c >= data[r].length) continue;
+                    let val = String(data[r][c]).trim().toUpperCase();
+                    let isText = isNaN(parseFloat(val));
+                    if (val.length >= 3 && isText && !val.includes("---") && val !== "PRIMER" && !val.startsWith("P0")) matchCount++;
+                }
+                if (matchCount >= 2) { originColIdx = c; break; }
+            }
+            if (originColIdx === -1) originColIdx = 2; 
+
+            for(let i = headerRowIdx + 1; i < data.length; i++) {
+                if (data[i].length <= originColIdx) continue;
+                let origin = String(data[i][originColIdx]).trim().toUpperCase(); 
+                if(!origin || origin === "" || origin.includes("---") || origin === "NAN" || origin.startsWith("P0")) continue;
+                if(!targetMatrixObj[origin]) targetMatrixObj[origin] = {};
+                
+                for(let j = originColIdx + 1; j < data[i].length; j++) {
+                    if (j < headers.length) {
+                        let dest = headers[j];
+                        let tarif = parseRupiah(data[i][j]);
+                        if(dest && dest !== "" && !dest.includes("---") && !dest.startsWith("P0") && tarif > 0) {
+                            targetMatrixObj[origin][dest] = tarif;
+                        }
+                    }
+                }
+            }
+        }
+
         function parseLionSheet(data, targetMatrixObj) {
             if (data.length < 2) return;
             let originCol = -1, destCol = -1, rateCol = -1;
@@ -728,9 +761,6 @@
             }
         }
 
-        // PARSER GARUDA INDONESIA
-        
-        // PARSER GARUDA INDONESIA
         function parseGaruda(data) {
             if (data.length < 2) return;
             let hOrigin = -1, hDest = -1, hBiaya = -1;
@@ -752,7 +782,6 @@
                 let originCode = oRaw.split('-')[0].trim();
                 let destCode = dRaw.split('-')[0].trim();
                 
-                // Format ulang agar seragam misal: "BTH - BATAM"
                 let originName = oRaw.includes('-') ? oRaw.substring(oRaw.indexOf('-')+1).trim() : originCode;
                 let destName = dRaw.includes('-') ? dRaw.substring(dRaw.indexOf('-')+1).trim() : destCode;
                 
@@ -769,7 +798,6 @@
             }
         }
 
-        // PARSER REGIONAL 1 - 6 (Handling)
         function parseRegional(data) {
             if (data.length < 2) return;
             let hBandara = -1, hOut = -1, hInAdmin = -1, hInGudang = -1;
@@ -779,9 +807,11 @@
                     let val = String(data[r][c]).toUpperCase().trim();
                     if(val === "BANDARA" || val === "BANDARA ") hBandara = c;
                     
+                    // PERBAIKAN 1: Hapus kata 'else' agar skrip selalu mengambil kolom paling KANAN 
+                    // (Otomatis membaca tarif handling 2026, bukan 2025)
                     if(val.includes("TOTAL BIAYA OUTGOING")) hOut = c;
-                    else if(val.includes("JLH BIAYA HANDLING DARAT") && hOut === -1) hOut = c;
-                    else if(val.includes("BIAYA HANDLING OUTGOING") && hOut === -1) hOut = c;
+                    if(val.includes("JLH BIAYA HANDLING DARAT")) hOut = c;
+                    if(val.includes("BIAYA HANDLING OUTGOING") && hOut === -1) hOut = c;
                     
                     if(val.includes("BIAYA ADMIN/ SMU") || val.includes("BIAYA ADMIN/SMU")) hInAdmin = c;
                     if(val.includes("SEWA GUDANG INCOMING")) hInGudang = c;
@@ -801,14 +831,15 @@
                 let inFee = inAdmin + inGudang;
 
                 if(!regionalFees[bandara]) regionalFees[bandara] = { out: 0, in: 0 };
-                if(outFee > regionalFees[bandara].out) regionalFees[bandara].out = outFee;
-                if(inFee > regionalFees[bandara].in) regionalFees[bandara].in = inFee;
+                
+                // PERBAIKAN 2: Jangan gunakan "MAX" (>). Gunakan "Kunci Pertama" (=== 0). 
+                // Karena Reg 1 (Sumatera) di-load duluan, BTH akan mengunci di angka 3.500 secara permanen.
+                // Jika ada BTH siluman di Reg 4, ia akan ditolak/diabaikan otomatis!
+                if(outFee > 0 && regionalFees[bandara].out === 0) regionalFees[bandara].out = outFee;
+                if(inFee > 0 && regionalFees[bandara].in === 0) regionalFees[bandara].in = inFee;
             }
         }
 
-        // BUILDER MATRIKS UDARA
-        
-        // BUILDER MATRIKS UDARA
         function buildMatrixUdara() {
             matrixUdara = {};
             for (let originKey in garudaMatrix) {
@@ -836,12 +867,44 @@
             }
         }
 
+        // =================================================================================
+        // SISTEM INIT ASINKRON (ANTI-RACE CONDITION)
+        // =================================================================================
+        let isInitializingData = false;
 
+        async function initData() {
+            if (isInitializingData) return;
+            isInitializingData = true;
+            
+            const statusDiv = document.getElementById('loadingStatus');
+            const statusText = document.getElementById('loadingText');
+            
+            try {
+                statusDiv.style.display = 'flex';
+                statusDiv.className = "bg-blue-100 border-l-4 border-posblue posblue p-4 rounded shadow mb-4 flex items-center";
+                statusText.innerHTML = "Menyedot 16 Database Google Sheets...";
+
+                let requests = [
+                    fetch(urlGaruda).then(r => r.text()), 
+                    fetch(urlReg1).then(r => r.text()), 
+                    fetch(urlReg2).then(r => r.text()), 
+                    fetch(urlReg4).then(r => r.text()), 
+                    fetch(urlReg5).then(r => r.text()), 
+                    fetch(urlReg6).then(r => r.text()), 
+                    fetch(urlPrimerDarat).then(r => r.text()), 
+                    fetch(urlPrimerLaut).then(r => r.text()), 
+                    fetch(urlTersier).then(r => r.text()), 
+                    fetch(urlLionParcel).then(r => r.text()) 
+                ];
+                urlSekunderList.forEach(url => requests.push(fetch(url).then(r => r.text())));
+                
+                const responses = await Promise.all(requests);
+                
                 Papa.parse(responses[0], { skipEmptyLines: true, complete: res => parseGaruda(res.data) });
                 for(let i=1; i<=5; i++) {
                     Papa.parse(responses[i], { skipEmptyLines: true, complete: res => parseRegional(res.data) });
                 }
-                buildMatrixUdara(); // Rangkai rumus Primer Udara
+                buildMatrixUdara(); 
 
                 Papa.parse(responses[6], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixDarat) });
                 Papa.parse(responses[7], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixLaut) });
@@ -880,6 +943,7 @@
                         }
 
                         let tersierOptions = Object.keys(tersierMap).sort().map(kcu => ({ value: kcu, text: kcu }));
+                        if (tsTujuan) tsTujuan.destroy();
                         tsTujuan = new TomSelect("#tujuanAkhirSelect", {
                             options: tersierOptions,
                             create: false,
@@ -893,9 +957,8 @@
                     Papa.parse(responses[i], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixSekunder) });
                 }
 
-                const statusDiv = document.getElementById('loadingStatus');
                 statusDiv.className = "bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow mb-4 flex items-center";
-                document.getElementById('loadingText').innerHTML = `Sistem Sukses! 16 Database Terintegrasi (Primer Udara Dinamis & Lion Parcel Aktif).`;
+                statusText.innerHTML = `Sistem Sukses! 16 Database Terintegrasi.`;
                 setTimeout(() => statusDiv.style.display = 'none', 3000);
 
                 document.getElementById('btnHitung').disabled = false;
@@ -908,11 +971,16 @@
 
             } catch (error) {
                 console.error(error);
-                document.getElementById('loadingStatus').className = "bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4 flex items-center";
-                document.getElementById('loadingText').innerHTML = "ERROR: Gagal terkoneksi dengan link Google Sheets.";
+                statusDiv.className = "bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4 flex items-center";
+                statusText.innerHTML = `<b>ERROR KONEKSI:</b> <br>${error.message}<br>Gagal memuat dari Google Sheets.`;
+            } finally {
+                isInitializingData = false;
             }
         }
 
+        // =================================================================================
+        // SISTEM CHAINING RUTE
+        // =================================================================================
         function findKey(matrix, keyword) { return Object.keys(matrix).find(k => k.includes(keyword)) || ""; }
         function findDestKey(matrix, origin, keyword) {
             if (!matrix[origin]) return "";
@@ -933,16 +1001,14 @@
         }
 
         function renderDefaultRoutes() {
-            // Kalkulasi ulang Volumetrik semua baris tiap kali moda berubah
             document.querySelectorAll('.paket-aktual').forEach(elem => calcCW(elem));
-
             document.getElementById('ruteContainer').innerHTML = '';
             ruteCount = 0;
             let moda = document.querySelector('input[name="modaUtama"]:checked').value;
             
             if (moda === 'UDARA') {
-                let origin = findKey(matrixUdara, "BATAM") || "BATAM 29400";
-                let dest = findDestKey(matrixUdara, origin, "JAKARTA") || "JAKARTA 10000";
+                let origin = findKey(matrixUdara, "BTH - BATAM") || "BTH - BATAM";
+                let dest = findDestKey(matrixUdara, origin, "CGK - JAKARTA") || "CGK - JAKARTA";
                 tambahRute("PRIMER UDARA", origin, dest);
             } else { 
                 let origin1 = findKey(matrixSekunder, "BATAM") || "BATAM";
@@ -970,7 +1036,7 @@
             row.id = `rute-row-${ruteCount}`;
             
             let modaVal = forcedModa || "PRIMER UDARA";
-            let displayOrigin = forcedOrigin || (allRows.length === 0 ? "BATAM" : (prevDestVal ? prevDestVal : "PILIH TUJUAN SEBELUMNYA"));
+            let displayOrigin = forcedOrigin || (allRows.length === 0 ? "BTH - BATAM" : (prevDestVal ? prevDestVal : "PILIH TUJUAN SEBELUMNYA"));
 
             row.innerHTML = `
                 <div class="w-full md:w-8 text-left md:text-center font-bold text-posorange bg-orange-100 md:bg-transparent rounded px-3 py-1.5 md:p-0">#${ruteCount}</div>
@@ -981,6 +1047,7 @@
                         <option value="PRIMER DARAT" ${modaVal==='PRIMER DARAT'?'selected':''}>PRIMER DARAT</option>
                         <option value="PRIMER LAUT" ${modaVal==='PRIMER LAUT'?'selected':''}>PRIMER LAUT</option>
                         <option value="SEKUNDER" ${modaVal==='SEKUNDER'?'selected':''}>SEKUNDER</option>
+                        <option value="SEKUNDER SETEMPAT" ${modaVal==='SEKUNDER SETEMPAT'?'selected':''}>SEKUNDER POS SETEMPAT</option>
                         <option value="LION PARCEL" ${modaVal==='LION PARCEL'?'selected':''}>LION PARCEL (VENDOR)</option>
                     </select>
                 </div>
@@ -990,15 +1057,17 @@
                 </div>
                 <span class="hidden md:inline text-gray-400 font-bold text-xl">➔</span>
                 <div class="w-full flex-1">
-                    <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tujuan (Ketik)</label>
-                    <select id="rute-dest-${ruteCount}" class="w-full uppercase" placeholder="KETIK TUJUAN...">
-                        <option value="">PILIH TUJUAN...</option>
-                    </select>
+                    <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tujuan (Ketik/Pilih)</label>
+                    <div id="rute-dest-wrapper-${ruteCount}">
+                        <select id="rute-dest-${ruteCount}" class="w-full uppercase" placeholder="KETIK TUJUAN...">
+                            <option value="">PILIH TUJUAN...</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="w-full md:w-1/6 relative mt-2 md:mt-0">
                     <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tarif / Kg</label>
                     <span class="absolute left-3 top-8 md:top-2.5 text-gray-500 font-semibold">Rp</span>
-                    <input type="text" id="rute-tarif-${ruteCount}" class="w-full bg-gray-200 border border-gray-300 p-2.5 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0">
+                    <input type="text" id="rute-tarif-${ruteCount}" class="w-full bg-gray-200 border border-gray-300 p-2.5 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0" oninput="formatRupiahInput(this); this.dataset.value = unformatRupiah(this.value);">
                 </div>
                 ${allRows.length > 0 ? `<button onclick="hapusRute(this)" class="w-full md:w-auto mt-2 md:mt-0 text-red-500 border border-red-200 md:border-none rounded py-2 md:py-0 font-bold hover:bg-red-50" title="Hapus">HAPUS</button>` : `<div class="hidden md:block w-4"></div>`}
             `;
@@ -1015,7 +1084,10 @@
 
         function onChangeModa(index, forcedDest = null, forcedOrigin = null) {
             const moda = document.getElementById(`rute-moda-${index}`).value;
-            let activeMatrix = moda === "PRIMER UDARA" ? matrixUdara : moda === "PRIMER DARAT" ? matrixDarat : moda === "PRIMER LAUT" ? matrixLaut : moda === "LION PARCEL" ? matrixLion : matrixSekunder;
+            let activeMatrix = moda === "PRIMER UDARA" ? matrixUdara : 
+                               moda === "PRIMER DARAT" ? matrixDarat : 
+                               moda === "PRIMER LAUT" ? matrixLaut : 
+                               moda === "LION PARCEL" ? matrixLion : matrixSekunder;
 
             let rowElem = document.getElementById(`rute-row-${index}`);
             if (!rowElem) return;
@@ -1023,9 +1095,75 @@
             let prevRow = rowElem.previousElementSibling;
             let isFirstRow = (!prevRow || !prevRow.classList.contains('rute-baris'));
 
+            let originInput = document.getElementById(`rute-origin-${index}`);
+            let tarifInput = document.getElementById(`rute-tarif-${index}`);
+            let wrapper = document.getElementById(`rute-dest-wrapper-${index}`);
+
+            // === PENANGANAN SEKUNDER SETEMPAT (MANUAL INPUT) ===
+            if (moda === "SEKUNDER SETEMPAT") {
+                if(document.getElementById(`rute-dest-${index}`) && document.getElementById(`rute-dest-${index}`).tomselect) {
+                    document.getElementById(`rute-dest-${index}`).tomselect.destroy();
+                }
+                wrapper.innerHTML = `
+                    <div class="flex flex-col xl:flex-row gap-2">
+                        <input type="text" id="rute-dest-custom-${index}" class="w-full border border-gray-300 p-2.5 rounded font-bold uppercase text-gray-700" placeholder="Ketik Tujuan Manual..." value="${forcedDest || ''}">
+                        <select id="rute-basis-${index}" class="w-full xl:w-1/2 border border-gray-300 p-2.5 rounded font-bold text-posblue bg-white text-xs">
+                            <option value="KG">PER KG</option>
+                            <option value="KOLI">PER KOLI (Maks 30Kg)</option>
+                        </select>
+                    </div>
+                `;
+                
+                // Buat Tarif jadi bisa di-edit (Un-readonly)
+                tarifInput.removeAttribute('readonly');
+                tarifInput.classList.remove('bg-gray-200', 'cursor-not-allowed');
+                tarifInput.classList.add('bg-white', 'focus:ring-posorange');
+                tarifInput.value = '';
+                tarifInput.dataset.value = 0;
+                tarifInput.placeholder = "Ketik Nominal...";
+
+                // Tetapkan Origin otomatis (atau bebas)
+                if (!isFirstRow && !forcedOrigin) {
+                    let prevDestVal = "";
+                    if (prevRow.querySelector(`select[id^="rute-dest-"]`)) {
+                        prevDestVal = prevRow.querySelector(`select[id^="rute-dest-"]`).value;
+                    } else if (prevRow.querySelector(`input[id^="rute-dest-custom-"]`)) {
+                        prevDestVal = prevRow.querySelector(`input[id^="rute-dest-custom-"]`).value;
+                    }
+                    originInput.value = prevDestVal ? String(prevDestVal).toUpperCase() : "";
+                } else if (forcedOrigin) {
+                    originInput.value = forcedOrigin;
+                }
+                
+                return; // STOP di sini, tidak perlu bangun opsi dropdown matrix
+            }
+
+            // === KEMBALIKAN KE MODE DROPDOWN MATRIKS NORMAL ===
+            if(document.getElementById(`rute-dest-custom-${index}`)) {
+                wrapper.innerHTML = `
+                    <select id="rute-dest-${index}" class="w-full uppercase" placeholder="KETIK TUJUAN...">
+                        <option value="">PILIH TUJUAN...</option>
+                    </select>
+                `;
+                new TomSelect(`#rute-dest-${index}`, {
+                    create: false,
+                    sortField: { field: "text", direction: "asc" },
+                    onChange: function() { onChangeDest(index); }
+                });
+            }
+
+            // Kunci lagi Tarif Input (Readonly)
+            tarifInput.setAttribute('readonly', true);
+            tarifInput.classList.add('bg-gray-200', 'cursor-not-allowed');
+            tarifInput.classList.remove('bg-white', 'focus:ring-posorange');
+            tarifInput.value = '';
+            tarifInput.dataset.value = 0;
+            tarifInput.placeholder = "0";
+
             if (!isFirstRow && !forcedOrigin) {
                 let prevDestSelect = prevRow.querySelector('select[id^="rute-dest-"]');
-                let prevDest = prevDestSelect ? prevDestSelect.value : "";
+                let prevDestCustom = prevRow.querySelector('input[id^="rute-dest-custom-"]');
+                let prevDest = prevDestSelect ? prevDestSelect.value : (prevDestCustom ? prevDestCustom.value : "");
                 
                 if (prevDest) {
                     let aliasOrigin = getAliasOrigin(moda, prevDest);
@@ -1037,13 +1175,13 @@
                         let cleanPrev = String(prevDest).toUpperCase().replace(/[0-9]/g, '').trim();
                         matchedKey = Object.keys(activeMatrix).find(k => k.includes(cleanPrev));
                     }
-                    document.getElementById(`rute-origin-${index}`).value = matchedKey || prevDest;
+                    originInput.value = matchedKey || prevDest;
                 }
             } else if (forcedOrigin) {
-                document.getElementById(`rute-origin-${index}`).value = forcedOrigin;
+                originInput.value = forcedOrigin;
             }
 
-            const origin = document.getElementById(`rute-origin-${index}`).value;
+            const origin = originInput.value;
             let tsControl = document.getElementById(`rute-dest-${index}`).tomselect;
             
             tsControl.clear(true);
@@ -1067,7 +1205,10 @@
             const origin = document.getElementById(`rute-origin-${index}`).value;
             const dest = document.getElementById(`rute-dest-${index}`).value;
             const tarifInput = document.getElementById(`rute-tarif-${index}`);
-            let activeMatrix = moda === "PRIMER UDARA" ? matrixUdara : moda === "PRIMER DARAT" ? matrixDarat : moda === "PRIMER LAUT" ? matrixLaut : moda === "LION PARCEL" ? matrixLion : matrixSekunder;
+            let activeMatrix = moda === "PRIMER UDARA" ? matrixUdara : 
+                               moda === "PRIMER DARAT" ? matrixDarat : 
+                               moda === "PRIMER LAUT" ? matrixLaut : 
+                               moda === "LION PARCEL" ? matrixLion : matrixSekunder;
             
             if (dest && activeMatrix[origin] && activeMatrix[origin][dest]) {
                 let trueVal = activeMatrix[origin][dest];
@@ -1105,6 +1246,9 @@
             }
         }
 
+        // =================================================================================
+        // LOGIKA OPTIMALISASI B2B & EXPORT EXCEL
+        // =================================================================================
         function hitungOptimalisasi() {
             try {
                 let tujuanAkhir = document.getElementById('tujuanAkhirSelect').value;
@@ -1122,9 +1266,26 @@
                     let id = row.id.split('-')[2];
                     let moda = document.getElementById(`rute-moda-${id}`).value;
                     let origin = document.getElementById(`rute-origin-${id}`).value;
-                    let dest = document.getElementById(`rute-dest-${id}`).value;
-                    let tarif = parseFloat(document.getElementById(`rute-tarif-${id}`).dataset.value) || 0;
-                    if (tarif > 0) globalRutes.push({ nama: `JALUR ${moda.split(' ')[1] || moda}: ${origin} ➔ ${dest}`, tarif: tarif });
+                    
+                    let dest, tarif, basis = 'KG';
+                    if (moda === 'SEKUNDER SETEMPAT') {
+                        dest = document.getElementById(`rute-dest-custom-${id}`).value.toUpperCase() || "CUSTOM";
+                        basis = document.getElementById(`rute-basis-${id}`).value;
+                        tarif = parseFloat(document.getElementById(`rute-tarif-${id}`).dataset.value) || 0;
+                    } else {
+                        dest = document.getElementById(`rute-dest-${id}`).value;
+                        tarif = parseFloat(document.getElementById(`rute-tarif-${id}`).dataset.value) || 0;
+                    }
+                    
+                    if (tarif > 0) {
+                        let namaJalur = moda === 'SEKUNDER SETEMPAT' ? `SEKUNDER POS SETEMPAT (${basis})` : (moda.split(' ')[1] || moda);
+                        globalRutes.push({ 
+                            nama: `JALUR ${namaJalur}: ${origin} ➔ ${dest}`, 
+                            tarif: tarif,
+                            moda: moda,
+                            basis: basis
+                        });
+                    }
                 });
 
                 globalTersier = { 
@@ -1146,8 +1307,17 @@
                     
                     let collecting = 1000;
                     let processing = 1000;
-                    let costRoutes = globalRutes.map(r => r.tarif * pCW);
+                    let costRoutes = globalRutes.map(r => {
+                        if (r.basis === 'KOLI') {
+                            let koliMultiplier = Math.ceil(pCW / 30);
+                            return r.tarif * koliMultiplier;
+                        } else {
+                            return r.tarif * pCW;
+                        }
+                    });
                     let costTersier = globalTersier.tarif * pCW;
+                    
+                    // UPDATE v3.8: Delivery menggunakan flat rate 2875 per kg
                     let delivery = 2875 * pCW;
                     
                     let totalOpt = collecting + processing + costRoutes.reduce((a,b)=>a+b, 0) + costTersier + delivery;
@@ -1277,9 +1447,7 @@
                 const getStyleTotalRp = () => ({ fill: { fgColor: { rgb: "E2E8F0" } }, font: { bold: true, color: { rgb: "1C2D5A" } }, alignment: { horizontal: "right", vertical: "center" }, border: createBorder() });
                 const getStyleTotalPct = () => ({ fill: { fgColor: { rgb: "E2E8F0" } }, font: { bold: true, color: { rgb: "1C2D5A" } }, alignment: { horizontal: "right", vertical: "center" }, border: createBorder() });
 
-                // =================================================================================
                 // SHEET 2: TABEL OPTIMALISASI
-                // =================================================================================
                 let wsData2 = [];
                 let headerRow2 = [
                     "NAMA PAKET", "BERAT AKTUAL (KG)", "PANJANG (CM)", "LEBAR (CM)", "TINGGI (CM)", 
@@ -1325,9 +1493,11 @@
                     let colAct = getColName(iAct), colP = getColName(iP), colL = getColName(iL);
                     let colT = getColName(iT), colVol = getColName(iVol), colCW = getColName(iCW), colBiaya = getColName(iBiaya);
 
+                    // UPDATE v3.8: Pembagi Volumetrik Dinamis pada File Excel
                     let modaValExport = document.querySelector('input[name="modaUtama"]:checked').value;
                     let pmbExport = modaValExport === 'UDARA' ? 6000 : 4000;
                     rowData[iVol] = { t: 'n', f: `${colP}${R}*${colL}${R}*${colT}${R}/${pmbExport}`, z: '0.00', s: getStylePlain() };
+                    
                     let maxStr = `MAX(${colAct}${R},${colVol}${R})`;
                     let formulaCW = `MAX(1, IF((${maxStr}-INT(${maxStr}))>0.3, INT(${maxStr})+1, INT(${maxStr})))`;
                     rowData[iCW] = { t: 'n', f: formulaCW, z: '0', s: getStylePlain() }; 
@@ -1341,11 +1511,18 @@
                     rowData[iPro] = { t: 'n', v: 1000, z: rpFmt, s: getStyleRp() };
                     
                     globalRutes.forEach((route, idx) => {
-                        rowData[iFirstRute + idx] = { t: 'n', f: `$${colCW}${R}*${route.tarif}`, z: rpFmt, s: getStyleRp() };
+                        if (route.basis === 'KOLI') {
+                            rowData[iFirstRute + idx] = { t: 'n', f: `ROUNDUP($${colCW}${R}/30,0)*${route.tarif}`, z: rpFmt, s: getStyleRp() };
+                        } else {
+                            rowData[iFirstRute + idx] = { t: 'n', f: `$${colCW}${R}*${route.tarif}`, z: rpFmt, s: getStyleRp() };
+                        }
                     });
                     
                     rowData[iTer] = { t: 'n', f: `$${colCW}${R}*${globalTersier.tarif}`, z: rpFmt, s: getStyleRp() };
+                    
+                    // UPDATE v3.8: Delivery flat rate pada File Excel
                     rowData[iDeliv] = { t: 'n', f: `$${colCW}${R}*2875`, z: rpFmt, s: getStyleRp() };
+                    
                     rowData[iOpt] = { t: 'n', f: `SUM(${getColName(iCol)}${R}:${getColName(iDeliv)}${R})`, z: rpFmt, s: getStyleRp() };
                     rowData[iOver] = { t: 'n', f: `${getColName(iOpt)}${R}*0.05`, z: rpFmt, s: getStyleRp() };
                     rowData[iCOF] = { t: 'n', f: `${getColName(iOpt)}${R}*30/365*0.08`, z: rpFmt, s: getStyleRp() };
@@ -1371,10 +1548,7 @@
                 footData2[iMargin] = { t: 'n', f: `${getColName(iLaba)}${totalR}/${getColName(iDPP)}${totalR}`, z: '0.00%', s: getStyleTotalPct() };
                 wsData2.push(footData2);
 
-
-                // =================================================================================
                 // SHEET 1: PERHITUNGAN
-                // =================================================================================
                 let wsData1 = [];
                 let headerRow1 = [
                     "NO", "ORIGIN", "DESTINATION", "BERAT TOTAL (KG)", "JUMLAH KOLI", "PROYEKSI PENDAPATAN", 
@@ -1407,10 +1581,7 @@
                 
                 wsData1.push(rowData1);
 
-
-                // =================================================================================
                 // GENERATE WORKBOOK
-                // =================================================================================
                 const ws1 = XLSX.utils.aoa_to_sheet(wsData1);
                 const ws2 = XLSX.utils.aoa_to_sheet(wsData2);
                 
