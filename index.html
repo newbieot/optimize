@@ -116,6 +116,1142 @@
 
     <header class="bg-white shadow-md py-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4 sticky top-0 z-50">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12">
+        <div class="flex items-center gap-3 flex-1 justify-center">
+            <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi & Optimalisasi Tarif</h1>
+            <span class="text-[10px] md:text-xs font-bold text-white bg-posorange px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v2.0 PRO</span>
+        </div>
+        <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10">
+    </header>
+
+    <main class="w-full max-w-6xl mx-auto space-y-4 md:space-y-6 px-4 md:px-0 pb-16">
+        
+        <div id="loadingStatus" class="bg-blue-100 border-l-4 border-posblue posblue p-4 rounded shadow mb-4 flex items-center">
+            <svg class="animate-spin h-5 w-5 mr-3 flex-shrink-0" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <span class="font-semibold text-sm md:text-base" id="loadingText">Menyedot 10 Database Google Sheets (Udara, Darat, Laut, 6 Sekunder, Tersier)...</span>
+        </div>
+
+        <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-posblue max-w-full overflow-hidden">
+            <h2 class="text-base md:text-lg font-bold posblue mb-4 flex items-center">
+                <span class="bg-posblue text-white rounded-full w-6 h-6 flex items-center justify-center text-xs md:text-sm mr-2">1</span> 
+                Informasi Tujuan & Rincian Paket
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
+                <div class="max-w-full overflow-hidden">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tujuan Akhir (Pilih KCU/KC Tersier)</label>
+                    <select id="tujuanAkhirSelect" class="w-full uppercase" placeholder="KETIK NAMA KOTA/KCU..." onchange="syncTersier()">
+                        <option value="">KETIK KCU/KC TUJUAN...</option>
+                    </select>
+                </div>
+                <div class="max-w-full overflow-hidden">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Pilihan Moda Utama</label>
+                    <div class="bg-gray-50 p-2.5 rounded border border-gray-200 flex flex-col space-y-3">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="modaUtama" value="UDARA" class="text-posorange focus:ring-posorange w-4 h-4" onchange="renderDefaultRoutes()" checked>
+                            <span class="ml-2 text-sm font-bold text-gray-800">Udara (Batam ➔ Jakarta)</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="modaUtama" value="DARAT_LAUT" class="text-posorange focus:ring-posorange w-4 h-4" onchange="renderDefaultRoutes()">
+                            <span class="ml-2 text-sm font-bold text-gray-800">Darat/Laut (Batam ➔ T.Pinang ➔ Pekanbaru)</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="max-w-full overflow-hidden">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Jumlah Paket Kiriman</label>
+                    <input type="number" id="jumlahPaket" class="w-full border border-gray-300 p-2.5 rounded focus:ring-posorange font-bold text-lg" value="1" min="1" onchange="renderPaketRows()">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto border border-gray-200 rounded-lg bg-gray-50 pb-2 w-full max-w-full">
+                <table class="w-full text-sm text-left whitespace-nowrap" id="mainPaketTable">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-200">
+                        <tr>
+                            <th class="px-3 py-3 w-1/4">Nama Paket (Ketik Bebas)</th>
+                            <th class="px-3 py-3 min-w-input">Aktual (Kg)</th>
+                            <th class="px-3 py-3 min-w-input">P (cm)</th>
+                            <th class="px-3 py-3 min-w-input">L (cm)</th>
+                            <th class="px-3 py-3 min-w-input">T (cm)</th>
+                            <th class="px-3 py-3 min-w-input">Vol (Kg)</th>
+                            <th class="px-3 py-3 min-w-input text-posorange">Chargeable (Kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paketBody" class="divide-y divide-gray-200">
+                        </tbody>
+                </table>
+            </div>
+            
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mt-3 gap-2">
+                <p class="text-xs text-gray-500 font-semibold">*Chargeable Weight dibulatkan ke atas jika desimal > 0.30 (300 gram).</p>
+                <div class="bg-blue-50 border border-blue-200 text-blue-800 text-xs px-3 py-2 rounded flex items-center font-semibold">
+                    <span class="mr-2 text-base">✨</span> 
+                    Tips: Anda bisa langsung COPY tabel dari Excel, lalu PASTE di kolom web ini! Baris otomatis bertambah.
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-posorange max-w-full overflow-hidden">
+            <h2 class="text-base md:text-lg font-bold posblue mb-4 flex items-center">
+                <span class="bg-posorange text-white rounded-full w-6 h-6 flex items-center justify-center text-xs md:text-sm mr-2">2</span> 
+                Susun Rute Perjalanan (Universal Chaining)
+            </h2>
+            <div id="ruteContainer" class="space-y-4"></div>
+            
+            <button id="btnTambahRute" onclick="tambahRute()" class="mt-5 posblue font-bold text-sm md:text-base flex items-center hover:text-red-500 transition-colors opacity-50 cursor-not-allowed w-full md:w-auto justify-center md:justify-start border-2 border-dashed border-gray-300 p-3 rounded-lg" disabled>
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+                + TAMBAH RUTE LANJUTAN
+            </button>
+        </section>
+
+        <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-green-600 max-w-full overflow-hidden">
+            <h2 class="text-base md:text-lg font-bold posblue mb-4 flex items-center">
+                <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs md:text-sm mr-2">3</span> 
+                Biaya Tersier (Otomatis)
+            </h2>
+            <p class="text-xs md:text-sm text-gray-500 mb-4">Biaya pengantaran akhir ini ditarik secara otomatis berdasarkan Tujuan Akhir yang Anda pilih di Step 1.</p>
+            
+            <div class="flex flex-col md:flex-row gap-3 md:gap-4 items-center bg-gray-50 p-4 rounded border border-gray-200">
+                <div class="w-full md:w-auto text-left md:text-center font-bold text-gray-500 text-sm">Tarif Pengantaran KCU/KC :</div>
+                <div class="relative w-full flex-1 mt-2 md:mt-0">
+                    <span class="absolute left-3 top-2.5 text-gray-500 font-semibold">Rp</span>
+                    <input type="text" id="tarifTersier" class="w-full bg-gray-200 border border-gray-300 p-2.5 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0">
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-yellow-500 mt-6 max-w-full overflow-hidden">
+            <h2 class="text-base md:text-lg font-bold posblue mb-4 flex items-center">
+                <span class="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs md:text-sm mr-2">4</span> 
+                Pengaturan Margin & Biaya Tambahan (Opsional)
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+                <div class="max-w-full">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Margin Target (%)</label>
+                    <input type="number" id="inputMargin" class="w-full border border-gray-300 p-2.5 rounded focus:ring-yellow-500 font-bold text-lg text-posblue" value="15" min="1" step="0.1">
+                </div>
+                <div class="max-w-full">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Biaya Langsung</label>
+                    <input type="text" id="inputNamaBL" class="w-full border border-gray-300 p-2.5 rounded uppercase font-bold text-gray-700" placeholder="Cth: Sewa Truk">
+                </div>
+                <div class="max-w-full">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nominal Biaya (Rp)</label>
+                    <div class="relative w-full">
+                        <span class="absolute left-3 top-2.5 text-gray-500 font-semibold">Rp</span>
+                        <input type="text" id="inputNominalBL" class="w-full border border-gray-300 p-2.5 pl-10 rounded font-bold text-gray-700" placeholder="0" oninput="formatRupiahInput(this)">
+                    </div>
+                </div>
+                <div class="max-w-full flex items-center md:mt-7">
+                    <label class="inline-flex items-center cursor-pointer bg-gray-50 p-2.5 border border-gray-200 rounded w-full">
+                        <input type="checkbox" id="checkPajakBL" class="form-checkbox text-posorange h-5 w-5 rounded focus:ring-posorange">
+                        <span class="ml-3 font-bold text-gray-700 text-sm">Potong PPh 2%</span>
+                    </label>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-3 font-semibold">*Biaya Langsung & Margin di atas akan terintegrasi dan membentuk DPP yang sesuai secara presisi di file Excel.</p>
+        </section>
+
+        <div class="flex justify-end mb-16 mt-6">
+            <button onclick="hitungOptimalisasi()" id="btnHitung" class="bg-posorange hover:bg-red-600 text-white font-bold py-4 px-8 rounded shadow-lg text-lg w-full md:w-auto opacity-50 cursor-not-allowed transition-all" disabled>
+                KALKULASI TARIF OPTIMALISASI
+            </button>
+        </div>
+
+        <section id="hasil-container" class="hidden bg-white p-4 md:p-6 rounded-lg shadow-md border border-gray-200 mb-16 max-w-full overflow-hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b pb-4 mb-4 gap-4">
+                <div>
+                    <h2 class="text-xl font-bold posblue">Tabel Preview Optimalisasi</h2>
+                    <p id="labelTujuan" class="text-gray-600 font-semibold mt-1 uppercase"></p>
+                </div>
+                <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded shadow flex items-center w-full md:w-auto justify-center transition-all">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Download Excel (Otomatis Rumus)
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto pb-2 w-full max-w-full">
+                <table class="w-full text-sm md:text-base text-left text-gray-700 border" id="tableHasil">
+                    <thead class="text-xs md:text-sm text-white uppercase bg-posblue border-b" id="hasilHeaders">
+                        </thead>
+                    <tbody id="tbodyHasil" class="divide-y divide-gray-200 bg-gray-50">
+                        </tbody>
+                    <tfoot id="tfootHasil" class="bg-gray-200 font-bold text-posblue uppercase text-sm border-t-2 border-gray-400">
+                        </tfoot>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="dashboard-footer">
+        <div class="footer-brand">
+            <i data-lucide="layers" style="color: #EF4123; width: 18px; height: 18px;"></i>
+            PosNew Hub
+        </div>
+        <p class="footer-desc">Sistem utilitas ini dikembangkan secara independen untuk optimalisasi efisiensi layanan logistik B2B dan Ritel.</p>
+        <div class="footer-creator-badge">
+            <i data-lucide="code-2" style="color: #EF4123; width: 14px; height: 14px;"></i>
+            Inovasi oleh <strong>Ikhsan Radiansyah</strong> &copy; 2026
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // =================================================================================
+        // SMART COPY-PASTE DARI EXCEL (FITUR V2.0 PRO)
+        // =================================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableBody = document.getElementById('paketBody');
+            
+            tableBody.addEventListener('paste', function(e) {
+                let target = e.target;
+                
+                // Cek apakah user mempaste di input yang benar (angka dimensi/berat)
+                let allowedClasses = ['paket-aktual', 'paket-p', 'paket-l', 'paket-t'];
+                let isAllowed = allowedClasses.some(cls => target.classList.contains(cls));
+                
+                if (!isAllowed) return; // Biarkan paste biasa terjadi di nama paket
+
+                let pasteData = (e.clipboardData || window.clipboardData).getData('text');
+                let rows = pasteData.trim().split(/\r\n|\n|\r/);
+                
+                if (rows.length <= 1 && rows[0].split('\t').length <= 1) {
+                    return; // Jika paste satu angka biasa, biarkan default browser jalan
+                }
+
+                e.preventDefault(); // Blokir perilaku bawaan jika user mempaste block cell
+                
+                let tr = target.closest('tr');
+                let allTrs = Array.from(tableBody.querySelectorAll('tr'));
+                let startRowIndex = allTrs.indexOf(tr);
+
+                // Tambah jumlah baris jika data paste melebihi baris yang ada
+                let requiredRows = startRowIndex + rows.length;
+                let jumlahPaketInput = document.getElementById('jumlahPaket');
+                
+                if (requiredRows > parseInt(jumlahPaketInput.value)) {
+                    jumlahPaketInput.value = requiredRows;
+                    renderPaketRows(); // Generate baris baru
+                    allTrs = Array.from(tableBody.querySelectorAll('tr')); // Refresh referensi DOM
+                }
+
+                // Cari indeks kolom awal paste
+                let startColIndex = allowedClasses.findIndex(c => target.classList.contains(c));
+
+                // Loop Eksekusi Isi Sel
+                for (let i = 0; i < rows.length; i++) {
+                    let cells = rows[i].split('\t');
+                    let currentRow = allTrs[startRowIndex + i];
+                    
+                    if(!currentRow) continue;
+
+                    for (let j = 0; j < cells.length; j++) {
+                        let currentTargetCol = startColIndex + j;
+                        if (currentTargetCol < allowedClasses.length) {
+                            let input = currentRow.querySelector('.' + allowedClasses[currentTargetCol]);
+                            if (input) {
+                                // Ganti koma (Indonesia) jadi titik agar terbaca Javascript
+                                let cleanVal = cells[j].trim().replace(/,/g, '.'); 
+                                let num = parseFloat(cleanVal);
+                                if (!isNaN(num)) {
+                                    input.value = num;
+                                }
+                            }
+                        }
+                    }
+                    // Trigger kalkulasi otomatis per baris
+                    calcCW(currentRow.querySelector('.paket-aktual'));
+                }
+            });
+        });
+
+        // =================================================================================
+        // FORMAT RUPIAH PADA INPUT (BIAYA LANGSUNG)
+        // =================================================================================
+        function formatRupiahInput(elem) {
+            let val = elem.value.replace(/[^,\d]/g, '');
+            if(val === '') { elem.value = ''; return; }
+            let parts = val.split(',');
+            let intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            elem.value = parts.length > 1 ? intPart + ',' + parts[1] : intPart;
+        }
+
+        function unformatRupiah(str) {
+            if (!str) return 0;
+            let val = str.replace(/\./g, '').replace(/,/g, '.');
+            return parseFloat(val) || 0;
+        }
+
+        // =================================================================================
+        // SEMUA URL CSV DARI GOOGLE SHEETS
+        // =================================================================================
+        const urlPrimerUdara = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuYYRcuYa4ehq9NlTxSJlse6CMFLMrOWU5zHcaEdyj2k1VRKr-t7z52ua-5DrtA/pub?gid=1378317974&single=true&output=csv";
+        const urlPrimerDarat = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuYYRcuYa4ehq9NlTxSJlse6CMFLMrOWU5zHcaEdyj2k1VRKr-t7z52ua-5DrtA/pub?gid=1226896685&single=true&output=csv";
+        const urlPrimerLaut  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRSuYYRcuYa4ehq9NlTxSJlse6CMFLMrOWU5zHcaEdyj2k1VRKr-t7z52ua-5DrtA/pub?gid=1554248724&single=true&output=csv";
+        const urlTersier     = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=1649129386&single=true&output=csv";
+        
+        const urlSekunderList = [
+            "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=1000630291&single=true&output=csv",
+            "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=987251352&single=true&output=csv",
+            "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=140592202&single=true&output=csv",
+            "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=471427614&single=true&output=csv",
+            "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=844283654&single=true&output=csv",
+            "https://docs.google.com/spreadsheets/d/e/2PACX-1vSxObv37H-oKqgwvuJpj8Cx_N4dBKQU9Fx2Y9BT-o8qVbRRQvJ93S6RzjsTmVd-IA/pub?gid=1040661244&single=true&output=csv"
+        ];
+
+        let matrixUdara = {}; 
+        let matrixDarat = {}; 
+        let matrixLaut = {}; 
+        let matrixSekunder = {}; 
+        let tersierMap = {}; 
+        let ruteCount = 0;
+        let tsTujuan; 
+        
+        let globalRutes = [];
+        let globalTersier = null;
+
+        function renderPaketRows() {
+            let targetCount = parseInt(document.getElementById('jumlahPaket').value) || 1;
+            if(targetCount < 1) { targetCount = 1; document.getElementById('jumlahPaket').value = 1; }
+            
+            let tbody = document.getElementById('paketBody');
+            let currentCount = tbody.children.length;
+
+            if (targetCount > currentCount) {
+                for (let i = currentCount; i < targetCount; i++) {
+                    tbody.insertAdjacentHTML('beforeend', `
+                        <tr class="paket-row hover:bg-gray-100 transition-colors">
+                            <td class="p-2"><input type="text" class="paket-nama w-full border border-gray-300 p-2 rounded uppercase font-bold text-gray-700" placeholder="PAKET ${i+1}" value="PAKET ${i+1}"></td>
+                            <td class="p-2"><input type="number" class="paket-aktual w-full border border-gray-300 p-2 rounded" min="0" step="0.1" value="10" oninput="calcCW(this)"></td>
+                            <td class="p-2"><input type="number" class="paket-p w-full border border-gray-300 p-2 rounded" min="0" value="20" oninput="calcCW(this)"></td>
+                            <td class="p-2"><input type="number" class="paket-l w-full border border-gray-300 p-2 rounded" min="0" value="20" oninput="calcCW(this)"></td>
+                            <td class="p-2"><input type="number" class="paket-t w-full border border-gray-300 p-2 rounded" min="0" value="20" oninput="calcCW(this)"></td>
+                            <td class="p-2"><input type="text" class="paket-vol w-full bg-gray-200 border border-gray-300 p-2 rounded text-center" readonly value="2.00"></td>
+                            <td class="p-2"><input type="text" class="paket-cw w-full bg-orange-100 border border-posorange p-2 rounded font-bold text-center text-posorange" readonly value="10"></td>
+                        </tr>
+                    `);
+                    calcCW(tbody.lastElementChild.querySelector('.paket-aktual'));
+                }
+            } else if (targetCount < currentCount) {
+                for (let i = currentCount; i > targetCount; i--) {
+                    tbody.lastElementChild.remove();
+                }
+            }
+        }
+
+        function calcCW(elem) {
+            let row = elem.closest('.paket-row');
+            let a = parseFloat(row.querySelector('.paket-aktual').value) || 0;
+            let p = parseFloat(row.querySelector('.paket-p').value) || 0;
+            let l = parseFloat(row.querySelector('.paket-l').value) || 0;
+            let t = parseFloat(row.querySelector('.paket-t').value) || 0;
+            
+            let vol = (p * l * t) / 4000;
+            row.querySelector('.paket-vol').value = vol.toFixed(2);
+            
+            let maxWeight = Math.max(a, vol);
+            let intPart = Math.floor(maxWeight);
+            let decPart = maxWeight - intPart;
+            
+            let cw = decPart > 0.30 ? intPart + 1 : intPart;
+            if (cw < 1) cw = 1; 
+            
+            row.querySelector('.paket-cw').value = cw;
+        }
+
+        function parseRupiah(str) {
+            if (str === null || str === undefined) return 0;
+            let s = String(str).trim();
+            if (s === "-" || s === "" || s.toUpperCase() === "PRIMER" || s.toUpperCase() === "NAN") return 0;
+            s = s.replace(/Rp/gi, '').replace(/\s/g, '');
+            
+            let lastDot = s.lastIndexOf('.');
+            let lastComma = s.lastIndexOf(',');
+
+            if (lastDot > -1 && lastComma > -1) {
+                if (lastComma > lastDot) s = s.replace(/\./g, '').replace(',', '.');
+                else s = s.replace(/,/g, '');
+            } else if (lastComma > -1) {
+                let parts = s.split(',');
+                if (parts[parts.length-1].length === 2) s = s.replace(',', '.');
+                else s = s.replace(/,/g, '');
+            } else if (lastDot > -1) {
+                let parts = s.split('.');
+                let isThousand = true;
+                for(let i = 1; i < parts.length; i++) {
+                    if(parts[i].length !== 3) { isThousand = false; break; }
+                }
+                if (isThousand) s = s.replace(/\./g, '');
+            }
+            
+            let val = parseFloat(s);
+            return isNaN(val) ? 0 : Math.ceil(val); 
+        }
+
+        function formatRupiahUI(number) { return new Intl.NumberFormat('id-ID').format(number); }
+
+        function getAliasOrigin(moda, prevDest) {
+            if (!prevDest) return "";
+            let dest = String(prevDest).toUpperCase().trim();
+            if (dest.includes("JAKARTA") && moda === "SEKUNDER") return "TANGERANG";
+            return dest.replace(/[0-9]/g, '').trim(); 
+        }
+
+        function parseMatrixSheet(data, targetMatrixObj) {
+            if (data.length < 2) return;
+            let headerRowIdx = -1, maxCols = 0;
+            for (let r = 0; r < Math.min(data.length, 15); r++) {
+                let textCols = 0;
+                for (let c = 0; c < data[r].length; c++) {
+                    let val = String(data[r][c]).trim().toUpperCase();
+                    let isText = isNaN(parseFloat(val));
+                    if (val.length >= 3 && isText && !val.includes("---") && !val.startsWith("P0")) textCols++;
+                }
+                if (textCols > maxCols) { maxCols = textCols; headerRowIdx = r; }
+            }
+            if (headerRowIdx === -1) return;
+            let headers = data[headerRowIdx].map(x => String(x).trim().toUpperCase());
+            
+            let originColIdx = -1;
+            for (let c = 0; c < Math.min(headers.length, 10); c++) {
+                let matchCount = 0;
+                for (let r = headerRowIdx + 1; r < Math.min(data.length, headerRowIdx + 20); r++) {
+                    if (c >= data[r].length) continue;
+                    let val = String(data[r][c]).trim().toUpperCase();
+                    let isText = isNaN(parseFloat(val));
+                    if (val.length >= 3 && isText && !val.includes("---") && val !== "PRIMER" && !val.startsWith("P0")) matchCount++;
+                }
+                if (matchCount >= 2) { originColIdx = c; break; }
+            }
+            if (originColIdx === -1) originColIdx = 2; 
+
+            for(let i = headerRowIdx + 1; i < data.length; i++) {
+                if (data[i].length <= originColIdx) continue;
+                let origin = String(data[i][originColIdx]).trim().toUpperCase(); 
+                if(!origin || origin === "" || origin.includes("---") || origin === "NAN" || origin.startsWith("P0")) continue;
+                if(!targetMatrixObj[origin]) targetMatrixObj[origin] = {};
+                
+                for(let j = originColIdx + 1; j < data[i].length; j++) {
+                    if (j < headers.length) {
+                        let dest = headers[j];
+                        let tarif = parseRupiah(data[i][j]);
+                        if(dest && dest !== "" && !dest.includes("---") && !dest.startsWith("P0") && tarif > 0) {
+                            targetMatrixObj[origin][dest] = tarif;
+                        }
+                    }
+                }
+            }
+        }
+
+        async function initData() {
+            try {
+                let requests = [
+                    fetch(urlPrimerUdara).then(r => r.text()),
+                    fetch(urlPrimerDarat).then(r => r.text()),
+                    fetch(urlPrimerLaut).then(r => r.text()),
+                    fetch(urlTersier).then(r => r.text())
+                ];
+                urlSekunderList.forEach(url => requests.push(fetch(url).then(r => r.text())));
+                const responses = await Promise.all(requests);
+                
+                Papa.parse(responses[0], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixUdara) });
+                Papa.parse(responses[1], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixDarat) });
+                Papa.parse(responses[2], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixLaut) });
+
+                Papa.parse(responses[3], {
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        const data = results.data;
+                        let headerRowIdx = -1;
+                        for(let r = 0; r < Math.min(data.length, 15); r++) {
+                            let rowArr = data[r].map(x => String(x).toUpperCase().trim());
+                            if(rowArr.includes("KCU/KC") || rowArr.includes("KCU") || rowArr.includes("KC")) { 
+                                headerRowIdx = r; break; 
+                            }
+                        }
+                        if (headerRowIdx === -1) headerRowIdx = 0;
+                        
+                        let headerTersier = data[headerRowIdx].map(x => String(x).trim().toUpperCase());
+                        let kcuColIdx = headerTersier.findIndex(x => x === "KCU/KC" || x === "KCU" || x === "KC");
+                        let biayaColIdx = headerTersier.findIndex(x => x === "BIAYA PER KG" || x === "BIAYA / KG");
+                        if (biayaColIdx === -1) biayaColIdx = headerTersier.findIndex(x => x.includes("BIAYA PER KG") || x.includes("PER KG"));
+                        
+                        if (kcuColIdx === -1) kcuColIdx = 2; 
+                        if (biayaColIdx === -1) biayaColIdx = 10; 
+
+                        for(let i = headerRowIdx + 1; i < data.length; i++) {
+                            if(data[i].length <= kcuColIdx) continue;
+                            let kcu = String(data[i][kcuColIdx]).trim().toUpperCase();
+                            if(!kcu || kcu === "" || kcu.includes("---") || kcu === "KANTOR TUJUAN" || kcu === "KCU/KC") continue;
+                            
+                            let tarif = data[i].length > biayaColIdx ? parseRupiah(data[i][biayaColIdx]) : 0;
+                            
+                            if(tersierMap[kcu] === undefined) tersierMap[kcu] = 0;
+                            if(tarif > tersierMap[kcu]) tersierMap[kcu] = tarif;
+                        }
+
+                        let tersierOptions = Object.keys(tersierMap).sort().map(kcu => ({ value: kcu, text: kcu }));
+                        tsTujuan = new TomSelect("#tujuanAkhirSelect", {
+                            options: tersierOptions,
+                            create: false,
+                            sortField: { field: "text", direction: "asc" },
+                            placeholder: "KETIK KCU/KC TUJUAN AKHIR..."
+                        });
+                    }
+                });
+
+                for (let i = 4; i < responses.length; i++) {
+                    Papa.parse(responses[i], { skipEmptyLines: true, complete: res => parseMatrixSheet(res.data, matrixSekunder) });
+                }
+
+                const statusDiv = document.getElementById('loadingStatus');
+                statusDiv.className = "bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow mb-4 flex items-center";
+                document.getElementById('loadingText').innerHTML = `Sistem Sukses! 10 Database Terintegrasi (208+ KCU Terdeteksi).`;
+                setTimeout(() => statusDiv.style.display = 'none', 3000);
+
+                document.getElementById('btnHitung').disabled = false;
+                document.getElementById('btnHitung').classList.remove('opacity-50', 'cursor-not-allowed');
+                document.getElementById('btnTambahRute').disabled = false;
+                document.getElementById('btnTambahRute').classList.remove('opacity-50', 'cursor-not-allowed');
+
+                renderPaketRows();
+                renderDefaultRoutes();
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('loadingStatus').className = "bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow mb-4 flex items-center";
+                document.getElementById('loadingText').innerHTML = "ERROR: Gagal terkoneksi dengan link Google Sheets.";
+            }
+        }
+
+        window.onload = initData;
+
+        function findKey(matrix, keyword) { return Object.keys(matrix).find(k => k.includes(keyword)) || ""; }
+        function findDestKey(matrix, origin, keyword) {
+            if (!matrix[origin]) return "";
+            return Object.keys(matrix[origin]).find(k => k.includes(keyword)) || "";
+        }
+
+        function syncTersier() {
+            const valKcu = document.getElementById('tujuanAkhirSelect').value;
+            const inp = document.getElementById('tarifTersier');
+            
+            if (valKcu && tersierMap[valKcu] !== undefined) {
+                let valTarif = tersierMap[valKcu];
+                inp.value = valTarif > 0 ? formatRupiahUI(valTarif) : '0 (GRATIS)'; 
+                inp.dataset.value = valTarif;
+            } else {
+                inp.value = ''; inp.dataset.value = 0;
+            }
+        }
+
+        function renderDefaultRoutes() {
+            document.getElementById('ruteContainer').innerHTML = '';
+            ruteCount = 0;
+            let moda = document.querySelector('input[name="modaUtama"]:checked').value;
+            
+            if (moda === 'UDARA') {
+                let origin = findKey(matrixUdara, "BATAM") || "BATAM 29400";
+                let dest = findDestKey(matrixUdara, origin, "JAKARTA") || "JAKARTA 10000";
+                tambahRute("PRIMER UDARA", origin, dest);
+            } else { 
+                let origin1 = findKey(matrixSekunder, "BATAM") || "BATAM";
+                let dest1 = findDestKey(matrixSekunder, origin1, "TANJUNGPINANG") || "TANJUNGPINANG";
+                tambahRute("SEKUNDER", origin1, dest1);
+                
+                let dest2 = findDestKey(matrixSekunder, dest1, "PEKANBARU") || "PEKANBARU";
+                tambahRute("SEKUNDER", dest1, dest2);
+            }
+        }
+
+        function tambahRute(forcedModa = null, forcedOrigin = null, forcedDest = null) {
+            ruteCount++;
+            const container = document.getElementById('ruteContainer');
+            const row = document.createElement('div');
+            row.className = 'flex flex-col md:flex-row gap-3 md:gap-4 items-center rute-baris mt-3 bg-gray-50 p-4 md:p-3 rounded border border-gray-200 shadow-sm';
+            row.id = `rute-row-${ruteCount}`;
+            
+            let modaVal = forcedModa || "PRIMER UDARA";
+            let displayOrigin = forcedOrigin || (ruteCount === 1 ? "BATAM" : "PILIH TUJUAN SEBELUMNYA");
+
+            row.innerHTML = `
+                <div class="w-full md:w-8 text-left md:text-center font-bold text-posorange bg-orange-100 md:bg-transparent rounded px-3 py-1.5 md:p-0">#${ruteCount}</div>
+                <div class="w-full md:w-1/5">
+                    <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Moda</label>
+                    <select id="rute-moda-${ruteCount}" class="w-full border border-gray-300 p-2.5 rounded focus:ring-posorange font-bold text-posblue bg-white" onchange="onChangeModa(${ruteCount})">
+                        <option value="PRIMER UDARA" ${modaVal==='PRIMER UDARA'?'selected':''}>PRIMER UDARA</option>
+                        <option value="PRIMER DARAT" ${modaVal==='PRIMER DARAT'?'selected':''}>PRIMER DARAT</option>
+                        <option value="PRIMER LAUT" ${modaVal==='PRIMER LAUT'?'selected':''}>PRIMER LAUT</option>
+                        <option value="SEKUNDER" ${modaVal==='SEKUNDER'?'selected':''}>SEKUNDER</option>
+                    </select>
+                </div>
+                <div class="w-full md:w-1/4">
+                    <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Origin</label>
+                    <input type="text" id="rute-origin-${ruteCount}" class="w-full bg-gray-200 border border-gray-300 p-2.5 rounded text-gray-700 font-bold uppercase cursor-not-allowed" value="${displayOrigin}" readonly>
+                </div>
+                <span class="hidden md:inline text-gray-400 font-bold text-xl">➔</span>
+                <div class="w-full flex-1">
+                    <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tujuan (Ketik)</label>
+                    <select id="rute-dest-${ruteCount}" class="w-full uppercase" placeholder="KETIK TUJUAN...">
+                        <option value="">PILIH TUJUAN...</option>
+                    </select>
+                </div>
+                <div class="w-full md:w-1/6 relative mt-2 md:mt-0">
+                    <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tarif / Kg</label>
+                    <span class="absolute left-3 top-8 md:top-2.5 text-gray-500 font-semibold">Rp</span>
+                    <input type="text" id="rute-tarif-${ruteCount}" class="w-full bg-gray-200 border border-gray-300 p-2.5 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0">
+                </div>
+                ${ruteCount > 1 ? `<button onclick="hapusRute(this)" class="w-full md:w-auto mt-2 md:mt-0 text-red-500 border border-red-200 md:border-none rounded py-2 md:py-0 font-bold hover:bg-red-50" title="Hapus">HAPUS</button>` : `<div class="hidden md:block w-4"></div>`}
+            `;
+            container.appendChild(row);
+            
+            new TomSelect(`#rute-dest-${ruteCount}`, {
+                create: false,
+                sortField: { field: "text", direction: "asc" },
+                onChange: function() { onChangeDest(ruteCount); }
+            });
+
+            onChangeModa(ruteCount, forcedDest, forcedOrigin);
+        }
+
+        function onChangeModa(index, forcedDest = null, forcedOrigin = null) {
+            const moda = document.getElementById(`rute-moda-${index}`).value;
+            let activeMatrix = moda === "PRIMER UDARA" ? matrixUdara : moda === "PRIMER DARAT" ? matrixDarat : moda === "PRIMER LAUT" ? matrixLaut : matrixSekunder;
+
+            if (index > 1 && !forcedOrigin) {
+                let prevDest = document.getElementById(`rute-dest-${index - 1}`).value;
+                if (prevDest) {
+                    let aliasOrigin = getAliasOrigin(moda, prevDest);
+                    let matchedKey = Object.keys(activeMatrix).find(k => k === aliasOrigin) || 
+                                     Object.keys(activeMatrix).find(k => k === String(prevDest).toUpperCase()) ||
+                                     Object.keys(activeMatrix).find(k => k.includes(aliasOrigin));
+                                     
+                    if (!matchedKey) {
+                        let cleanPrev = String(prevDest).toUpperCase().replace(/[0-9]/g, '').trim();
+                        matchedKey = Object.keys(activeMatrix).find(k => k.includes(cleanPrev));
+                    }
+                    document.getElementById(`rute-origin-${index}`).value = matchedKey || prevDest;
+                }
+            } else if (forcedOrigin) {
+                document.getElementById(`rute-origin-${index}`).value = forcedOrigin;
+            }
+
+            const origin = document.getElementById(`rute-origin-${index}`).value;
+            let tsControl = document.getElementById(`rute-dest-${index}`).tomselect;
+            
+            tsControl.clear(true);
+            tsControl.clearOptions();
+            
+            let newOptions = [];
+            if (activeMatrix[origin]) {
+                Object.keys(activeMatrix[origin]).sort().forEach(dest => {
+                    newOptions.push({value: dest, text: dest});
+                });
+            }
+            tsControl.addOption(newOptions);
+            
+            if (forcedDest && activeMatrix[origin] && activeMatrix[origin][forcedDest]) {
+                tsControl.setValue(forcedDest);
+            }
+        }
+
+        function onChangeDest(index) {
+            const moda = document.getElementById(`rute-moda-${index}`).value;
+            const origin = document.getElementById(`rute-origin-${index}`).value;
+            const dest = document.getElementById(`rute-dest-${index}`).value;
+            const tarifInput = document.getElementById(`rute-tarif-${index}`);
+            let activeMatrix = moda === "PRIMER UDARA" ? matrixUdara : moda === "PRIMER DARAT" ? matrixDarat : moda === "PRIMER LAUT" ? matrixLaut : matrixSekunder;
+            
+            if (dest && activeMatrix[origin] && activeMatrix[origin][dest]) {
+                let trueVal = activeMatrix[origin][dest];
+                tarifInput.value = formatRupiahUI(trueVal); 
+                tarifInput.dataset.value = trueVal;         
+            } else { 
+                tarifInput.value = ''; 
+                tarifInput.dataset.value = 0; 
+            }
+            
+            let nextIndex = index + 1;
+            if (document.getElementById(`rute-origin-${nextIndex}`)) {
+                onChangeModa(nextIndex); 
+            }
+        }
+
+        function hapusRute(btn) { 
+            btn.parentElement.remove(); 
+            let allRows = document.querySelectorAll('.rute-baris');
+            allRows.forEach((row, idx) => {
+                row.querySelector('.text-posorange').innerText = `#${idx + 1}`;
+            });
+        }
+
+        // =================================================================================
+        // LOGIKA PERHITUNGAN (MARGIN 100% AKURAT)
+        // =================================================================================
+        function hitungOptimalisasi() {
+            try {
+                let tujuanAkhir = document.getElementById('tujuanAkhirSelect').value;
+                if (!tujuanAkhir || tujuanAkhir === "") {
+                    alert("HARAP PILIH TUJUAN AKHIR TERLEBIH DAHULU PADA LANGKAH 1!");
+                    return;
+                }
+
+                let marginInput = parseFloat(document.getElementById('inputMargin').value) || 15;
+                let marginDec = marginInput / 100;
+                let nominalBL = unformatRupiah(document.getElementById('inputNominalBL').value);
+
+                globalRutes = [];
+                document.querySelectorAll('.rute-baris').forEach((row) => {
+                    let id = row.id.split('-')[2];
+                    let moda = document.getElementById(`rute-moda-${id}`).value;
+                    let origin = document.getElementById(`rute-origin-${id}`).value;
+                    let dest = document.getElementById(`rute-dest-${id}`).value;
+                    let tarif = parseFloat(document.getElementById(`rute-tarif-${id}`).dataset.value) || 0;
+                    if (tarif > 0) globalRutes.push({ nama: `JALUR ${moda.split(' ')[1] || moda}: ${origin} ➔ ${dest}`, tarif: tarif });
+                });
+
+                globalTersier = { 
+                    nama: `TERSIER KCU: ${tujuanAkhir}`, 
+                    tarif: parseFloat(document.getElementById('tarifTersier').dataset.value) || 0 
+                };
+
+                let trHTML = `<tr><th class="px-4 py-3 whitespace-nowrap">NAMA PAKET</th><th class="px-4 py-3 text-right">BERAT (KG)</th><th class="px-4 py-3 text-right">NILAI PROYEK</th><th class="px-4 py-3 text-right">DPP</th><th class="px-4 py-3 text-right">PPN</th><th class="px-4 py-3 text-right">COLLECTING</th><th class="px-4 py-3 text-right">PROCESSING</th>`;
+                globalRutes.forEach(r => trHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${r.nama}</th>`);
+                trHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${globalTersier.nama}</th><th class="px-4 py-3 text-right">DELIVERY</th><th class="px-4 py-3 text-right">TOTAL OPT</th><th class="px-4 py-3 text-right">OVERHEAD</th><th class="px-4 py-3 text-right">COF</th><th class="px-4 py-3 text-right text-posorange">TOTAL BIAYA</th><th class="px-4 py-3 text-right">LABA</th><th class="px-4 py-3 text-right">MARGIN</th></tr>`;
+                document.getElementById('hasilHeaders').innerHTML = trHTML;
+
+                // FASE 1: Hitung Biaya BTL Dasar per Paket
+                let pktsData = [];
+                let grandTotalBiayaOpt = 0; 
+                
+                document.querySelectorAll('.paket-row').forEach((row) => {
+                    let pNama = row.querySelector('.paket-nama').value || "PAKET";
+                    let pCW = parseFloat(row.querySelector('.paket-cw').value) || 1;
+                    
+                    let collecting = 1000;
+                    let processing = 1000;
+                    let costRoutes = globalRutes.map(r => r.tarif * pCW);
+                    let costTersier = globalTersier.tarif * pCW;
+                    let delivery = pCW <= 3 ? 2775 : 2775 + ((pCW - 3) * 2300);
+                    
+                    let totalOpt = collecting + processing + costRoutes.reduce((a,b)=>a+b, 0) + costTersier + delivery;
+                    let overhead = totalOpt * 0.05;
+                    let cof = totalOpt * 30 / 365 * 0.08;
+                    let biayaPaket = totalOpt + overhead + cof; // Ini adalah total BTL untuk paket ini
+                    
+                    grandTotalBiayaOpt += biayaPaket;
+                    pktsData.push({ pNama, pCW, totalOpt, overhead, cof, biayaPaket, collecting, processing, costRoutes, costTersier, delivery });
+                });
+
+                // FASE 2: Hitung DPP Global berdasarkan Total Biaya (BTL + Biaya Langsung) agar Margin tepat sasaran
+                let totalBiayaGlobal = grandTotalBiayaOpt + nominalBL;
+                let dppGlobal = totalBiayaGlobal / (1 - marginDec);
+
+                // FASE 3: Distribusikan DPP secara proporsional ke tiap Paket, lalu cetak tabel preview
+                let tbodyHTML = '';
+                let sumBerat = 0, sumNP = 0, sumDPP = 0, sumPPN = 0, sumCol = 0, sumPro = 0;
+                let sumRoutes = Array(globalRutes.length).fill(0);
+                let sumTer = 0, sumDeliv = 0, sumOpt = 0, sumOver = 0, sumCOF = 0, sumBiaya = 0, sumLaba = 0;
+
+                pktsData.forEach((paket) => {
+                    let ratio = grandTotalBiayaOpt > 0 ? (paket.biayaPaket / grandTotalBiayaOpt) : 0;
+                    let dppPaket = dppGlobal * ratio;
+                    let npPaket = dppPaket * 1.011;
+                    let ppnPaket = dppPaket * 0.011;
+                    
+                    // Laba & Margin di tabel ini terlihat lebih besar karena tabel ini HANYA menampilkan BTL (tidak ada BL)
+                    let labaPaket = dppPaket - paket.biayaPaket;
+                    let marginPaket = dppPaket > 0 ? (labaPaket / dppPaket) * 100 : 0;
+
+                    sumBerat += paket.pCW; sumNP += npPaket; sumDPP += dppPaket; sumPPN += ppnPaket; 
+                    sumCol += paket.collecting; sumPro += paket.processing;
+                    paket.costRoutes.forEach((cr, i) => sumRoutes[i] += cr);
+                    sumTer += paket.costTersier; sumDeliv += paket.delivery; sumOpt += paket.totalOpt; 
+                    sumOver += paket.overhead; sumCOF += paket.cof; sumBiaya += paket.biayaPaket; sumLaba += labaPaket;
+
+                    let tr = `<tr class="hover:bg-gray-100 border-b border-gray-200">
+                        <td class="px-4 py-3 font-bold whitespace-nowrap text-gray-700">${paket.pNama}</td>
+                        <td class="px-4 py-3 text-right font-semibold">${paket.pCW}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(npPaket)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(dppPaket)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(ppnPaket)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(paket.collecting)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(paket.processing)}</td>`;
+                    paket.costRoutes.forEach(cr => tr += `<td class="px-4 py-3 text-right">${formatRupiahUI(cr)}</td>`);
+                    tr += `<td class="px-4 py-3 text-right">${formatRupiahUI(paket.costTersier)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(paket.delivery)}</td>
+                        <td class="px-4 py-3 text-right font-bold text-gray-800">${formatRupiahUI(paket.totalOpt)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(paket.overhead)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(paket.cof)}</td>
+                        <td class="px-4 py-3 text-right font-bold text-posorange">${formatRupiahUI(paket.biayaPaket)}</td>
+                        <td class="px-4 py-3 text-right">${formatRupiahUI(labaPaket)}</td>
+                        <td class="px-4 py-3 text-right">${marginPaket.toFixed(2)}%</td>
+                    </tr>`;
+                    tbodyHTML += tr;
+                });
+
+                document.getElementById('tbodyHasil').innerHTML = tbodyHTML;
+
+                let marginTotal = sumDPP > 0 ? (sumLaba / sumDPP) * 100 : 0;
+                let trFoot = `<tr>
+                    <td class="px-4 py-4 whitespace-nowrap font-bold">GRAND TOTAL</td>
+                    <td class="px-4 py-4 text-right">${sumBerat}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumNP)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumDPP)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumPPN)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumCol)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumPro)}</td>`;
+                sumRoutes.forEach(sr => trFoot += `<td class="px-4 py-4 text-right">${formatRupiahUI(sr)}</td>`);
+                trFoot += `<td class="px-4 py-4 text-right">${formatRupiahUI(sumTer)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumDeliv)}</td>
+                    <td class="px-4 py-4 text-right text-gray-800">${formatRupiahUI(sumOpt)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumOver)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumCOF)}</td>
+                    <td class="px-4 py-4 text-right text-posorange">${formatRupiahUI(sumBiaya)}</td>
+                    <td class="px-4 py-4 text-right">${formatRupiahUI(sumLaba)}</td>
+                    <td class="px-4 py-4 text-right">${marginTotal.toFixed(2)}%</td>
+                </tr>`;
+                document.getElementById('tfootHasil').innerHTML = trFoot;
+
+                document.getElementById('labelTujuan').innerText = `Tujuan Akhir (KCU/KC): ${tujuanAkhir}`;
+                document.getElementById('hasil-container').classList.remove('hidden');
+                
+                setTimeout(() => {
+                    document.getElementById('hasil-container').scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }, 100);
+
+            } catch (error) {
+                console.error("Kalkulasi Error:", error);
+                alert("Terjadi kesalahan sistem saat memproses kalkulasi: " + error.message);
+            }
+        }
+
+        function getColName(n) {
+            let s = "";
+            while(n >= 0) {
+                s = String.fromCharCode(n % 26 + 65) + s;
+                n = Math.floor(n / 26) - 1;
+            }
+            return s;
+        }
+
+        // =================================================================================
+        // EKSPOR EXCEL (FUNGSI GETSTYLE TERISOLASI)
+        // =================================================================================
+        function exportToExcel() {
+            try {
+                if (globalRutes.length === 0 || !globalTersier) {
+                    alert("Harap kalkulasi optimalisasi terlebih dahulu sebelum mendownload Excel.");
+                    return;
+                }
+
+                let tujuanAkhir = document.getElementById('tujuanAkhirSelect').value || "KOTA_TUJUAN";
+                const rpFmt = '#,##0'; 
+                
+                let marginInput = parseFloat(document.getElementById('inputMargin').value) || 15;
+                let marginDec = marginInput / 100;
+                let namaBLRaw = document.getElementById('inputNamaBL').value.trim().toUpperCase();
+                let namaBL = namaBLRaw ? namaBLRaw : "BIAYA LANGSUNG";
+                let nominalBL = unformatRupiah(document.getElementById('inputNominalBL').value);
+                let isPph = document.getElementById('checkPajakBL').checked;
+                
+                // Isolasi Objek Memori Style
+                const createBorder = () => ({ top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } });
+                const getStyleHeader = () => ({ fill: { fgColor: { rgb: "1C2D5A" } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center", vertical: "center", wrapText: true }, border: createBorder() });
+                const getStyleText = () => ({ alignment: { vertical: "center" }, border: createBorder() });
+                const getStylePlain = () => ({ alignment: { horizontal: "right", vertical: "center" }, border: createBorder() });
+                const getStyleRp = () => ({ alignment: { horizontal: "right", vertical: "center" }, border: createBorder() });
+                const getStylePct = () => ({ alignment: { horizontal: "right", vertical: "center" }, border: createBorder() });
+
+                const getStyleTotalText = () => ({ fill: { fgColor: { rgb: "E2E8F0" } }, font: { bold: true, color: { rgb: "1C2D5A" } }, alignment: { horizontal: "left", vertical: "center" }, border: createBorder() });
+                const getStyleTotalPlain = () => ({ fill: { fgColor: { rgb: "E2E8F0" } }, font: { bold: true, color: { rgb: "1C2D5A" } }, alignment: { horizontal: "right", vertical: "center" }, border: createBorder() });
+                const getStyleTotalRp = () => ({ fill: { fgColor: { rgb: "E2E8F0" } }, font: { bold: true, color: { rgb: "1C2D5A" } }, alignment: { horizontal: "right", vertical: "center" }, border: createBorder() });
+                const getStyleTotalPct = () => ({ fill: { fgColor: { rgb: "E2E8F0" } }, font: { bold: true, color: { rgb: "1C2D5A" } }, alignment: { horizontal: "right", vertical: "center" }, border: createBorder() });
+
+                // =================================================================================
+                // SHEET 2: TABEL OPTIMALISASI
+                // =================================================================================
+                let wsData2 = [];
+                let headerRow2 = [
+                    "NAMA PAKET", "BERAT AKTUAL (KG)", "PANJANG (CM)", "LEBAR (CM)", "TINGGI (CM)", 
+                    "BERAT VOLUMETRIK (KG)", "CHARGEABLE WEIGHT (KG)", `NILAI PROYEK (MARGIN TARGET)`, 
+                    "DPP", "PPN (1.1%)", "COLLECTING", "PROCESSING"
+                ];
+                globalRutes.forEach(r => headerRow2.push(r.nama.toUpperCase()));
+                headerRow2.push(globalTersier.nama.toUpperCase(), "DELIVERY", "TOTAL OPTIMALISASI", "OVERHEAD (5%)", "COF", "TOTAL BIAYA", "LABA", "MARGIN (%)");
+                
+                wsData2.push(headerRow2.map(h => ({ v: h, t: 's', s: getStyleHeader() })));
+
+                let iAct = 1, iP = 2, iL = 3, iT = 4, iVol = 5, iCW = 6;
+                let iNP = 7, iDPP = 8, iPPN = 9, iCol = 10, iPro = 11;
+                let iFirstRute = 12;
+                let iTer = iFirstRute + globalRutes.length;
+                let iDeliv = iTer + 1;
+                let iOpt = iDeliv + 1;
+                let iOver = iOpt + 1;
+                let iCOF = iOpt + 2;
+                let iBiaya = iOpt + 3;
+                let iLaba = iOpt + 4;
+                let iMargin = iOpt + 5;
+
+                let pkts = document.querySelectorAll('.paket-row');
+                let totalR = pkts.length + 2;
+
+                pkts.forEach((row, index) => {
+                    let R = index + 2; 
+                    let pNama = row.querySelector('.paket-nama').value.toUpperCase() || `PAKET ${index+1}`;
+                    let pAct = parseFloat(row.querySelector('.paket-aktual').value) || 0;
+                    let pP = parseFloat(row.querySelector('.paket-p').value) || 0;
+                    let pL = parseFloat(row.querySelector('.paket-l').value) || 0;
+                    let pT = parseFloat(row.querySelector('.paket-t').value) || 0;
+
+                    let rowData = [];
+                    rowData[0] = { v: pNama, t: 's', s: getStyleText() };
+                    
+                    // Format Z: '0' Mencegah Koma Muncul di Aktual & Dimensi (Menjadi Angka Bulat Utuh)
+                    rowData[iAct] = { t: 'n', v: pAct, z: '0', s: getStylePlain() };
+                    rowData[iP] = { t: 'n', v: pP, z: '0', s: getStylePlain() };
+                    rowData[iL] = { t: 'n', v: pL, z: '0', s: getStylePlain() };
+                    rowData[iT] = { t: 'n', v: pT, z: '0', s: getStylePlain() };
+
+                    let colAct = getColName(iAct), colP = getColName(iP), colL = getColName(iL);
+                    let colT = getColName(iT), colVol = getColName(iVol), colCW = getColName(iCW), colBiaya = getColName(iBiaya);
+
+                    rowData[iVol] = { t: 'n', f: `${colP}${R}*${colL}${R}*${colT}${R}/4000`, z: '0.00', s: getStylePlain() };
+                    let maxStr = `MAX(${colAct}${R},${colVol}${R})`;
+                    let formulaCW = `MAX(1, IF((${maxStr}-INT(${maxStr}))>0.3, INT(${maxStr})+1, INT(${maxStr})))`;
+                    rowData[iCW] = { t: 'n', f: formulaCW, z: '0', s: getStylePlain() }; // No koma di CW
+
+                    // Rumus DPP Jenius: Menarik Proporsi dari Global Total Biaya yang mencakup Biaya Langsung
+                    let fDPP = `((SUM(${colBiaya}$2:${colBiaya}$${totalR-1}) + Perhitungan!$I$2) / (1 - ${marginDec})) * (${colBiaya}${R} / SUM(${colBiaya}$2:${colBiaya}$${totalR-1}))`;
+                    rowData[iDPP] = { t: 'n', f: fDPP, z: rpFmt, s: getStyleRp() };
+                    rowData[iNP] = { t: 'n', f: `${getColName(iDPP)}${R}*101.1/100`, z: rpFmt, s: getStyleRp() };
+                    rowData[iPPN] = { t: 'n', f: `${getColName(iDPP)}${R}*0.011`, z: rpFmt, s: getStyleRp() };
+                    
+                    rowData[iCol] = { t: 'n', v: 1000, z: rpFmt, s: getStyleRp() };
+                    rowData[iPro] = { t: 'n', v: 1000, z: rpFmt, s: getStyleRp() };
+                    
+                    globalRutes.forEach((route, idx) => {
+                        rowData[iFirstRute + idx] = { t: 'n', f: `$${colCW}${R}*${route.tarif}`, z: rpFmt, s: getStyleRp() };
+                    });
+                    
+                    rowData[iTer] = { t: 'n', f: `$${colCW}${R}*${globalTersier.tarif}`, z: rpFmt, s: getStyleRp() };
+                    rowData[iDeliv] = { t: 'n', f: `IF($${colCW}${R}<=3, 2775, 2775+(($${colCW}${R}-3)*2300))`, z: rpFmt, s: getStyleRp() };
+                    rowData[iOpt] = { t: 'n', f: `SUM(${getColName(iCol)}${R}:${getColName(iDeliv)}${R})`, z: rpFmt, s: getStyleRp() };
+                    rowData[iOver] = { t: 'n', f: `${getColName(iOpt)}${R}*0.05`, z: rpFmt, s: getStyleRp() };
+                    rowData[iCOF] = { t: 'n', f: `${getColName(iOpt)}${R}*30/365*0.08`, z: rpFmt, s: getStyleRp() };
+                    rowData[iBiaya] = { t: 'n', f: `${getColName(iOpt)}${R}+${getColName(iOver)}${R}+${getColName(iCOF)}${R}`, z: rpFmt, s: getStyleRp() };
+                    
+                    rowData[iLaba] = { t: 'n', f: `${getColName(iDPP)}${R}-${colBiaya}${R}`, z: rpFmt, s: getStyleRp() }; 
+                    rowData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${R}/${getColName(iDPP)}${R}`, z: '0.00%', s: getStylePct() };
+                    
+                    wsData2.push(rowData);
+                });
+
+                let footData2 = [];
+                footData2[0] = { v: "GRAND TOTAL", t: 's', s: getStyleTotalText() };
+
+                let columnsToSum = [iAct, iVol, iCW].concat(Array.from({length: iMargin - iNP}, (_, i) => iNP + i));
+                columnsToSum.forEach(c => {
+                    let fmt = (c === iVol) ? '0.00' : (c === iAct || c === iCW) ? '0' : rpFmt;
+                    let usedStyle = (c === iVol || c === iAct || c === iCW) ? getStyleTotalPlain() : getStyleTotalRp();
+                    footData2[c] = { t: 'n', f: `SUM(${getColName(c)}2:${getColName(c)}${totalR-1})`, z: fmt, s: usedStyle };
+                });
+
+                footData2[iP] = { v: "", s: getStyleTotalPlain() }; footData2[iL] = { v: "", s: getStyleTotalPlain() }; footData2[iT] = { v: "", s: getStyleTotalPlain() };
+                footData2[iMargin] = { t: 'n', f: `${getColName(iLaba)}${totalR}/${getColName(iDPP)}${totalR}`, z: '0.00%', s: getStyleTotalPct() };
+                wsData2.push(footData2);
+
+
+                // =================================================================================
+                // SHEET 1: PERHITUNGAN
+                // =================================================================================
+                let wsData1 = [];
+                let headerRow1 = [
+                    "NO", "ORIGIN", "DESTINATION", "BERAT TOTAL (KG)", "JUMLAH KOLI", "PROYEKSI PENDAPATAN", 
+                    "DPP", "PPN (1.1%)", `BL | ${namaBL}`, "PAJAK", "NET BIAYA LANGSUNG", 
+                    "JUMLAH BIAYA LANGSUNG", "BTL | BIAYA OPTIMALISASI", "BTL | OVERHEAD 5%", 
+                    "BTL | COST OF FUND", "JUMLAH BTL", "TOTAL BIAYA", "LABA", "% MARGIN"
+                ];
+                wsData1.push(headerRow1.map(h => ({ v: h, t: 's', s: getStyleHeader() })));
+
+                let rowData1 = [];
+                rowData1[0] = { v: 1, t: 'n', s: getStylePlain() };
+                rowData1[1] = { v: "BATAM", t: 's', s: getStyleText() }; 
+                rowData1[2] = { v: tujuanAkhir, t: 's', s: getStyleText() }; 
+                rowData1[3] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iCW)}${totalR}`, z: '0', s: getStylePlain() }; 
+                rowData1[4] = { v: pkts.length, t: 'n', s: getStylePlain() }; 
+                rowData1[5] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iNP)}${totalR}`, z: rpFmt, s: getStyleRp() }; 
+                rowData1[6] = { t: 'n', f: `F2*100/101.1`, z: rpFmt, s: getStyleRp() }; 
+                rowData1[7] = { t: 'n', f: `G2*0.011`, z: rpFmt, s: getStyleRp() }; 
+                rowData1[8] = { v: nominalBL, t: 'n', z: rpFmt, s: getStyleRp() }; 
+                rowData1[9] = { t: 'n', f: isPph ? `I2*0.02` : `0`, z: rpFmt, s: getStyleRp() }; 
+                rowData1[10] = { t: 'n', f: `I2-J2`, z: rpFmt, s: getStyleRp() }; 
+                rowData1[11] = { t: 'n', f: `I2`, z: rpFmt, s: getStyleRp() }; 
+                rowData1[12] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iOpt)}${totalR}`, z: rpFmt, s: getStyleRp() }; 
+                rowData1[13] = { t: 'n', f: `M2*0.05`, z: rpFmt, s: getStyleRp() }; 
+                rowData1[14] = { t: 'n', f: `M2*30/365*0.08`, z: rpFmt, s: getStyleRp() }; 
+                rowData1[15] = { t: 'n', f: `M2+N2+O2`, z: rpFmt, s: getStyleRp() }; 
+                rowData1[16] = { t: 'n', f: `L2+P2`, z: rpFmt, s: getStyleRp() }; 
+                rowData1[17] = { t: 'n', f: `G2-Q2`, z: rpFmt, s: getStyleRp() }; 
+                rowData1[18] = { t: 'n', f: `R2/G2`, z: '0.00%', s: getStylePct() }; // Pasti Presisi 15% (atau sesuai margin target)
+                
+                wsData1.push(rowData1);
+
+
+                // =================================================================================
+                // GENERATE WORKBOOK
+                // =================================================================================
+                const ws1 = XLSX.utils.aoa_to_sheet(wsData1);
+                const ws2 = XLSX.utils.aoa_to_sheet(wsData2);
+                
+                let colWidths1 = [
+                    {wch: 5}, {wch: 15}, {wch: 25}, {wch: 18}, {wch: 15}, {wch: 25}, 
+                    {wch: 20}, {wch: 15}, {wch: 25}, {wch: 15}, {wch: 22}, 
+                    {wch: 25}, {wch: 28}, {wch: 20}, {wch: 20}, {wch: 20}, 
+                    {wch: 20}, {wch: 20}, {wch: 15}
+                ];
+                ws1['!cols'] = colWidths1;
+                ws1['!rows'] = [{ hpt: 35 }, { hpt: 25 }]; 
+
+                let colWidths2 = [{ wch: 30 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 25 }, { wch: 28 }];
+                for(let c=iNP; c<=iMargin; c++) colWidths2.push({ wch: 20 });
+                ws2['!cols'] = colWidths2;
+                ws2['!rows'] = [{ hpt: 35 }]; 
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws1, "Perhitungan"); // Sheet 1 duluan
+                XLSX.utils.book_append_sheet(wb, ws2, "Tabel Optimalisasi"); // Sheet 2 menyusul
+                
+                let cleanFileName = tujuanAkhir.replace(/[^a-zA-Z0-9]/g, '_');
+                XLSX.writeFile(wb, `Kalkulasi_PosIND_${cleanFileName}.xlsx`);
+
+            } catch (error) {
+                console.error("Excel Export Error:", error);
+                alert("Gagal mengunduh Excel: " + error.message);
+            }
+        }
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>Portal Optimalisasi Tarif Pengiriman PosIND by Ikhsan Radiansyah</title>
+    <meta name="description" content="Portal Kalkulasi dan Optimalisasi Tarif Pengiriman Pos Indonesia (PosIND). Sistem logistik multi-paket B2B dan Ritel untuk efisiensi jalur Udara, Darat, Laut, Sekunder, dan Tersier oleh Ikhsan Radiansyah.">
+    <meta name="keywords" content="PosIND, Tarif Pos Indonesia, Kalkulator Logistik, Optimalisasi Pengiriman, Ikhsan Radiansyah, Rute Udara Darat Laut, PosNew Hub, Ekspedisi, Cargo">
+    <meta name="author" content="Ikhsan Radiansyah">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Gantari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --pos-blue: #1C2D5A; 
+            --pos-orange: #EF4123; 
+            --bg: #F4F6F9; 
+        }
+        
+        /* Proteksi Overflow & Scroll Fix */
+        html {
+            background-color: var(--bg);
+        }
+
+        body {
+            font-family: 'Gantari', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #334155;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        main { flex: 1; }
+
+        .posblue { color: #1C2D5A; }
+        .bg-posblue { background-color: #1C2D5A; }
+        .posorange { color: #EF4123; }
+        .bg-posorange { background-color: #EF4123; }
+        .border-posblue { border-color: #1C2D5A; }
+        .border-posorange { border-color: #EF4123; }
+        .focus\:ring-posorange:focus { --tw-ring-color: #EF4123; }
+        .focus\:border-posorange:focus { border-color: #EF4123; }
+        
+        /* TomSelect Style Override */
+        .ts-control {
+            border-color: #D1D5DB !important;
+            padding: 0.7rem !important;
+            border-radius: 0.375rem !important;
+            font-family: inherit;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .ts-control.focus {
+            border-color: #EF4123 !important;
+            box-shadow: 0 0 0 1px #EF4123 !important;
+        }
+        .ts-dropdown {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+        }
+
+        /* Footer Khas PosNew Hub */
+        .dashboard-footer {
+            width: 100%; box-sizing: border-box; background-color: #0f172a;
+            border-top: 3px solid #EF4123; display: flex; justify-content: space-between;
+            align-items: center; padding: 0 24px; margin-top: auto;
+            font-family: 'Gantari', 'Segoe UI', sans-serif; z-index: 20;
+            height: 60px; overflow: hidden;
+            /* Hack untuk menutupi whitespace/bounce scroll tanpa merusak mouse wheel */
+            box-shadow: 0 50vh 0 50vh #0f172a; 
+        }
+        .footer-brand {
+            display: flex; align-items: center; gap: 8px; color: #f8fafc; font-weight: 700; 
+            font-size: 0.95rem; letter-spacing: 0.5px; white-space: nowrap; font-family: 'Sora', sans-serif;
+        }
+        .footer-desc { 
+            color: #94a3b8; font-size: 0.8rem; margin: 0 15px; white-space: nowrap; 
+            overflow: hidden; text-overflow: ellipsis; text-align: center; flex: 1;
+        }
+        .footer-creator-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(239, 65, 35, 0.1); border: 1px solid rgba(239, 65, 35, 0.2);
+            padding: 5px 14px; border-radius: 20px; color: #e2e8f0; font-size: 0.75rem;
+            white-space: nowrap; transition: all 0.3s ease;
+        }
+        .footer-creator-badge:hover { 
+            background: rgba(239, 65, 35, 0.2); border-color: rgba(239, 65, 35, 0.5); 
+        }
+        .footer-creator-badge strong { color: #EF4123; font-weight: 600; }
+
+        @media (max-width: 850px) {
+            .dashboard-footer { flex-direction: column; justify-content: center; gap: 8px; padding: 15px; height: auto; }
+            .footer-desc { display: none; }
+        }
+
+        .min-w-input { min-width: 80px; }
+    </style>
+</head>
+
+<body class="font-sans w-full max-w-full">
+
+    <header class="bg-white shadow-md py-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4 sticky top-0 z-50">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12">
         <h1 class="text-xl md:text-2xl font-bold posblue text-center flex-1" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi & Optimalisasi Tarif</h1>
         <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10">
     </header>
