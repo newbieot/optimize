@@ -118,7 +118,7 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12">
         <div class="flex items-center gap-3 flex-1 justify-center">
             <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi & Optimalisasi Tarif</h1>
-            <span class="text-[10px] md:text-xs font-bold text-white bg-posorange px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v2.1 PRO</span>
+            <span class="text-[10px] md:text-xs font-bold text-white bg-posorange px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v2.2 PRO</span>
         </div>
         <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10">
     </header>
@@ -671,7 +671,6 @@
         // PERBAIKAN LOGIKA RUTE (DOM Traversal)
         // =================================================================================
         function tambahRute(forcedModa = null, forcedOrigin = null, forcedDest = null) {
-            // Deteksi otomatis Rute Terakhir yang ada di layar
             let allRows = document.querySelectorAll('.rute-baris');
             let prevDestVal = "";
             if (allRows.length > 0) {
@@ -687,7 +686,6 @@
             row.id = `rute-row-${ruteCount}`;
             
             let modaVal = forcedModa || "PRIMER UDARA";
-            // Jika ada rute sebelumnya, otomatis pakai Destinasi rute tersebut sebagai Origin rute baru
             let displayOrigin = forcedOrigin || (allRows.length === 0 ? "BATAM" : (prevDestVal ? prevDestVal : "PILIH TUJUAN SEBELUMNYA"));
 
             row.innerHTML = `
@@ -795,7 +793,6 @@
                 tarifInput.dataset.value = 0; 
             }
             
-            // Auto-Healing: Update rute selanjutnya (jika ada) saat destinasi rute ini diubah
             let rowElem = document.getElementById(`rute-row-${index}`);
             if (rowElem) {
                 let nextRow = rowElem.nextElementSibling;
@@ -817,7 +814,6 @@
                 row.querySelector('.text-posorange').innerText = `#${idx + 1}`;
             });
 
-            // Auto-Healing: Sambungkan rute setelahnya dengan rute sebelumnya
             if (nextRow && nextRow.classList.contains('rute-baris')) {
                 let nextId = nextRow.id.split('-')[2];
                 onChangeModa(parseInt(nextId));
@@ -825,7 +821,7 @@
         }
 
         // =================================================================================
-        // LOGIKA PERHITUNGAN
+        // LOGIKA PERHITUNGAN (MARGIN 100% AKURAT)
         // =================================================================================
         function hitungOptimalisasi() {
             try {
@@ -859,7 +855,6 @@
                 trHTML += `<th class="px-4 py-3 text-right whitespace-nowrap">${globalTersier.nama}</th><th class="px-4 py-3 text-right">DELIVERY</th><th class="px-4 py-3 text-right">TOTAL OPT</th><th class="px-4 py-3 text-right">OVERHEAD</th><th class="px-4 py-3 text-right">COF</th><th class="px-4 py-3 text-right text-posorange">TOTAL BIAYA</th><th class="px-4 py-3 text-right">LABA</th><th class="px-4 py-3 text-right">MARGIN</th></tr>`;
                 document.getElementById('hasilHeaders').innerHTML = trHTML;
 
-                // FASE 1: Hitung Biaya BTL Dasar per Paket
                 let pktsData = [];
                 let grandTotalBiayaOpt = 0; 
                 
@@ -882,11 +877,9 @@
                     pktsData.push({ pNama, pCW, totalOpt, overhead, cof, biayaPaket, collecting, processing, costRoutes, costTersier, delivery });
                 });
 
-                // FASE 2: Hitung DPP Global berdasarkan Total Biaya (BTL + Biaya Langsung) agar Margin tepat sasaran
                 let totalBiayaGlobal = grandTotalBiayaOpt + nominalBL;
                 let dppGlobal = totalBiayaGlobal / (1 - marginDec);
 
-                // FASE 3: Distribusikan DPP secara proporsional ke tiap Paket, lalu cetak tabel preview
                 let tbodyHTML = '';
                 let sumBerat = 0, sumNP = 0, sumDPP = 0, sumPPN = 0, sumCol = 0, sumPro = 0;
                 let sumRoutes = Array(globalRutes.length).fill(0);
@@ -974,7 +967,7 @@
         }
 
         // =================================================================================
-        // EKSPOR EXCEL
+        // EKSPOR EXCEL (FUNGSI GETSTYLE TERISOLASI)
         // =================================================================================
         function exportToExcel() {
             try {
@@ -1045,8 +1038,8 @@
                     let rowData = [];
                     rowData[0] = { v: pNama, t: 's', s: getStyleText() };
                     
-                    // z: '0' menghilangkan koma desimal untuk dimensi yang utuh
-                    rowData[iAct] = { t: 'n', v: pAct, z: '0.##', s: getStylePlain() };
+                    // FIX MENGHILANGKAN KOMA PADA AKTUAL DAN DIMENSI DENGAN z: '0'
+                    rowData[iAct] = { t: 'n', v: pAct, z: '0', s: getStylePlain() };
                     rowData[iP] = { t: 'n', v: pP, z: '0', s: getStylePlain() };
                     rowData[iL] = { t: 'n', v: pL, z: '0', s: getStylePlain() };
                     rowData[iT] = { t: 'n', v: pT, z: '0', s: getStylePlain() };
@@ -1059,7 +1052,6 @@
                     let formulaCW = `MAX(1, IF((${maxStr}-INT(${maxStr}))>0.3, INT(${maxStr})+1, INT(${maxStr})))`;
                     rowData[iCW] = { t: 'n', f: formulaCW, z: '0', s: getStylePlain() }; // Tanpa koma di CW
 
-                    // Rumus DPP Jenius
                     let fDPP = `((SUM(${colBiaya}$2:${colBiaya}$${totalR-1}) + Perhitungan!$I$2) / (1 - ${marginDec})) * (${colBiaya}${R} / SUM(${colBiaya}$2:${colBiaya}$${totalR-1}))`;
                     rowData[iDPP] = { t: 'n', f: fDPP, z: rpFmt, s: getStyleRp() };
                     rowData[iNP] = { t: 'n', f: `${getColName(iDPP)}${R}*101.1/100`, z: rpFmt, s: getStyleRp() };
@@ -1090,7 +1082,8 @@
 
                 let columnsToSum = [iAct, iVol, iCW].concat(Array.from({length: iMargin - iNP}, (_, i) => iNP + i));
                 columnsToSum.forEach(c => {
-                    let fmt = (c === iVol) ? '0.00' : (c === iAct || c === iCW) ? '0.##' : rpFmt;
+                    // FIX MENGHILANGKAN KOMA PADA GRAND TOTAL
+                    let fmt = (c === iVol) ? '0.00' : (c === iAct || c === iCW) ? '0' : rpFmt;
                     let usedStyle = (c === iVol || c === iAct || c === iCW) ? getStyleTotalPlain() : getStyleTotalRp();
                     footData2[c] = { t: 'n', f: `SUM(${getColName(c)}2:${getColName(c)}${totalR-1})`, z: fmt, s: usedStyle };
                 });
@@ -1116,7 +1109,7 @@
                 rowData1[0] = { v: 1, t: 'n', s: getStylePlain() };
                 rowData1[1] = { v: "BATAM", t: 's', s: getStyleText() }; 
                 rowData1[2] = { v: tujuanAkhir, t: 's', s: getStyleText() }; 
-                rowData1[3] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iCW)}${totalR}`, z: '0', s: getStylePlain() }; 
+                rowData1[3] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iCW)}${totalR}`, z: '0', s: getStylePlain() }; // Tanpa koma
                 rowData1[4] = { v: pkts.length, t: 'n', s: getStylePlain() }; 
                 rowData1[5] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iNP)}${totalR}`, z: rpFmt, s: getStyleRp() }; 
                 rowData1[6] = { t: 'n', f: `F2*100/101.1`, z: rpFmt, s: getStyleRp() }; 
