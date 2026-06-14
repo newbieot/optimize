@@ -9,6 +9,8 @@
     <meta name="keywords" content="PosIND, Tarif Pos Indonesia, Kalkulator Logistik, Optimalisasi Pengiriman, Ikhsan Radiansyah, Rute Udara Darat Laut, PosNew Hub, Ekspedisi, Cargo">
     <meta name="author" content="Ikhsan Radiansyah">
     
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -25,25 +27,21 @@
             --bg: #F4F6F9; 
         }
         
-        /* Proteksi Overflow & White Space Fix */
+        /* Proteksi Overflow & White Space Fix Terbaik */
         html, body {
             max-width: 100vw !important;
             overflow-x: hidden !important;
             margin: 0;
             padding: 0;
-        }
-
-        html {
             background-color: var(--bg);
             overscroll-behavior-y: none;
         }
 
         body {
             font-family: 'Gantari', sans-serif;
-            background-color: var(--bg);
             display: flex;
             flex-direction: column;
-            min-height: 100dvh;
+            min-height: 100dvh; /* Adaptif untuk address bar mobile */
             color: #334155;
         }
         
@@ -77,13 +75,15 @@
             font-size: 0.875rem;
         }
 
-        /* Footer */
+        /* Footer Khas PosNew Hub */
         .dashboard-footer {
             width: 100%; box-sizing: border-box; background-color: #0f172a;
             border-top: 3px solid #EF4123; display: flex; justify-content: space-between;
             align-items: center; padding: 0 24px; margin-top: auto;
             font-family: 'Gantari', 'Segoe UI', sans-serif; z-index: 20;
             height: 60px; overflow: hidden;
+            /* Hack ajaib untuk menutupi whitespace/bounce scroll di mobile */
+            box-shadow: 0 50vh 0 50vh #0f172a; 
         }
         .footer-brand {
             display: flex; align-items: center; gap: 8px; color: #f8fafc; font-weight: 700; 
@@ -113,7 +113,7 @@
     </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen font-sans overflow-x-hidden w-full max-w-full">
+<body class="font-sans w-full max-w-full">
 
     <header class="bg-white shadow-md py-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4 sticky top-0 z-50">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12">
@@ -193,7 +193,7 @@
             </button>
         </section>
 
-        <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-green-600 mb-6 max-w-full overflow-hidden">
+        <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-green-600 max-w-full overflow-hidden">
             <h2 class="text-base md:text-lg font-bold posblue mb-4 flex items-center">
                 <span class="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs md:text-sm mr-2">3</span> 
                 Biaya Tersier (Otomatis)
@@ -209,7 +209,38 @@
             </div>
         </section>
 
-        <div class="flex justify-end mb-16">
+        <section class="bg-white p-4 md:p-6 rounded-lg shadow-md border-t-4 border-yellow-500 max-w-full overflow-hidden">
+            <h2 class="text-base md:text-lg font-bold posblue mb-4 flex items-center">
+                <span class="bg-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs md:text-sm mr-2">4</span> 
+                Pengaturan Margin & Biaya Tambahan (Opsional)
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+                <div class="max-w-full">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Margin Laba (%)</label>
+                    <input type="number" id="inputMargin" class="w-full border border-gray-300 p-2.5 rounded focus:ring-yellow-500 font-bold text-lg text-posblue" value="15" min="1">
+                </div>
+                <div class="max-w-full">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Biaya Langsung</label>
+                    <input type="text" id="inputNamaBL" class="w-full border border-gray-300 p-2.5 rounded uppercase font-bold text-gray-700" placeholder="Cth: Sewa Kapal">
+                </div>
+                <div class="max-w-full">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nominal Biaya (Rp)</label>
+                    <div class="relative w-full">
+                        <span class="absolute left-3 top-2.5 text-gray-500 font-semibold">Rp</span>
+                        <input type="text" id="inputNominalBL" class="w-full border border-gray-300 p-2.5 pl-10 rounded font-bold text-gray-700" placeholder="0" oninput="formatRupiahInput(this)">
+                    </div>
+                </div>
+                <div class="max-w-full flex items-center md:mt-7">
+                    <label class="inline-flex items-center cursor-pointer bg-gray-50 p-2.5 border border-gray-200 rounded w-full">
+                        <input type="checkbox" id="checkPajakBL" class="form-checkbox text-posorange h-5 w-5 rounded focus:ring-posorange">
+                        <span class="ml-3 font-bold text-gray-700 text-sm">Potong PPh 2%</span>
+                    </label>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-3 font-semibold">*Biaya Langsung & Margin ini akan diekspor otomatis ke Sheet "Perhitungan" di file Excel.</p>
+        </section>
+
+        <div class="flex justify-end mb-16 mt-6">
             <button onclick="hitungOptimalisasi()" id="btnHitung" class="bg-posorange hover:bg-red-600 text-white font-bold py-4 px-8 rounded shadow-lg text-lg w-full md:w-auto opacity-50 cursor-not-allowed transition-all" disabled>
                 KALKULASI TARIF OPTIMALISASI
             </button>
@@ -218,7 +249,7 @@
         <section id="hasil-container" class="hidden bg-white p-4 md:p-6 rounded-lg shadow-md border border-gray-200 mb-16 max-w-full overflow-hidden">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b pb-4 mb-4 gap-4">
                 <div>
-                    <h2 class="text-xl font-bold posblue">Tabel Rekapitulasi Optimalisasi</h2>
+                    <h2 class="text-xl font-bold posblue">Tabel Preview Optimalisasi</h2>
                     <p id="labelTujuan" class="text-gray-600 font-semibold mt-1 uppercase"></p>
                 </div>
                 <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded shadow flex items-center w-full md:w-auto justify-center transition-all">
@@ -256,6 +287,23 @@
     <script>
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
+        }
+
+        // =================================================================================
+        // FORMAT RUPIAH PADA INPUT (BARU)
+        // =================================================================================
+        function formatRupiahInput(elem) {
+            let val = elem.value.replace(/[^,\d]/g, '');
+            if(val === '') { elem.value = ''; return; }
+            let parts = val.split(',');
+            let intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            elem.value = parts.length > 1 ? intPart + ',' + parts[1] : intPart;
+        }
+
+        function unformatRupiah(str) {
+            if (!str) return 0;
+            let val = str.replace(/\./g, '').replace(/,/g, '.');
+            return parseFloat(val) || 0;
         }
 
         // =================================================================================
@@ -669,6 +717,10 @@
                     return;
                 }
 
+                // Ambil nilai Margin
+                let marginInput = parseFloat(document.getElementById('inputMargin').value) || 15;
+                let marginDec = marginInput / 100;
+
                 globalRutes = [];
                 document.querySelectorAll('.rute-baris').forEach((row) => {
                     let id = row.id.split('-')[2];
@@ -709,11 +761,13 @@
                     let overhead = totalOpt * 0.05;
                     let cof = totalOpt * 30 / 365 * 0.08;
                     let totalBiaya = totalOpt + overhead + cof;
-                    let laba = totalBiaya * 0.15;
+                    
+                    // Laba menggunakan margin yang diinput user
+                    let laba = totalBiaya * marginDec;
                     let dpp = totalBiaya + laba;
                     let nilaiProyek = dpp * 101.1 / 100;
                     let ppn = dpp * 0.011;
-                    let margin = (laba / totalBiaya) * 100;
+                    let margin = (laba / dpp) * 100; // Rumus: LABA / DPP
 
                     sumBerat += pCW; sumNP += nilaiProyek; sumDPP += dpp; sumPPN += ppn; sumCol += collecting; sumPro += processing;
                     costRoutes.forEach((cr, i) => sumRoutes[i] += cr);
@@ -742,7 +796,7 @@
 
                 document.getElementById('tbodyHasil').innerHTML = tbodyHTML;
 
-                let marginTotal = sumBiaya > 0 ? (sumLaba / sumBiaya) * 100 : 0;
+                let marginTotal = sumDPP > 0 ? (sumLaba / sumDPP) * 100 : 0;
                 let trFoot = `<tr>
                     <td class="px-4 py-4 whitespace-nowrap font-bold">GRAND TOTAL</td>
                     <td class="px-4 py-4 text-right">${sumBerat}</td>
@@ -794,20 +848,21 @@
 
                 let tujuanAkhir = document.getElementById('tujuanAkhirSelect').value || "KOTA_TUJUAN";
                 const rpFmt = '#,##0'; 
-                let wsData = [];
                 
-                // Setelan Styling xlsx-js-style (DIPISAH AGAR TIDAK BOCOR REFERENSINYA)
+                // Ambil Data dari Step 4
+                let marginInput = parseFloat(document.getElementById('inputMargin').value) || 15;
+                let marginDec = marginInput / 100;
+                let namaBLRaw = document.getElementById('inputNamaBL').value.trim().toUpperCase();
+                let namaBL = namaBLRaw ? namaBLRaw : "BIAYA LANGSUNG";
+                let nominalBL = unformatRupiah(document.getElementById('inputNominalBL').value);
+                let isPph = document.getElementById('checkPajakBL').checked;
+                
+                // Setelan Styling xlsx-js-style yang Teredam (Terisolasi)
                 const createBorder = () => ({
                     top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" }
                 });
 
-                const sHeader = {
-                    fill: { fgColor: { rgb: "1C2D5A" } },
-                    font: { color: { rgb: "FFFFFF" }, bold: true },
-                    alignment: { horizontal: "center", vertical: "center", wrapText: true },
-                    border: createBorder()
-                };
-                
+                const sHeader = { fill: { fgColor: { rgb: "1C2D5A" } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center", vertical: "center", wrapText: true }, border: createBorder() };
                 const sDataText = { alignment: { vertical: "center" }, border: createBorder() };
                 const sDataPlain = { alignment: { horizontal: "right", vertical: "center" }, border: createBorder() };
                 const sDataRp = { alignment: { horizontal: "right", vertical: "center" }, border: createBorder() };
@@ -820,8 +875,11 @@
                 const sTotalVol = { fill: { fgColor: { rgb: "E2E8F0" } }, font: { bold: true, color: { rgb: "1C2D5A" } }, alignment: { horizontal: "right", vertical: "center" }, border: createBorder() };
                 const sTotalPct = { fill: { fgColor: { rgb: "E2E8F0" } }, font: { bold: true, color: { rgb: "1C2D5A" } }, alignment: { horizontal: "right", vertical: "center" }, border: createBorder() };
 
-                // HEADER BARU SESUAI REQUEST
-                let headerRow = [
+                // =================================================================================
+                // PROSES SHEET 2: TABEL OPTIMALISASI
+                // =================================================================================
+                let wsData2 = [];
+                let headerRow2 = [
                     "NAMA PAKET", 
                     "BERAT AKTUAL (KG)", 
                     "PANJANG (CM)", 
@@ -829,19 +887,18 @@
                     "TINGGI (CM)", 
                     "BERAT VOLUMETRIK (KG)", 
                     "CHARGEABLE WEIGHT (KG)", 
-                    "NILAI PROYEK (MARGIN 15%)", 
+                    `NILAI PROYEK (MARGIN ${marginInput}%)`, 
                     "DPP", 
                     "PPN (1.1%)", 
                     "COLLECTING", 
                     "PROCESSING"
                 ];
-                globalRutes.forEach(r => headerRow.push(r.nama.toUpperCase()));
-                headerRow.push(globalTersier.nama.toUpperCase(), "DELIVERY", "TOTAL OPTIMALISASI", "OVERHEAD (5%)", "COF", "TOTAL BIAYA", "LABA", "MARGIN (%)");
+                globalRutes.forEach(r => headerRow2.push(r.nama.toUpperCase()));
+                headerRow2.push(globalTersier.nama.toUpperCase(), "DELIVERY", "TOTAL OPTIMALISASI", "OVERHEAD (5%)", "COF", "TOTAL BIAYA", "LABA", "MARGIN (%)");
                 
-                let styledHeaderRow = headerRow.map(h => ({ v: h, t: 's', s: sHeader }));
-                wsData.push(styledHeaderRow);
+                let styledHeaderRow2 = headerRow2.map(h => ({ v: h, t: 's', s: sHeader }));
+                wsData2.push(styledHeaderRow2);
 
-                // INDEKS KOLOM BARU
                 let iAct = 1, iP = 2, iL = 3, iT = 4, iVol = 5, iCW = 6;
                 let iNP = 7, iDPP = 8, iPPN = 9, iCol = 10, iPro = 11;
                 let iFirstRute = 12;
@@ -858,8 +915,6 @@
                 pkts.forEach((row, index) => {
                     let R = index + 2; 
                     let pNama = row.querySelector('.paket-nama').value.toUpperCase() || `PAKET ${index+1}`;
-                    
-                    // Ambil nilai mentah dari DOM
                     let pAct = parseFloat(row.querySelector('.paket-aktual').value) || 0;
                     let pP = parseFloat(row.querySelector('.paket-p').value) || 0;
                     let pL = parseFloat(row.querySelector('.paket-l').value) || 0;
@@ -872,17 +927,10 @@
                     rowData[iL] = { t: 'n', v: pL, s: sDataPlain };
                     rowData[iT] = { t: 'n', v: pT, s: sDataPlain };
 
-                    let colAct = getColName(iAct); // B
-                    let colP = getColName(iP); // C
-                    let colL = getColName(iL); // D
-                    let colT = getColName(iT); // E
-                    let colVol = getColName(iVol); // F
-                    let colCW = getColName(iCW); // G
+                    let colAct = getColName(iAct), colP = getColName(iP), colL = getColName(iL);
+                    let colT = getColName(iT), colVol = getColName(iVol), colCW = getColName(iCW);
 
-                    // RUMUS VOLUMETRIK
                     rowData[iVol] = { t: 'n', f: `${colP}${R}*${colL}${R}*${colT}${R}/4000`, z: '0.00', s: sDataVol };
-                    
-                    // RUMUS CHARGEABLE WEIGHT (Max Aktual/Volumetrik, pembulatan atas kelipatan 1 jika desimal > 0.3)
                     let maxStr = `MAX(${colAct}${R},${colVol}${R})`;
                     let formulaCW = `MAX(1, IF((${maxStr}-INT(${maxStr}))>0.3, INT(${maxStr})+1, INT(${maxStr})))`;
                     rowData[iCW] = { t: 'n', f: formulaCW, s: sDataPlain };
@@ -903,62 +951,89 @@
                     rowData[iOver] = { t: 'n', f: `${getColName(iOpt)}${R}*0.05`, z: rpFmt, s: sDataRp };
                     rowData[iCOF] = { t: 'n', f: `${getColName(iOpt)}${R}*30/365*0.08`, z: rpFmt, s: sDataRp };
                     rowData[iBiaya] = { t: 'n', f: `${getColName(iOpt)}${R}+${getColName(iOver)}${R}+${getColName(iCOF)}${R}`, z: rpFmt, s: sDataRp };
-                    rowData[iLaba] = { t: 'n', f: `${getColName(iBiaya)}${R}*0.15`, z: rpFmt, s: sDataRp };
-                    rowData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${R}/${getColName(iBiaya)}${R}`, z: '0.00%', s: sDataPct };
+                    rowData[iLaba] = { t: 'n', f: `${getColName(iBiaya)}${R}*${marginDec}`, z: rpFmt, s: sDataRp }; // MARGIN USER
+                    rowData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${R}/${getColName(iDPP)}${R}`, z: '0.00%', s: sDataPct };
                     
-                    wsData.push(rowData);
+                    wsData2.push(rowData);
                 });
 
                 let totalR = pkts.length + 2;
-                let footData = [];
-                footData[0] = { v: "GRAND TOTAL", t: 's', s: sTotalText };
+                let footData2 = [];
+                footData2[0] = { v: "GRAND TOTAL", t: 's', s: sTotalText };
 
-                // Proses sum kolom secara dinamis
                 let columnsToSum = [iAct, iVol, iCW].concat(Array.from({length: iMargin - iNP}, (_, i) => iNP + i));
                 columnsToSum.forEach(c => {
-                    let fmt, usedStyle;
-                    if (c === iVol) {
-                        fmt = '0.00';
-                        usedStyle = sTotalVol;
-                    } else if (c === iAct) {
-                        fmt = '0.##'; 
-                        usedStyle = sTotalPlain;
-                    } else if (c === iCW) {
-                        fmt = '0'; 
-                        usedStyle = sTotalPlain;
-                    } else {
-                        fmt = rpFmt; // '#,##0'
-                        usedStyle = sTotalRp;
-                    }
-                    footData[c] = { t: 'n', f: `SUM(${getColName(c)}2:${getColName(c)}${totalR-1})`, z: fmt, s: usedStyle };
+                    let fmt = (c === iVol) ? '0.00' : (c === iAct || c === iCW) ? '0.##' : rpFmt;
+                    let usedStyle = (c === iVol) ? sTotalVol : (c === iAct || c === iCW) ? sTotalPlain : sTotalRp;
+                    footData2[c] = { t: 'n', f: `SUM(${getColName(c)}2:${getColName(c)}${totalR-1})`, z: fmt, s: usedStyle };
                 });
 
-                // Kosongkan bagian P, L, T di Total Bawah
-                footData[iP] = { v: "", s: sTotalPlain };
-                footData[iL] = { v: "", s: sTotalPlain };
-                footData[iT] = { v: "", s: sTotalPlain };
+                footData2[iP] = { v: "", s: sTotalPlain }; footData2[iL] = { v: "", s: sTotalPlain }; footData2[iT] = { v: "", s: sTotalPlain };
+                footData2[iMargin] = { t: 'n', f: `${getColName(iLaba)}${totalR}/${getColName(iDPP)}${totalR}`, z: '0.00%', s: sTotalPct };
+                wsData2.push(footData2);
 
-                footData[iMargin] = { t: 'n', f: `${getColName(iLaba)}${totalR}/${getColName(iBiaya)}${totalR}`, z: '0.00%', s: sTotalPct };
-                wsData.push(footData);
 
-                const ws = XLSX.utils.aoa_to_sheet(wsData);
-                
-                // Lebar kolom disesuaikan dengan header baru
-                let colWidths = [
-                    { wch: 30 }, // NAMA PAKET
-                    { wch: 20 }, // AKTUAL
-                    { wch: 15 }, // P
-                    { wch: 15 }, // L
-                    { wch: 15 }, // T
-                    { wch: 25 }, // VOLUMETRIK
-                    { wch: 28 }  // CHARGEABLE WEIGHT
+                // =================================================================================
+                // PROSES SHEET 1: PERHITUNGAN
+                // =================================================================================
+                let wsData1 = [];
+                let headerRow1 = [
+                    "NO", "ORIGIN", "DESTINATION", "BERAT (KG)", "JUMLAH KOLI", "PROYEKSI PENDAPATAN", 
+                    "DPP", "PPN (1.1%)", `BL | ${namaBL}`, "PAJAK", "NET BIAYA LANGSUNG", 
+                    "JUMLAH BIAYA LANGSUNG", "BTL | BIAYA OPTIMALISASI", "BTL | OVERHEAD 5%", 
+                    "BTL | COST OF FUND", "JUMLAH BTL", "TOTAL BIAYA", "LABA", "%"
                 ];
-                for(let c=iNP; c<=iMargin; c++) colWidths.push({ wch: 20 });
-                ws['!cols'] = colWidths;
-                ws['!rows'] = [{ hpt: 30 }];
+                wsData1.push(headerRow1.map(h => ({ v: h, t: 's', s: sHeader })));
+
+                let rowData1 = [];
+                rowData1[0] = { v: 1, t: 'n', s: sDataPlain }; // NO
+                rowData1[1] = { v: "BATAM", t: 's', s: sDataText }; // ORIGIN
+                rowData1[2] = { v: tujuanAkhir, t: 's', s: sDataText }; // DESTINATION
+                rowData1[3] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iCW)}${totalR}`, z: '0.##', s: sDataPlain }; // BERAT (KG)
+                rowData1[4] = { v: pkts.length, t: 'n', s: sDataPlain }; // JUMLAH KOLI
+                rowData1[5] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iNP)}${totalR}`, z: rpFmt, s: sDataRp }; // PROYEKSI PENDAPATAN
+                rowData1[6] = { t: 'n', f: `F2*100/101.1`, z: rpFmt, s: sDataRp }; // DPP
+                rowData1[7] = { t: 'n', f: `G2*0.011`, z: rpFmt, s: sDataRp }; // PPN
+                rowData1[8] = { v: nominalBL, t: 'n', z: rpFmt, s: sDataRp }; // BL
+                rowData1[9] = { t: 'n', f: isPph ? `I2*0.02` : `0`, z: rpFmt, s: sDataRp }; // PAJAK
+                rowData1[10] = { t: 'n', f: `I2-J2`, z: rpFmt, s: sDataRp }; // NET BIAYA LANGSUNG
+                rowData1[11] = { t: 'n', f: `I2`, z: rpFmt, s: sDataRp }; // JUMLAH BIAYA LANGSUNG
+                rowData1[12] = { t: 'n', f: `='Tabel Optimalisasi'!${getColName(iOpt)}${totalR}`, z: rpFmt, s: sDataRp }; // BIAYA OPTIMALISASI
+                rowData1[13] = { t: 'n', f: `0.05*M2`, z: rpFmt, s: sDataRp }; // OVERHEAD 5%
+                rowData1[14] = { t: 'n', f: `(30/365)*0.08*M2`, z: rpFmt, s: sDataRp }; // COST OF FUND
+                rowData1[15] = { t: 'n', f: `M2+N2+O2`, z: rpFmt, s: sDataRp }; // JUMLAH BTL
+                rowData1[16] = { t: 'n', f: `L2+P2`, z: rpFmt, s: sDataRp }; // TOTAL BIAYA
+                rowData1[17] = { t: 'n', f: `G2-Q2`, z: rpFmt, s: sDataRp }; // LABA
+                rowData1[18] = { t: 'n', f: `R2/G2`, z: '0.00%', s: sDataPct }; // % MARGIN (LABA / DPP)
+                
+                wsData1.push(rowData1);
+
+
+                // =================================================================================
+                // GENERATE WORKBOOK
+                // =================================================================================
+                const ws1 = XLSX.utils.aoa_to_sheet(wsData1);
+                const ws2 = XLSX.utils.aoa_to_sheet(wsData2);
+                
+                // Lebar Kolom Sheet 1
+                let colWidths1 = [
+                    {wch: 5}, {wch: 15}, {wch: 25}, {wch: 12}, {wch: 15}, {wch: 22}, 
+                    {wch: 20}, {wch: 15}, {wch: 25}, {wch: 15}, {wch: 22}, 
+                    {wch: 25}, {wch: 28}, {wch: 20}, {wch: 20}, {wch: 20}, 
+                    {wch: 20}, {wch: 20}, {wch: 15}
+                ];
+                ws1['!cols'] = colWidths1;
+                ws1['!rows'] = [{ hpt: 35 }, { hpt: 25 }]; // Tinggi baris rapi
+
+                // Lebar Kolom Sheet 2
+                let colWidths2 = [{ wch: 30 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 25 }, { wch: 28 }];
+                for(let c=iNP; c<=iMargin; c++) colWidths2.push({ wch: 20 });
+                ws2['!cols'] = colWidths2;
+                ws2['!rows'] = [{ hpt: 35 }]; 
 
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "OPTIMALISASI MULTI PAKET");
+                XLSX.utils.book_append_sheet(wb, ws1, "Perhitungan");
+                XLSX.utils.book_append_sheet(wb, ws2, "Tabel Optimalisasi");
                 
                 let cleanFileName = tujuanAkhir.replace(/[^a-zA-Z0-9]/g, '_');
                 XLSX.writeFile(wb, `Kalkulasi_PosIND_${cleanFileName}.xlsx`);
