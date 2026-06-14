@@ -118,7 +118,7 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12">
         <div class="flex items-center gap-3 flex-1 justify-center">
             <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi & Optimalisasi Tarif</h1>
-            <span class="text-[10px] md:text-xs font-bold text-white bg-posorange px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v2.0 PRO</span>
+            <span class="text-[10px] md:text-xs font-bold text-white bg-posorange px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v2.1 PRO</span>
         </div>
         <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10">
     </header>
@@ -184,7 +184,7 @@
                 <p class="text-xs text-gray-500 font-semibold">*Chargeable Weight dibulatkan ke atas jika desimal > 0.30 (300 gram).</p>
                 <div class="bg-blue-50 border border-blue-200 text-blue-800 text-xs px-3 py-2 rounded flex items-center font-semibold">
                     <span class="mr-2 text-base">✨</span> 
-                    Tips: Anda bisa langsung COPY tabel dari Excel, lalu PASTE di kolom web ini! Baris otomatis bertambah.
+                    Tips: Anda bisa langsung COPY tabel dari Excel (Termasuk Nama Paket), lalu PASTE di kolom web ini!
                 </div>
             </div>
         </section>
@@ -299,7 +299,7 @@
         }
 
         // =================================================================================
-        // SMART COPY-PASTE DARI EXCEL (FITUR V2.0 PRO)
+        // SMART COPY-PASTE DARI EXCEL (FITUR V2.1 PRO)
         // =================================================================================
         document.addEventListener('DOMContentLoaded', () => {
             const tableBody = document.getElementById('paketBody');
@@ -307,39 +307,37 @@
             tableBody.addEventListener('paste', function(e) {
                 let target = e.target;
                 
-                // Cek apakah user mempaste di input yang benar (angka dimensi/berat)
-                let allowedClasses = ['paket-aktual', 'paket-p', 'paket-l', 'paket-t'];
+                // Menambahkan 'paket-nama' agar blok paste berfungsi di kolom nama paket
+                let allowedClasses = ['paket-nama', 'paket-aktual', 'paket-p', 'paket-l', 'paket-t'];
                 let isAllowed = allowedClasses.some(cls => target.classList.contains(cls));
                 
-                if (!isAllowed) return; // Biarkan paste biasa terjadi di nama paket
+                if (!isAllowed) return; 
 
                 let pasteData = (e.clipboardData || window.clipboardData).getData('text');
                 let rows = pasteData.trim().split(/\r\n|\n|\r/);
                 
+                // Jika hanya 1 sel yang di-paste, biarkan perilaku default
                 if (rows.length <= 1 && rows[0].split('\t').length <= 1) {
-                    return; // Jika paste satu angka biasa, biarkan default browser jalan
+                    return; 
                 }
 
-                e.preventDefault(); // Blokir perilaku bawaan jika user mempaste block cell
+                e.preventDefault(); // Blokir perilaku bawaan
                 
                 let tr = target.closest('tr');
                 let allTrs = Array.from(tableBody.querySelectorAll('tr'));
                 let startRowIndex = allTrs.indexOf(tr);
 
-                // Tambah jumlah baris jika data paste melebihi baris yang ada
                 let requiredRows = startRowIndex + rows.length;
                 let jumlahPaketInput = document.getElementById('jumlahPaket');
                 
                 if (requiredRows > parseInt(jumlahPaketInput.value)) {
                     jumlahPaketInput.value = requiredRows;
-                    renderPaketRows(); // Generate baris baru
-                    allTrs = Array.from(tableBody.querySelectorAll('tr')); // Refresh referensi DOM
+                    renderPaketRows(); // Ekspan baris otomatis
+                    allTrs = Array.from(tableBody.querySelectorAll('tr'));
                 }
 
-                // Cari indeks kolom awal paste
                 let startColIndex = allowedClasses.findIndex(c => target.classList.contains(c));
 
-                // Loop Eksekusi Isi Sel
                 for (let i = 0; i < rows.length; i++) {
                     let cells = rows[i].split('\t');
                     let currentRow = allTrs[startRowIndex + i];
@@ -351,16 +349,20 @@
                         if (currentTargetCol < allowedClasses.length) {
                             let input = currentRow.querySelector('.' + allowedClasses[currentTargetCol]);
                             if (input) {
-                                // Ganti koma (Indonesia) jadi titik agar terbaca Javascript
-                                let cleanVal = cells[j].trim().replace(/,/g, '.'); 
-                                let num = parseFloat(cleanVal);
-                                if (!isNaN(num)) {
-                                    input.value = num;
+                                if (allowedClasses[currentTargetCol] === 'paket-nama') {
+                                    // Paste sebagai Teks (Huruf Kapital)
+                                    input.value = cells[j].trim().toUpperCase();
+                                } else {
+                                    // Konversi koma Excel menjadi titik JS
+                                    let cleanVal = cells[j].trim().replace(/,/g, '.'); 
+                                    let num = parseFloat(cleanVal);
+                                    if (!isNaN(num)) {
+                                        input.value = num;
+                                    }
                                 }
                             }
                         }
                     }
-                    // Trigger kalkulasi otomatis per baris
                     calcCW(currentRow.querySelector('.paket-aktual'));
                 }
             });
@@ -665,7 +667,19 @@
             }
         }
 
+        // =================================================================================
+        // PERBAIKAN LOGIKA RUTE (DOM Traversal)
+        // =================================================================================
         function tambahRute(forcedModa = null, forcedOrigin = null, forcedDest = null) {
+            // Deteksi otomatis Rute Terakhir yang ada di layar
+            let allRows = document.querySelectorAll('.rute-baris');
+            let prevDestVal = "";
+            if (allRows.length > 0) {
+                let lastRow = allRows[allRows.length - 1];
+                let selectDest = lastRow.querySelector('select[id^="rute-dest-"]');
+                if(selectDest) prevDestVal = selectDest.value;
+            }
+
             ruteCount++;
             const container = document.getElementById('ruteContainer');
             const row = document.createElement('div');
@@ -673,7 +687,8 @@
             row.id = `rute-row-${ruteCount}`;
             
             let modaVal = forcedModa || "PRIMER UDARA";
-            let displayOrigin = forcedOrigin || (ruteCount === 1 ? "BATAM" : "PILIH TUJUAN SEBELUMNYA");
+            // Jika ada rute sebelumnya, otomatis pakai Destinasi rute tersebut sebagai Origin rute baru
+            let displayOrigin = forcedOrigin || (allRows.length === 0 ? "BATAM" : (prevDestVal ? prevDestVal : "PILIH TUJUAN SEBELUMNYA"));
 
             row.innerHTML = `
                 <div class="w-full md:w-8 text-left md:text-center font-bold text-posorange bg-orange-100 md:bg-transparent rounded px-3 py-1.5 md:p-0">#${ruteCount}</div>
@@ -702,7 +717,7 @@
                     <span class="absolute left-3 top-8 md:top-2.5 text-gray-500 font-semibold">Rp</span>
                     <input type="text" id="rute-tarif-${ruteCount}" class="w-full bg-gray-200 border border-gray-300 p-2.5 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0">
                 </div>
-                ${ruteCount > 1 ? `<button onclick="hapusRute(this)" class="w-full md:w-auto mt-2 md:mt-0 text-red-500 border border-red-200 md:border-none rounded py-2 md:py-0 font-bold hover:bg-red-50" title="Hapus">HAPUS</button>` : `<div class="hidden md:block w-4"></div>`}
+                ${allRows.length > 0 ? `<button onclick="hapusRute(this)" class="w-full md:w-auto mt-2 md:mt-0 text-red-500 border border-red-200 md:border-none rounded py-2 md:py-0 font-bold hover:bg-red-50" title="Hapus">HAPUS</button>` : `<div class="hidden md:block w-4"></div>`}
             `;
             container.appendChild(row);
             
@@ -719,8 +734,16 @@
             const moda = document.getElementById(`rute-moda-${index}`).value;
             let activeMatrix = moda === "PRIMER UDARA" ? matrixUdara : moda === "PRIMER DARAT" ? matrixDarat : moda === "PRIMER LAUT" ? matrixLaut : matrixSekunder;
 
-            if (index > 1 && !forcedOrigin) {
-                let prevDest = document.getElementById(`rute-dest-${index - 1}`).value;
+            let rowElem = document.getElementById(`rute-row-${index}`);
+            if (!rowElem) return;
+
+            let prevRow = rowElem.previousElementSibling;
+            let isFirstRow = (!prevRow || !prevRow.classList.contains('rute-baris'));
+
+            if (!isFirstRow && !forcedOrigin) {
+                let prevDestSelect = prevRow.querySelector('select[id^="rute-dest-"]');
+                let prevDest = prevDestSelect ? prevDestSelect.value : "";
+                
                 if (prevDest) {
                     let aliasOrigin = getAliasOrigin(moda, prevDest);
                     let matchedKey = Object.keys(activeMatrix).find(k => k === aliasOrigin) || 
@@ -772,22 +795,37 @@
                 tarifInput.dataset.value = 0; 
             }
             
-            let nextIndex = index + 1;
-            if (document.getElementById(`rute-origin-${nextIndex}`)) {
-                onChangeModa(nextIndex); 
+            // Auto-Healing: Update rute selanjutnya (jika ada) saat destinasi rute ini diubah
+            let rowElem = document.getElementById(`rute-row-${index}`);
+            if (rowElem) {
+                let nextRow = rowElem.nextElementSibling;
+                if (nextRow && nextRow.classList.contains('rute-baris')) {
+                    let nextId = nextRow.id.split('-')[2];
+                    onChangeModa(parseInt(nextId)); 
+                }
             }
         }
 
         function hapusRute(btn) { 
-            btn.parentElement.remove(); 
+            let rowToRemove = btn.parentElement;
+            let nextRow = rowToRemove.nextElementSibling;
+            
+            rowToRemove.remove(); 
+            
             let allRows = document.querySelectorAll('.rute-baris');
             allRows.forEach((row, idx) => {
                 row.querySelector('.text-posorange').innerText = `#${idx + 1}`;
             });
+
+            // Auto-Healing: Sambungkan rute setelahnya dengan rute sebelumnya
+            if (nextRow && nextRow.classList.contains('rute-baris')) {
+                let nextId = nextRow.id.split('-')[2];
+                onChangeModa(parseInt(nextId));
+            }
         }
 
         // =================================================================================
-        // LOGIKA PERHITUNGAN (MARGIN 100% AKURAT)
+        // LOGIKA PERHITUNGAN
         // =================================================================================
         function hitungOptimalisasi() {
             try {
@@ -838,7 +876,7 @@
                     let totalOpt = collecting + processing + costRoutes.reduce((a,b)=>a+b, 0) + costTersier + delivery;
                     let overhead = totalOpt * 0.05;
                     let cof = totalOpt * 30 / 365 * 0.08;
-                    let biayaPaket = totalOpt + overhead + cof; // Ini adalah total BTL untuk paket ini
+                    let biayaPaket = totalOpt + overhead + cof; 
                     
                     grandTotalBiayaOpt += biayaPaket;
                     pktsData.push({ pNama, pCW, totalOpt, overhead, cof, biayaPaket, collecting, processing, costRoutes, costTersier, delivery });
@@ -860,7 +898,6 @@
                     let npPaket = dppPaket * 1.011;
                     let ppnPaket = dppPaket * 0.011;
                     
-                    // Laba & Margin di tabel ini terlihat lebih besar karena tabel ini HANYA menampilkan BTL (tidak ada BL)
                     let labaPaket = dppPaket - paket.biayaPaket;
                     let marginPaket = dppPaket > 0 ? (labaPaket / dppPaket) * 100 : 0;
 
@@ -937,7 +974,7 @@
         }
 
         // =================================================================================
-        // EKSPOR EXCEL (FUNGSI GETSTYLE TERISOLASI)
+        // EKSPOR EXCEL
         // =================================================================================
         function exportToExcel() {
             try {
@@ -956,7 +993,6 @@
                 let nominalBL = unformatRupiah(document.getElementById('inputNominalBL').value);
                 let isPph = document.getElementById('checkPajakBL').checked;
                 
-                // Isolasi Objek Memori Style
                 const createBorder = () => ({ top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } });
                 const getStyleHeader = () => ({ fill: { fgColor: { rgb: "1C2D5A" } }, font: { color: { rgb: "FFFFFF" }, bold: true }, alignment: { horizontal: "center", vertical: "center", wrapText: true }, border: createBorder() });
                 const getStyleText = () => ({ alignment: { vertical: "center" }, border: createBorder() });
@@ -1009,8 +1045,8 @@
                     let rowData = [];
                     rowData[0] = { v: pNama, t: 's', s: getStyleText() };
                     
-                    // Format Z: '0' Mencegah Koma Muncul di Aktual & Dimensi (Menjadi Angka Bulat Utuh)
-                    rowData[iAct] = { t: 'n', v: pAct, z: '0', s: getStylePlain() };
+                    // z: '0' menghilangkan koma desimal untuk dimensi yang utuh
+                    rowData[iAct] = { t: 'n', v: pAct, z: '0.##', s: getStylePlain() };
                     rowData[iP] = { t: 'n', v: pP, z: '0', s: getStylePlain() };
                     rowData[iL] = { t: 'n', v: pL, z: '0', s: getStylePlain() };
                     rowData[iT] = { t: 'n', v: pT, z: '0', s: getStylePlain() };
@@ -1021,9 +1057,9 @@
                     rowData[iVol] = { t: 'n', f: `${colP}${R}*${colL}${R}*${colT}${R}/4000`, z: '0.00', s: getStylePlain() };
                     let maxStr = `MAX(${colAct}${R},${colVol}${R})`;
                     let formulaCW = `MAX(1, IF((${maxStr}-INT(${maxStr}))>0.3, INT(${maxStr})+1, INT(${maxStr})))`;
-                    rowData[iCW] = { t: 'n', f: formulaCW, z: '0', s: getStylePlain() }; // No koma di CW
+                    rowData[iCW] = { t: 'n', f: formulaCW, z: '0', s: getStylePlain() }; // Tanpa koma di CW
 
-                    // Rumus DPP Jenius: Menarik Proporsi dari Global Total Biaya yang mencakup Biaya Langsung
+                    // Rumus DPP Jenius
                     let fDPP = `((SUM(${colBiaya}$2:${colBiaya}$${totalR-1}) + Perhitungan!$I$2) / (1 - ${marginDec})) * (${colBiaya}${R} / SUM(${colBiaya}$2:${colBiaya}$${totalR-1}))`;
                     rowData[iDPP] = { t: 'n', f: fDPP, z: rpFmt, s: getStyleRp() };
                     rowData[iNP] = { t: 'n', f: `${getColName(iDPP)}${R}*101.1/100`, z: rpFmt, s: getStyleRp() };
@@ -1054,7 +1090,7 @@
 
                 let columnsToSum = [iAct, iVol, iCW].concat(Array.from({length: iMargin - iNP}, (_, i) => iNP + i));
                 columnsToSum.forEach(c => {
-                    let fmt = (c === iVol) ? '0.00' : (c === iAct || c === iCW) ? '0' : rpFmt;
+                    let fmt = (c === iVol) ? '0.00' : (c === iAct || c === iCW) ? '0.##' : rpFmt;
                     let usedStyle = (c === iVol || c === iAct || c === iCW) ? getStyleTotalPlain() : getStyleTotalRp();
                     footData2[c] = { t: 'n', f: `SUM(${getColName(c)}2:${getColName(c)}${totalR-1})`, z: fmt, s: usedStyle };
                 });
@@ -1095,7 +1131,7 @@
                 rowData1[15] = { t: 'n', f: `M2+N2+O2`, z: rpFmt, s: getStyleRp() }; 
                 rowData1[16] = { t: 'n', f: `L2+P2`, z: rpFmt, s: getStyleRp() }; 
                 rowData1[17] = { t: 'n', f: `G2-Q2`, z: rpFmt, s: getStyleRp() }; 
-                rowData1[18] = { t: 'n', f: `R2/G2`, z: '0.00%', s: getStylePct() }; // Pasti Presisi 15% (atau sesuai margin target)
+                rowData1[18] = { t: 'n', f: `R2/G2`, z: '0.00%', s: getStylePct() }; 
                 
                 wsData1.push(rowData1);
 
@@ -1121,8 +1157,8 @@
                 ws2['!rows'] = [{ hpt: 35 }]; 
 
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws1, "Perhitungan"); // Sheet 1 duluan
-                XLSX.utils.book_append_sheet(wb, ws2, "Tabel Optimalisasi"); // Sheet 2 menyusul
+                XLSX.utils.book_append_sheet(wb, ws1, "Perhitungan"); 
+                XLSX.utils.book_append_sheet(wb, ws2, "Tabel Optimalisasi"); 
                 
                 let cleanFileName = tujuanAkhir.replace(/[^a-zA-Z0-9]/g, '_');
                 XLSX.writeFile(wb, `Kalkulasi_PosIND_${cleanFileName}.xlsx`);
