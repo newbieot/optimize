@@ -800,21 +800,22 @@
 
         function parseRegional(data) {
             if (data.length < 2) return;
-            let hBandara = -1, hOut = -1, hInAdmin = -1, hInGudang = -1;
+            let hBandara = -1, hOut = -1, hInAdmin = -1, hInGudang = -1, hInLainnya = -1;
 
             for(let r=0; r<Math.min(data.length, 10); r++) {
                 for(let c=0; c<data[r].length; c++) {
                     let val = String(data[r][c]).toUpperCase().trim();
                     if(val === "BANDARA" || val === "BANDARA ") hBandara = c;
                     
-                    // PERBAIKAN 1: Hapus kata 'else' agar skrip selalu mengambil kolom paling KANAN 
-                    // (Otomatis membaca tarif handling 2026, bukan 2025)
                     if(val.includes("TOTAL BIAYA OUTGOING")) hOut = c;
                     if(val.includes("JLH BIAYA HANDLING DARAT")) hOut = c;
                     if(val.includes("BIAYA HANDLING OUTGOING") && hOut === -1) hOut = c;
                     
                     if(val.includes("BIAYA ADMIN/ SMU") || val.includes("BIAYA ADMIN/SMU")) hInAdmin = c;
                     if(val.includes("SEWA GUDANG INCOMING")) hInGudang = c;
+                    
+                    // PERBAIKAN 1: Deteksi kolom Biaya Lainnya
+                    if(val.includes("BIAYA LAINNYA")) hInLainnya = c;
                 }
             }
 
@@ -823,18 +824,20 @@
                 let bandaraRaw = String(data[i][hBandara]).trim().toUpperCase();
                 if(!bandaraRaw || bandaraRaw === "NAN" || bandaraRaw.length < 3 || bandaraRaw.includes("BANDARA")) continue;
                 
-                let bandara = bandaraRaw.split(' ')[0].trim(); 
+                // PERBAIKAN 2: Gunakan nama utuh, JANGAN di-split agar "SPP DPS" tidak rusak
+                // Bersihkan embel-embel dalam kurung misal "(Garuda & Citilink)"
+                let bandara = bandaraRaw.replace(/\s*\([^)]*\)/g, '').trim(); 
                 
                 let outFee = hOut > -1 ? parseRupiah(data[i][hOut]) : 0;
                 let inAdmin = hInAdmin > -1 ? parseRupiah(data[i][hInAdmin]) : 0;
                 let inGudang = hInGudang > -1 ? parseRupiah(data[i][hInGudang]) : 0;
-                let inFee = inAdmin + inGudang;
+                let inLainnya = hInLainnya > -1 ? parseRupiah(data[i][hInLainnya]) : 0;
+                
+                // Total seluruh Incoming
+                let inFee = inAdmin + inGudang + inLainnya;
 
                 if(!regionalFees[bandara]) regionalFees[bandara] = { out: 0, in: 0 };
                 
-                // PERBAIKAN 2: Jangan gunakan "MAX" (>). Gunakan "Kunci Pertama" (=== 0). 
-                // Karena Reg 1 (Sumatera) di-load duluan, BTH akan mengunci di angka 3.500 secara permanen.
-                // Jika ada BTH siluman di Reg 4, ia akan ditolak/diabaikan otomatis!
                 if(outFee > 0 && regionalFees[bandara].out === 0) regionalFees[bandara].out = outFee;
                 if(inFee > 0 && regionalFees[bandara].in === 0) regionalFees[bandara].in = inFee;
             }
@@ -851,16 +854,21 @@
                     let destCode = destObj.code;
                     let base = destObj.biaya;
                     
-                    let outFee = regionalFees[originCode] ? regionalFees[originCode].out : 0;
+                    // PERBAIKAN 3: Pemetaan Silang IATA Code Garuda vs Regional PosIND
+                    let originMatch = originCode === "MES" ? "KNO" : originCode;
+                    let destMatch = destCode === "MES" ? "KNO" : destCode;
                     
+                    // Tarik Tarif Outgoing (Berdasarkan Origin)
+                    let outFee = 0;
+                    let outKey = Object.keys(regionalFees).find(k => k === originMatch || k.includes(originMatch));
+                    if(!outKey && originMatch === "CGK") outKey = Object.keys(regionalFees).find(k => k.includes("KTSH"));
+                    if(outKey) outFee = regionalFees[outKey].out;
+                    
+                    // Tarik Tarif Incoming (Berdasarkan Destination)
                     let inFee = 0;
-                    let destAlias = destCode === "CGK" ? "KTSH" : (destCode === "KTSH" ? "CGK" : destCode);
-                    
-                    if (regionalFees[destCode]) {
-                        inFee = regionalFees[destCode].in;
-                    } else if (regionalFees[destAlias]) {
-                        inFee = regionalFees[destAlias].in;
-                    }
+                    let inKey = Object.keys(regionalFees).find(k => k === destMatch || k.includes(destMatch));
+                    if(!inKey && destMatch === "CGK") inKey = Object.keys(regionalFees).find(k => k.includes("KTSH"));
+                    if(inKey) inFee = regionalFees[inKey].in;
 
                     matrixUdara[originKey][destKey] = base + outFee + inFee;
                 }
