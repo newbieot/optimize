@@ -191,7 +191,7 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12 hidden md:block">
         <div class="flex items-center gap-3 flex-1 justify-center">
             <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi Tarif</h1>
-            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v3.6 SECURE PRO</span>
+            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v3.7 SECURE PRO</span>
         </div>
         <div class="flex items-center gap-4">
             <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10 hidden md:block">
@@ -639,7 +639,10 @@
             let l = parseFloat(row.querySelector('.paket-l').value) || 0;
             let t = parseFloat(row.querySelector('.paket-t').value) || 0;
             
-            let vol = (p * l * t) / 4000;
+            let modaVal = document.querySelector('input[name="modaUtama"]:checked').value;
+            let pembagi = modaVal === 'UDARA' ? 6000 : 4000;
+            
+            let vol = (p * l * t) / pembagi;
             row.querySelector('.paket-vol').value = vol.toFixed(2);
             
             let maxWeight = Math.max(a, vol);
@@ -686,6 +689,12 @@
         function getAliasOrigin(moda, prevDest) {
             if (!prevDest) return "";
             let dest = String(prevDest).toUpperCase().trim();
+            
+            // Jika dest dari Primer Udara memiliki format "CGK - JAKARTA", ambil nama kotanya saja
+            if (dest.includes(" - ")) {
+                dest = dest.split(" - ")[1].trim();
+            }
+            
             if (dest.includes("JAKARTA") && moda === "SEKUNDER") return "TANGERANG";
             return dest.replace(/[0-9]/g, '').trim(); 
         }
@@ -720,6 +729,8 @@
         }
 
         // PARSER GARUDA INDONESIA
+        
+        // PARSER GARUDA INDONESIA
         function parseGaruda(data) {
             if (data.length < 2) return;
             let hOrigin = -1, hDest = -1, hBiaya = -1;
@@ -734,17 +745,26 @@
 
             for(let i=1; i<data.length; i++) {
                 if(data[i].length <= Math.max(hOrigin, hDest, hBiaya)) continue;
-                let oRaw = String(data[i][hOrigin]).trim();
-                let dRaw = String(data[i][hDest]).trim();
-                if(!oRaw || !dRaw || oRaw.toUpperCase().includes("ORIGIN") || oRaw.toUpperCase() === "NAN") continue;
+                let oRaw = String(data[i][hOrigin]).trim().toUpperCase();
+                let dRaw = String(data[i][hDest]).trim().toUpperCase();
+                if(!oRaw || !dRaw || oRaw.includes("ORIGIN") || oRaw === "NAN") continue;
 
-                let origin = oRaw.split('-')[0].trim().toUpperCase();
-                let dest = dRaw.split('-')[0].trim().toUpperCase();
+                let originCode = oRaw.split('-')[0].trim();
+                let destCode = dRaw.split('-')[0].trim();
+                
+                // Format ulang agar seragam misal: "BTH - BATAM"
+                let originName = oRaw.includes('-') ? oRaw.substring(oRaw.indexOf('-')+1).trim() : originCode;
+                let destName = dRaw.includes('-') ? dRaw.substring(dRaw.indexOf('-')+1).trim() : destCode;
+                
+                let originKey = originCode + " - " + originName;
+                let destKey = destCode + " - " + destName;
 
                 let biaya = parseRupiah(data[i][hBiaya]);
                 if(biaya > 0) {
-                    if(!garudaMatrix[origin]) garudaMatrix[origin] = {};
-                    if(!garudaMatrix[origin][dest] || biaya > garudaMatrix[origin][dest]) garudaMatrix[origin][dest] = biaya;
+                    if(!garudaMatrix[originKey]) garudaMatrix[originKey] = { code: originCode, dests: {} };
+                    if(!garudaMatrix[originKey].dests[destKey] || biaya > garudaMatrix[originKey].dests[destKey].biaya) {
+                        garudaMatrix[originKey].dests[destKey] = { biaya: biaya, code: destCode };
+                    }
                 }
             }
         }
@@ -787,93 +807,36 @@
         }
 
         // BUILDER MATRIKS UDARA
+        
+        // BUILDER MATRIKS UDARA
         function buildMatrixUdara() {
             matrixUdara = {};
-            for (let origin in garudaMatrix) {
-                matrixUdara[origin] = {};
-                for (let dest in garudaMatrix[origin]) {
-                    let base = garudaMatrix[origin][dest];
-                    let outFee = regionalFees[origin] ? regionalFees[origin].out : 0;
+            for (let originKey in garudaMatrix) {
+                matrixUdara[originKey] = {};
+                let originCode = garudaMatrix[originKey].code;
+                
+                for (let destKey in garudaMatrix[originKey].dests) {
+                    let destObj = garudaMatrix[originKey].dests[destKey];
+                    let destCode = destObj.code;
+                    let base = destObj.biaya;
+                    
+                    let outFee = regionalFees[originCode] ? regionalFees[originCode].out : 0;
                     
                     let inFee = 0;
-                    // Deteksi singkatan ganda seperti CGK <-> KTSH
-                    let destAlias = dest === "CGK" ? "KTSH" : (dest === "KTSH" ? "CGK" : dest);
+                    let destAlias = destCode === "CGK" ? "KTSH" : (destCode === "KTSH" ? "CGK" : destCode);
                     
-                    if (regionalFees[dest]) {
-                        inFee = regionalFees[dest].in;
+                    if (regionalFees[destCode]) {
+                        inFee = regionalFees[destCode].in;
                     } else if (regionalFees[destAlias]) {
                         inFee = regionalFees[destAlias].in;
                     }
 
-                    matrixUdara[origin][dest] = base + outFee + inFee;
+                    matrixUdara[originKey][destKey] = base + outFee + inFee;
                 }
             }
         }
 
-        function parseMatrixSheet(data, targetMatrixObj) {
-            if (data.length < 2) return;
-            let headerRowIdx = -1, maxCols = 0;
-            for (let r = 0; r < Math.min(data.length, 15); r++) {
-                let textCols = 0;
-                for (let c = 0; c < data[r].length; c++) {
-                    let val = String(data[r][c]).trim().toUpperCase();
-                    let isText = isNaN(parseFloat(val));
-                    if (val.length >= 3 && isText && !val.includes("---") && !val.startsWith("P0")) textCols++;
-                }
-                if (textCols > maxCols) { maxCols = textCols; headerRowIdx = r; }
-            }
-            if (headerRowIdx === -1) return;
-            let headers = data[headerRowIdx].map(x => String(x).trim().toUpperCase());
-            
-            let originColIdx = -1;
-            for (let c = 0; c < Math.min(headers.length, 10); c++) {
-                let matchCount = 0;
-                for (let r = headerRowIdx + 1; r < Math.min(data.length, headerRowIdx + 20); r++) {
-                    if (c >= data[r].length) continue;
-                    let val = String(data[r][c]).trim().toUpperCase();
-                    let isText = isNaN(parseFloat(val));
-                    if (val.length >= 3 && isText && !val.includes("---") && val !== "PRIMER" && !val.startsWith("P0")) matchCount++;
-                }
-                if (matchCount >= 2) { originColIdx = c; break; }
-            }
-            if (originColIdx === -1) originColIdx = 2; 
 
-            for(let i = headerRowIdx + 1; i < data.length; i++) {
-                if (data[i].length <= originColIdx) continue;
-                let origin = String(data[i][originColIdx]).trim().toUpperCase(); 
-                if(!origin || origin === "" || origin.includes("---") || origin === "NAN" || origin.startsWith("P0")) continue;
-                if(!targetMatrixObj[origin]) targetMatrixObj[origin] = {};
-                
-                for(let j = originColIdx + 1; j < data[i].length; j++) {
-                    if (j < headers.length) {
-                        let dest = headers[j];
-                        let tarif = parseRupiah(data[i][j]);
-                        if(dest && dest !== "" && !dest.includes("---") && !dest.startsWith("P0") && tarif > 0) {
-                            targetMatrixObj[origin][dest] = tarif;
-                        }
-                    }
-                }
-            }
-        }
-
-        async function initData() {
-            try {
-                let requests = [
-                    fetch(urlGaruda).then(r => r.text()), // 0
-                    fetch(urlReg1).then(r => r.text()), // 1
-                    fetch(urlReg2).then(r => r.text()), // 2
-                    fetch(urlReg4).then(r => r.text()), // 3
-                    fetch(urlReg5).then(r => r.text()), // 4
-                    fetch(urlReg6).then(r => r.text()), // 5
-                    fetch(urlPrimerDarat).then(r => r.text()), // 6
-                    fetch(urlPrimerLaut).then(r => r.text()), // 7
-                    fetch(urlTersier).then(r => r.text()), // 8
-                    fetch(urlLionParcel).then(r => r.text()) // 9
-                ];
-                urlSekunderList.forEach(url => requests.push(fetch(url).then(r => r.text())));
-                const responses = await Promise.all(requests);
-                
-                // Parse Udara (Garuda + Regs)
                 Papa.parse(responses[0], { skipEmptyLines: true, complete: res => parseGaruda(res.data) });
                 for(let i=1; i<=5; i++) {
                     Papa.parse(responses[i], { skipEmptyLines: true, complete: res => parseRegional(res.data) });
@@ -970,6 +933,9 @@
         }
 
         function renderDefaultRoutes() {
+            // Kalkulasi ulang Volumetrik semua baris tiap kali moda berubah
+            document.querySelectorAll('.paket-aktual').forEach(elem => calcCW(elem));
+
             document.getElementById('ruteContainer').innerHTML = '';
             ruteCount = 0;
             let moda = document.querySelector('input[name="modaUtama"]:checked').value;
@@ -1182,7 +1148,7 @@
                     let processing = 1000;
                     let costRoutes = globalRutes.map(r => r.tarif * pCW);
                     let costTersier = globalTersier.tarif * pCW;
-                    let delivery = pCW <= 3 ? 2775 : 2775 + ((pCW - 3) * 2300);
+                    let delivery = 2875 * pCW;
                     
                     let totalOpt = collecting + processing + costRoutes.reduce((a,b)=>a+b, 0) + costTersier + delivery;
                     let overhead = totalOpt * 0.05;
@@ -1359,7 +1325,9 @@
                     let colAct = getColName(iAct), colP = getColName(iP), colL = getColName(iL);
                     let colT = getColName(iT), colVol = getColName(iVol), colCW = getColName(iCW), colBiaya = getColName(iBiaya);
 
-                    rowData[iVol] = { t: 'n', f: `${colP}${R}*${colL}${R}*${colT}${R}/4000`, z: '0.00', s: getStylePlain() };
+                    let modaValExport = document.querySelector('input[name="modaUtama"]:checked').value;
+                    let pmbExport = modaValExport === 'UDARA' ? 6000 : 4000;
+                    rowData[iVol] = { t: 'n', f: `${colP}${R}*${colL}${R}*${colT}${R}/${pmbExport}`, z: '0.00', s: getStylePlain() };
                     let maxStr = `MAX(${colAct}${R},${colVol}${R})`;
                     let formulaCW = `MAX(1, IF((${maxStr}-INT(${maxStr}))>0.3, INT(${maxStr})+1, INT(${maxStr})))`;
                     rowData[iCW] = { t: 'n', f: formulaCW, z: '0', s: getStylePlain() }; 
@@ -1377,7 +1345,7 @@
                     });
                     
                     rowData[iTer] = { t: 'n', f: `$${colCW}${R}*${globalTersier.tarif}`, z: rpFmt, s: getStyleRp() };
-                    rowData[iDeliv] = { t: 'n', f: `IF($${colCW}${R}<=3, 2775, 2775+(($${colCW}${R}-3)*2300))`, z: rpFmt, s: getStyleRp() };
+                    rowData[iDeliv] = { t: 'n', f: `$${colCW}${R}*2875`, z: rpFmt, s: getStyleRp() };
                     rowData[iOpt] = { t: 'n', f: `SUM(${getColName(iCol)}${R}:${getColName(iDeliv)}${R})`, z: rpFmt, s: getStyleRp() };
                     rowData[iOver] = { t: 'n', f: `${getColName(iOpt)}${R}*0.05`, z: rpFmt, s: getStyleRp() };
                     rowData[iCOF] = { t: 'n', f: `${getColName(iOpt)}${R}*30/365*0.08`, z: rpFmt, s: getStyleRp() };
