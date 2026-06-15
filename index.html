@@ -681,12 +681,21 @@
             if (!prevDest) return "";
             let dest = String(prevDest).toUpperCase().trim();
             
+            // Jika dest dari Primer Udara memiliki format "CGK - JAKARTA", ambil nama kotanya saja
+            let cleanDest = dest;
             if (dest.includes(" - ")) {
-                dest = dest.split(" - ")[1].trim();
+                cleanDest = dest.split(" - ")[1].trim();
+            } else {
+                cleanDest = dest.replace(/[0-9]/g, '').trim();
             }
             
-            if (dest.includes("JAKARTA") && moda === "SEKUNDER") return "TANGERANG";
-            return dest.replace(/[0-9]/g, '').trim(); 
+            // Ralat Operasional: Jika rute lanjutan adalah SEKUNDER dan sebelumnya dari JAKARTA,
+            // rute asal sekunder otomatis diarahkan ke JAKARTA PREMIER
+            if (cleanDest.includes("JAKARTA") && moda === "SEKUNDER") {
+                return "JAKARTA PREMIER";
+            }
+            
+            return cleanDest; 
         }
 
         // =================================================================================
