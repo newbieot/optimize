@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <title>Portal Optimalisasi Tarif Pengiriman PosIND by Ikhsan Radiansyah</title>
-    <meta name="description" content="Portal Kalkulasi dan Optimalisasi Tarif Pengiriman Pos Indonesia (PosIND). Sistem logistik multi-paket B2B dan Ritel untuk efisiensi jalur Udara, Darat, Laut, Sekunder, dan Tersier oleh Ikhsan Radiansyah.">
+    <meta name="description" content="Portal Kalkulasi Tarif CBA Optimalisasi Pengiriman Pos Indonesia (PosIND). Sistem logistik multi-paket B2B dan Ritel untuk efisiensi jalur Udara, Darat, Laut, Sekunder, dan Tersier oleh Ikhsan Radiansyah.">
     
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
@@ -155,7 +155,7 @@
         <div class="login-card">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara">
             <h2>PosNew Hub SECURE</h2>
-            <p>Otentikasi Internal diperlukan untuk mengakses Portal Kalkulasi B2B & Ritel.</p>
+            <p>Otentikasi Internal diperlukan untuk mengakses Portal Kalkulasi Tarif CBA Optimalisasi</p>
             
             <form id="loginForm">
                 <div class="input-group">
@@ -190,8 +190,8 @@
     <header id="appHeader" class="bg-white shadow-md py-4 px-4 md:px-8 flex flex-col md:flex-row justify-between items-center mb-6 md:mb-8 gap-4 sticky top-0 z-50" style="display: none;">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12 hidden md:block">
         <div class="flex items-center gap-3 flex-1 justify-center">
-            <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi Tarif</h1>
-            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v4.1 BYPASS LOGIN</span>
+            <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi Tarif CBA Optimalisasi</h1>
+            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v4.3</span>
         </div>
         <div class="flex items-center gap-4">
             <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10 hidden md:block">
@@ -371,7 +371,6 @@
     </footer>
 
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
@@ -400,13 +399,34 @@
         const appFooter = document.getElementById('appFooter');
 
         auth.onAuthStateChanged(user => {
-            // LOGIN DIMATIKAN SEMENTARA SESUAI PERMINTAAN (BYPASS)
-            loginOverlay.style.display = 'none';
-            appHeader.style.display = 'flex';
-            appMain.style.display = 'block';
-            appFooter.style.display = 'flex';
-            
-            if(Object.keys(matrixUdara).length === 0) initData(); 
+            if (user) {
+                const allowedDomain = "@posindonesia.co.id";
+                const allowedEmails = [
+                    "ikhsanradiansyah@gmail.com", 
+                    "ikhsan@posnew.com"
+                ];
+
+                if (user.email.endsWith(allowedDomain) || allowedEmails.includes(user.email)) {
+                    loginOverlay.style.display = 'none';
+                    appHeader.style.display = 'flex';
+                    appMain.style.display = 'block';
+                    appFooter.style.display = 'flex';
+                    
+                    if(Object.keys(matrixUdara).length === 0) initData(); 
+
+                } else {
+                    auth.signOut().then(() => {
+                        loginOverlay.style.display = 'flex';
+                        document.getElementById('loginError').innerText = "Akses ditolak! Gunakan email korporat resmi PosIND.";
+                        document.getElementById('loginError').style.display = 'block';
+                    });
+                }
+            } else {
+                loginOverlay.style.display = 'flex';
+                appHeader.style.display = 'none';
+                appMain.style.display = 'none';
+                appFooter.style.display = 'none';
+            }
         });
 
         document.getElementById('loginForm').addEventListener('submit', (e) => {
@@ -656,12 +676,18 @@
             if (!prevDest) return "";
             let dest = String(prevDest).toUpperCase().trim();
             
+            let cleanDest = dest;
             if (dest.includes(" - ")) {
-                dest = dest.split(" - ")[1].trim();
+                cleanDest = dest.split(" - ")[1].trim();
+            } else {
+                cleanDest = dest.replace(/[0-9]/g, '').trim();
             }
             
-            if (dest.includes("JAKARTA") && moda === "SEKUNDER") return "TANGERANG";
-            return dest.replace(/[0-9]/g, '').trim(); 
+            if (cleanDest.includes("JAKARTA") && moda === "SEKUNDER") {
+                return "JAKARTA PREMIER";
+            }
+            
+            return cleanDest; 
         }
 
         // =================================================================================
@@ -770,8 +796,11 @@
                 let biaya = parseRupiah(data[i][hBiaya]);
                 if(biaya > 0) {
                     if(!garudaMatrix[originKey]) garudaMatrix[originKey] = { code: originCode, dests: {} };
-                    if(!garudaMatrix[originKey].dests[destKey] || biaya > garudaMatrix[originKey].dests[destKey].biaya) {
-                        garudaMatrix[originKey].dests[destKey] = { biaya: biaya, code: destCode };
+                    if(!garudaMatrix[originKey].dests[destKey]) {
+                        garudaMatrix[originKey].dests[destKey] = { choices: [], code: destCode };
+                    }
+                    if (!garudaMatrix[originKey].dests[destKey].choices.includes(biaya)) {
+                        garudaMatrix[originKey].dests[destKey].choices.push(biaya);
                     }
                 }
             }
@@ -793,7 +822,6 @@
                     if(val.includes("BIAYA ADMIN/ SMU") || val.includes("BIAYA ADMIN/SMU")) hInAdmin = c;
                     if(val.includes("SEWA GUDANG INCOMING")) hInGudang = c;
                     
-                    // PERBAIKAN 1: Deteksi kolom Biaya Lainnya
                     if(val.includes("BIAYA LAINNYA")) hInLainnya = c;
                 }
             }
@@ -803,8 +831,6 @@
                 let bandaraRaw = String(data[i][hBandara]).trim().toUpperCase();
                 if(!bandaraRaw || bandaraRaw === "NAN" || bandaraRaw.length < 3 || bandaraRaw.includes("BANDARA")) continue;
                 
-                // PERBAIKAN 2: Gunakan nama utuh, JANGAN di-split agar "SPP DPS" tidak rusak
-                // Bersihkan embel-embel dalam kurung misal "(Garuda & Citilink)"
                 let bandara = bandaraRaw.replace(/\s*\([^)]*\)/g, '').trim(); 
                 
                 let outFee = hOut > -1 ? parseRupiah(data[i][hOut]) : 0;
@@ -812,7 +838,6 @@
                 let inGudang = hInGudang > -1 ? parseRupiah(data[i][hInGudang]) : 0;
                 let inLainnya = hInLainnya > -1 ? parseRupiah(data[i][hInLainnya]) : 0;
                 
-                // Total seluruh Incoming
                 let inFee = inAdmin + inGudang + inLainnya;
 
                 if(!regionalFees[bandara]) regionalFees[bandara] = { out: 0, in: 0 };
@@ -831,25 +856,31 @@
                 for (let destKey in garudaMatrix[originKey].dests) {
                     let destObj = garudaMatrix[originKey].dests[destKey];
                     let destCode = destObj.code;
-                    let base = destObj.biaya;
                     
-                    // PERBAIKAN 3: Pemetaan Silang IATA Code Garuda vs Regional PosIND
                     let originMatch = originCode === "MES" ? "KNO" : originCode;
                     let destMatch = destCode === "MES" ? "KNO" : destCode;
                     
-                    // Tarik Tarif Outgoing (Berdasarkan Origin)
                     let outFee = 0;
                     let outKey = Object.keys(regionalFees).find(k => k === originMatch || k.includes(originMatch));
                     if(!outKey && originMatch === "CGK") outKey = Object.keys(regionalFees).find(k => k.includes("KTSH"));
                     if(outKey) outFee = regionalFees[outKey].out;
                     
-                    // Tarik Tarif Incoming (Berdasarkan Destination)
                     let inFee = 0;
                     let inKey = Object.keys(regionalFees).find(k => k === destMatch || k.includes(destMatch));
                     if(!inKey && destMatch === "CGK") inKey = Object.keys(regionalFees).find(k => k.includes("KTSH"));
                     if(inKey) inFee = regionalFees[inKey].in;
 
-                    matrixUdara[originKey][destKey] = base + outFee + inFee;
+                    // Mengumpulkan semua tarif (Base Garuda + Out + In)
+                    let finalChoices = [];
+                    destObj.choices.forEach(base => {
+                        let total = base + outFee + inFee;
+                        if (!finalChoices.includes(total)) {
+                            finalChoices.push(total);
+                        }
+                    });
+                    
+                    finalChoices.sort((a,b) => a - b);
+                    matrixUdara[originKey][destKey] = finalChoices;
                 }
             }
         }
@@ -1053,8 +1084,9 @@
                 </div>
                 <div class="w-full md:w-1/6 relative mt-2 md:mt-0">
                     <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tarif / Kg</label>
-                    <span class="absolute left-3 top-8 md:top-2.5 text-gray-500 font-semibold">Rp</span>
+                    <span class="absolute left-3 top-8 md:top-2.5 text-gray-500 font-semibold z-10">Rp</span>
                     <input type="text" id="rute-tarif-${ruteCount}" class="w-full bg-gray-200 border border-gray-300 p-2.5 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0" oninput="formatRupiahInput(this); this.dataset.value = unformatRupiah(this.value);">
+                    <select id="rute-tarif-select-${ruteCount}" class="hidden w-full bg-yellow-50 border border-yellow-400 p-2.5 pl-10 rounded text-posblue font-bold focus:ring-posorange cursor-pointer shadow-sm" onchange="syncTarifDropdown(${ruteCount})"></select>
                 </div>
                 ${allRows.length > 0 ? `<button onclick="hapusRute(this)" class="w-full md:w-auto mt-2 md:mt-0 text-red-500 border border-red-200 md:border-none rounded py-2 md:py-0 font-bold hover:bg-red-50" title="Hapus">HAPUS</button>` : `<div class="hidden md:block w-4"></div>`}
             `;
@@ -1084,6 +1116,7 @@
 
             let originInput = document.getElementById(`rute-origin-${index}`);
             let tarifInput = document.getElementById(`rute-tarif-${index}`);
+            let tarifSelect = document.getElementById(`rute-tarif-select-${index}`);
             let wrapper = document.getElementById(`rute-dest-wrapper-${index}`);
 
             // === PENANGANAN SEKUNDER SETEMPAT (MANUAL INPUT) ===
@@ -1101,15 +1134,15 @@
                     </div>
                 `;
                 
-                // Buat Tarif jadi bisa di-edit (Un-readonly)
                 tarifInput.removeAttribute('readonly');
-                tarifInput.classList.remove('bg-gray-200', 'cursor-not-allowed');
+                tarifInput.classList.remove('bg-gray-200', 'cursor-not-allowed', 'hidden');
                 tarifInput.classList.add('bg-white', 'focus:ring-posorange');
+                if (tarifSelect) tarifSelect.classList.add('hidden');
+                
                 tarifInput.value = '';
                 tarifInput.dataset.value = 0;
                 tarifInput.placeholder = "Ketik Nominal...";
 
-                // Tetapkan Origin otomatis (atau bebas)
                 if (!isFirstRow && !forcedOrigin) {
                     let prevDestVal = "";
                     if (prevRow.querySelector(`select[id^="rute-dest-"]`)) {
@@ -1122,7 +1155,7 @@
                     originInput.value = forcedOrigin;
                 }
                 
-                return; // STOP di sini, tidak perlu bangun opsi dropdown matrix
+                return; 
             }
 
             // === KEMBALIKAN KE MODE DROPDOWN MATRIKS NORMAL ===
@@ -1139,10 +1172,11 @@
                 });
             }
 
-            // Kunci lagi Tarif Input (Readonly)
             tarifInput.setAttribute('readonly', true);
             tarifInput.classList.add('bg-gray-200', 'cursor-not-allowed');
-            tarifInput.classList.remove('bg-white', 'focus:ring-posorange');
+            tarifInput.classList.remove('bg-white', 'focus:ring-posorange', 'hidden');
+            if (tarifSelect) tarifSelect.classList.add('hidden');
+            
             tarifInput.value = '';
             tarifInput.dataset.value = 0;
             tarifInput.placeholder = "0";
@@ -1187,11 +1221,23 @@
             }
         }
 
+        function syncTarifDropdown(index) {
+            let tarifSelect = document.getElementById(`rute-tarif-select-${index}`);
+            let tarifInput = document.getElementById(`rute-tarif-${index}`);
+            if(!tarifSelect || !tarifInput) return;
+            
+            let val = tarifSelect.value;
+            tarifInput.dataset.value = val;
+            tarifInput.value = formatRupiahUI(val);
+        }
+
         function onChangeDest(index) {
             const moda = document.getElementById(`rute-moda-${index}`).value;
             const origin = document.getElementById(`rute-origin-${index}`).value;
             const dest = document.getElementById(`rute-dest-${index}`).value;
             const tarifInput = document.getElementById(`rute-tarif-${index}`);
+            const tarifSelect = document.getElementById(`rute-tarif-select-${index}`);
+            
             let activeMatrix = moda === "PRIMER UDARA" ? matrixUdara : 
                                moda === "PRIMER DARAT" ? matrixDarat : 
                                moda === "PRIMER LAUT" ? matrixLaut : 
@@ -1199,11 +1245,36 @@
             
             if (dest && activeMatrix[origin] && activeMatrix[origin][dest]) {
                 let trueVal = activeMatrix[origin][dest];
-                tarifInput.value = formatRupiahUI(trueVal); 
-                tarifInput.dataset.value = trueVal;         
+                
+                if (Array.isArray(trueVal)) {
+                    tarifSelect.innerHTML = '';
+                    trueVal.forEach(val => {
+                        tarifSelect.innerHTML += `<option value="${val}">${formatRupiahUI(val)}</option>`;
+                    });
+                    if(trueVal.length > 1) {
+                        tarifSelect.classList.remove('hidden');
+                        tarifInput.classList.add('hidden');
+                        tarifInput.dataset.value = trueVal[0];
+                        tarifInput.value = formatRupiahUI(trueVal[0]);
+                    } else {
+                        tarifSelect.classList.add('hidden');
+                        tarifInput.classList.remove('hidden');
+                        tarifInput.value = formatRupiahUI(trueVal[0]); 
+                        tarifInput.dataset.value = trueVal[0];
+                    }
+                } else {
+                    if(tarifSelect) tarifSelect.classList.add('hidden');
+                    tarifInput.classList.remove('hidden');
+                    tarifInput.value = formatRupiahUI(trueVal); 
+                    tarifInput.dataset.value = trueVal;         
+                }
             } else { 
-                tarifInput.value = ''; 
-                tarifInput.dataset.value = 0; 
+                if(tarifSelect) tarifSelect.classList.add('hidden');
+                if(tarifInput) {
+                    tarifInput.classList.remove('hidden');
+                    tarifInput.value = ''; 
+                    tarifInput.dataset.value = 0; 
+                }
             }
             
             let rowElem = document.getElementById(`rute-row-${index}`);
@@ -1303,8 +1374,6 @@
                         }
                     });
                     let costTersier = globalTersier.tarif * pCW;
-                    
-                    // UPDATE v3.8: Delivery menggunakan flat rate 2875 per kg
                     let delivery = 2875 * pCW;
                     
                     let totalOpt = collecting + processing + costRoutes.reduce((a,b)=>a+b, 0) + costTersier + delivery;
@@ -1397,10 +1466,13 @@
         }
 
         function getColName(n) {
+            let ordA = 'A'.charCodeAt(0);
+            let ordZ = 'Z'.charCodeAt(0);
+            let len = ordZ - ordA + 1;
             let s = "";
             while(n >= 0) {
-                s = String.fromCharCode(n % 26 + 65) + s;
-                n = Math.floor(n / 26) - 1;
+                s = String.fromCharCode(n % len + ordA) + s;
+                n = Math.floor(n / len) - 1;
             }
             return s;
         }
@@ -1480,7 +1552,6 @@
                     let colAct = getColName(iAct), colP = getColName(iP), colL = getColName(iL);
                     let colT = getColName(iT), colVol = getColName(iVol), colCW = getColName(iCW), colBiaya = getColName(iBiaya);
 
-                    // UPDATE v3.8: Pembagi Volumetrik Dinamis pada File Excel
                     let modaValExport = document.querySelector('input[name="modaUtama"]:checked').value;
                     let pmbExport = modaValExport === 'UDARA' ? 6000 : 4000;
                     rowData[iVol] = { t: 'n', f: `${colP}${R}*${colL}${R}*${colT}${R}/${pmbExport}`, z: '0.00', s: getStylePlain() };
@@ -1507,7 +1578,7 @@
                     
                     rowData[iTer] = { t: 'n', f: `$${colCW}${R}*${globalTersier.tarif}`, z: rpFmt, s: getStyleRp() };
                     
-                    // UPDATE v3.8: Delivery flat rate pada File Excel
+                    // Delivery flat rate
                     rowData[iDeliv] = { t: 'n', f: `$${colCW}${R}*2875`, z: rpFmt, s: getStyleRp() };
                     
                     rowData[iOpt] = { t: 'n', f: `SUM(${getColName(iCol)}${R}:${getColName(iDeliv)}${R})`, z: rpFmt, s: getStyleRp() };
