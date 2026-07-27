@@ -1,4 +1,4 @@
-# Laporan Pengujian — PosNew Hub Optimize v5.0
+# Laporan Pengujian — PosNew Hub Optimize v5.1
 
 Tanggal pengujian: 27 Juli 2026
 
@@ -38,3 +38,9 @@ Perhitungan DPP lama sudah memasukkan biaya langsung. Namun, preview tabel lama 
 ## Batas pengujian lingkungan
 
 Firebase Authentication dan sumber tarif Google Sheets/CSV merupakan layanan eksternal yang tidak dapat diakses secara live dari lingkungan pengujian terisolasi. Konfigurasi, URL sumber, parser, serta alur pemuatan lama tidak diubah. Regression browser dilakukan dengan stub deterministik agar alur UI, formula, rendering hasil, responsive layout, dan error console tetap dapat diuji secara konsisten. Setelah deploy, lakukan smoke test singkat pada domain produksi untuk login dan pemuatan tarif live.
+
+## Regression v5.1 — Footer
+- Struktur footer pada `index.html` dan `beta.html` konsisten.
+- Gaya desktop: tinggi 38 px, baris tunggal, garis oranye, tiga zona konten.
+- Gaya mobile: tinggi 36 px, caption disembunyikan, badge kreator tetap terlihat.
+- Footer tetap tersembunyi pada mode cetak dan tidak memengaruhi formula aplikasi.

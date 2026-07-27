@@ -1,3 +1,9 @@
+## v5.1 — Footer parity with lacak.posnew.com
+- Footer diubah menjadi bar tipis 38 px dengan garis oranye di atas dan latar navy.
+- Menambahkan ikon brand, caption tengah, dan badge kreator interaktif seperti lacak.posnew.com.
+- Versi mobile menggunakan tinggi 36 px, menyembunyikan caption, dan menjaga badge tetap ringkas.
+- Tautan PosNew Hub dan profil kreator sekarang aktif serta aman dibuka di tab baru.
+
 # Changelog
 
 ## v5.0 — UI/UX Redesign
