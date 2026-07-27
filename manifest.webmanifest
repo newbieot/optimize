@@ -1,0 +1,11 @@
+{
+  "name": "PosNew Hub Optimalisasi Proyek Logistik",
+  "short_name": "Optimize",
+  "description": "Kalkulator dan alat analisis optimalisasi proyek logistik.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eef2f7",
+  "theme_color": "#10274d",
+  "lang": "id-ID",
+  "icons": []
+}

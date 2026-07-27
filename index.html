@@ -2,10 +2,10 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <title>Portal Optimalisasi Tarif Pengiriman PosIND by Ikhsan Radiansyah</title>
-    <meta name="description" content="Portal Kalkulasi Tarif CBA Optimalisasi Pengiriman Pos Indonesia (PosIND). Sistem logistik multi-paket B2B dan Ritel untuk efisiensi jalur Udara, Darat, Laut, Sekunder, dan Tersier oleh Ikhsan Radiansyah.">
+    <title>Kalkulator Optimalisasi Proyek Logistik | PosNew Hub</title>
+    <meta name="description" content="Kalkulator analisis dan optimalisasi proyek logistik untuk menghitung nilai proyek, pendapatan, biaya, laba, margin, dan nilai per kilogram.">
     
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📦</text></svg>">
@@ -14,7 +14,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/tailwind-local.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
@@ -146,6 +146,17 @@
         
         #loginError { color: #ef4444; font-size: 0.85rem; font-weight: 600; margin-top: 1rem; display: none; }
     </style>
+
+    <link rel="canonical" href="https://optimize.posnew.com/">
+    <meta name="theme-color" content="#10274d">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Kalkulator Optimalisasi Proyek Logistik | PosNew Hub">
+    <meta property="og:description" content="Analisis nilai proyek, biaya, laba, margin, dan nilai proyek per kilogram.">
+    <meta property="og:url" content="https://optimize.posnew.com/">
+    <meta name="twitter:card" content="summary">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="stylesheet" href="assets/app.css">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"PosNew Hub Optimalisasi Proyek Logistik","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://optimize.posnew.com/","description":"Kalkulator dan alat analisis optimalisasi proyek logistik."}</script>
 </head>
 
 <body>
@@ -191,7 +202,7 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Logo_1_tahun_Danantara.svg/3840px-Logo_1_tahun_Danantara.svg.png" alt="Danantara" class="h-10 md:h-12 hidden md:block">
         <div class="flex items-center gap-3 flex-1 justify-center">
             <h1 class="text-xl md:text-2xl font-bold posblue text-center" style="font-family: 'Sora', sans-serif;">Portal Kalkulasi Tarif CBA Optimalisasi</h1>
-            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v4.2</span>
+            <span class="text-[10px] md:text-xs font-bold text-white bg-posblue px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide">v4.3</span>
         </div>
         <div class="flex items-center gap-4">
             <img src="https://www.posindonesia.co.id/_next/image?url=https%3A%2F%2Fadmin-piol.posindonesia.co.id%2Fmedia%2FUntitled%20design%20(7).png&w=750&q=75" alt="PosIND" class="h-8 md:h-10 hidden md:block">
@@ -371,7 +382,6 @@
     </footer>
 
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
@@ -401,7 +411,6 @@
 
         auth.onAuthStateChanged(user => {
             if (user) {
-                // DOMAIN DAN EMAIL YANG DIIZINKAN (WHITELIST)
                 const allowedDomain = "@posindonesia.co.id";
                 const allowedEmails = [
                     "ikhsanradiansyah@gmail.com", 
@@ -409,7 +418,6 @@
                 ];
 
                 if (user.email.endsWith(allowedDomain) || allowedEmails.includes(user.email)) {
-                    // Jika lolos whitelist, buka aplikasi
                     loginOverlay.style.display = 'none';
                     appHeader.style.display = 'flex';
                     appMain.style.display = 'block';
@@ -418,7 +426,6 @@
                     if(Object.keys(matrixUdara).length === 0) initData(); 
 
                 } else {
-                    // Jika email asing mencoba masuk, tolak dan logout paksa
                     auth.signOut().then(() => {
                         loginOverlay.style.display = 'flex';
                         document.getElementById('loginError').innerText = "Akses ditolak! Gunakan email korporat resmi PosIND.";
@@ -426,7 +433,6 @@
                     });
                 }
             } else {
-                // Jika belum login, tampilkan layar login
                 loginOverlay.style.display = 'flex';
                 appHeader.style.display = 'none';
                 appMain.style.display = 'none';
@@ -681,7 +687,6 @@
             if (!prevDest) return "";
             let dest = String(prevDest).toUpperCase().trim();
             
-            // Jika dest dari Primer Udara memiliki format "CGK - JAKARTA", ambil nama kotanya saja
             let cleanDest = dest;
             if (dest.includes(" - ")) {
                 cleanDest = dest.split(" - ")[1].trim();
@@ -689,8 +694,6 @@
                 cleanDest = dest.replace(/[0-9]/g, '').trim();
             }
             
-            // Ralat Operasional: Jika rute lanjutan adalah SEKUNDER dan sebelumnya dari JAKARTA,
-            // rute asal sekunder otomatis diarahkan ke JAKARTA PREMIER
             if (cleanDest.includes("JAKARTA") && moda === "SEKUNDER") {
                 return "JAKARTA PREMIER";
             }
@@ -804,8 +807,11 @@
                 let biaya = parseRupiah(data[i][hBiaya]);
                 if(biaya > 0) {
                     if(!garudaMatrix[originKey]) garudaMatrix[originKey] = { code: originCode, dests: {} };
-                    if(!garudaMatrix[originKey].dests[destKey] || biaya > garudaMatrix[originKey].dests[destKey].biaya) {
-                        garudaMatrix[originKey].dests[destKey] = { biaya: biaya, code: destCode };
+                    if(!garudaMatrix[originKey].dests[destKey]) {
+                        garudaMatrix[originKey].dests[destKey] = { choices: [], code: destCode };
+                    }
+                    if (!garudaMatrix[originKey].dests[destKey].choices.includes(biaya)) {
+                        garudaMatrix[originKey].dests[destKey].choices.push(biaya);
                     }
                 }
             }
@@ -827,7 +833,6 @@
                     if(val.includes("BIAYA ADMIN/ SMU") || val.includes("BIAYA ADMIN/SMU")) hInAdmin = c;
                     if(val.includes("SEWA GUDANG INCOMING")) hInGudang = c;
                     
-                    // PERBAIKAN 1: Deteksi kolom Biaya Lainnya
                     if(val.includes("BIAYA LAINNYA")) hInLainnya = c;
                 }
             }
@@ -837,8 +842,6 @@
                 let bandaraRaw = String(data[i][hBandara]).trim().toUpperCase();
                 if(!bandaraRaw || bandaraRaw === "NAN" || bandaraRaw.length < 3 || bandaraRaw.includes("BANDARA")) continue;
                 
-                // PERBAIKAN 2: Gunakan nama utuh, JANGAN di-split agar "SPP DPS" tidak rusak
-                // Bersihkan embel-embel dalam kurung misal "(Garuda & Citilink)"
                 let bandara = bandaraRaw.replace(/\s*\([^)]*\)/g, '').trim(); 
                 
                 let outFee = hOut > -1 ? parseRupiah(data[i][hOut]) : 0;
@@ -846,7 +849,6 @@
                 let inGudang = hInGudang > -1 ? parseRupiah(data[i][hInGudang]) : 0;
                 let inLainnya = hInLainnya > -1 ? parseRupiah(data[i][hInLainnya]) : 0;
                 
-                // Total seluruh Incoming
                 let inFee = inAdmin + inGudang + inLainnya;
 
                 if(!regionalFees[bandara]) regionalFees[bandara] = { out: 0, in: 0 };
@@ -865,25 +867,31 @@
                 for (let destKey in garudaMatrix[originKey].dests) {
                     let destObj = garudaMatrix[originKey].dests[destKey];
                     let destCode = destObj.code;
-                    let base = destObj.biaya;
                     
-                    // PERBAIKAN 3: Pemetaan Silang IATA Code Garuda vs Regional PosIND
                     let originMatch = originCode === "MES" ? "KNO" : originCode;
                     let destMatch = destCode === "MES" ? "KNO" : destCode;
                     
-                    // Tarik Tarif Outgoing (Berdasarkan Origin)
                     let outFee = 0;
                     let outKey = Object.keys(regionalFees).find(k => k === originMatch || k.includes(originMatch));
                     if(!outKey && originMatch === "CGK") outKey = Object.keys(regionalFees).find(k => k.includes("KTSH"));
                     if(outKey) outFee = regionalFees[outKey].out;
                     
-                    // Tarik Tarif Incoming (Berdasarkan Destination)
                     let inFee = 0;
                     let inKey = Object.keys(regionalFees).find(k => k === destMatch || k.includes(destMatch));
                     if(!inKey && destMatch === "CGK") inKey = Object.keys(regionalFees).find(k => k.includes("KTSH"));
                     if(inKey) inFee = regionalFees[inKey].in;
 
-                    matrixUdara[originKey][destKey] = base + outFee + inFee;
+                    // Mengumpulkan semua tarif (Base Garuda + Out + In)
+                    let finalChoices = [];
+                    destObj.choices.forEach(base => {
+                        let total = base + outFee + inFee;
+                        if (!finalChoices.includes(total)) {
+                            finalChoices.push(total);
+                        }
+                    });
+                    
+                    finalChoices.sort((a,b) => a - b);
+                    matrixUdara[originKey][destKey] = finalChoices;
                 }
             }
         }
@@ -1087,8 +1095,9 @@
                 </div>
                 <div class="w-full md:w-1/6 relative mt-2 md:mt-0">
                     <label class="text-[10px] text-gray-500 font-bold uppercase md:hidden block mb-1">Tarif / Kg</label>
-                    <span class="absolute left-3 top-8 md:top-2.5 text-gray-500 font-semibold">Rp</span>
+                    <span class="absolute left-3 top-8 md:top-2.5 text-gray-500 font-semibold z-10">Rp</span>
                     <input type="text" id="rute-tarif-${ruteCount}" class="w-full bg-gray-200 border border-gray-300 p-2.5 pl-10 rounded text-gray-700 font-bold cursor-not-allowed" placeholder="0" readonly data-value="0" oninput="formatRupiahInput(this); this.dataset.value = unformatRupiah(this.value);">
+                    <select id="rute-tarif-select-${ruteCount}" class="hidden w-full bg-yellow-50 border border-yellow-400 p-2.5 pl-10 rounded text-posblue font-bold focus:ring-posorange cursor-pointer shadow-sm" onchange="syncTarifDropdown(${ruteCount})"></select>
                 </div>
                 ${allRows.length > 0 ? `<button onclick="hapusRute(this)" class="w-full md:w-auto mt-2 md:mt-0 text-red-500 border border-red-200 md:border-none rounded py-2 md:py-0 font-bold hover:bg-red-50" title="Hapus">HAPUS</button>` : `<div class="hidden md:block w-4"></div>`}
             `;
@@ -1118,6 +1127,7 @@
 
             let originInput = document.getElementById(`rute-origin-${index}`);
             let tarifInput = document.getElementById(`rute-tarif-${index}`);
+            let tarifSelect = document.getElementById(`rute-tarif-select-${index}`);
             let wrapper = document.getElementById(`rute-dest-wrapper-${index}`);
 
             // === PENANGANAN SEKUNDER SETEMPAT (MANUAL INPUT) ===
@@ -1135,15 +1145,15 @@
                     </div>
                 `;
                 
-                // Buat Tarif jadi bisa di-edit (Un-readonly)
                 tarifInput.removeAttribute('readonly');
-                tarifInput.classList.remove('bg-gray-200', 'cursor-not-allowed');
+                tarifInput.classList.remove('bg-gray-200', 'cursor-not-allowed', 'hidden');
                 tarifInput.classList.add('bg-white', 'focus:ring-posorange');
+                if (tarifSelect) tarifSelect.classList.add('hidden');
+                
                 tarifInput.value = '';
                 tarifInput.dataset.value = 0;
                 tarifInput.placeholder = "Ketik Nominal...";
 
-                // Tetapkan Origin otomatis (atau bebas)
                 if (!isFirstRow && !forcedOrigin) {
                     let prevDestVal = "";
                     if (prevRow.querySelector(`select[id^="rute-dest-"]`)) {
@@ -1156,7 +1166,7 @@
                     originInput.value = forcedOrigin;
                 }
                 
-                return; // STOP di sini, tidak perlu bangun opsi dropdown matrix
+                return; 
             }
 
             // === KEMBALIKAN KE MODE DROPDOWN MATRIKS NORMAL ===
@@ -1173,10 +1183,11 @@
                 });
             }
 
-            // Kunci lagi Tarif Input (Readonly)
             tarifInput.setAttribute('readonly', true);
             tarifInput.classList.add('bg-gray-200', 'cursor-not-allowed');
-            tarifInput.classList.remove('bg-white', 'focus:ring-posorange');
+            tarifInput.classList.remove('bg-white', 'focus:ring-posorange', 'hidden');
+            if (tarifSelect) tarifSelect.classList.add('hidden');
+            
             tarifInput.value = '';
             tarifInput.dataset.value = 0;
             tarifInput.placeholder = "0";
@@ -1221,11 +1232,23 @@
             }
         }
 
+        function syncTarifDropdown(index) {
+            let tarifSelect = document.getElementById(`rute-tarif-select-${index}`);
+            let tarifInput = document.getElementById(`rute-tarif-${index}`);
+            if(!tarifSelect || !tarifInput) return;
+            
+            let val = tarifSelect.value;
+            tarifInput.dataset.value = val;
+            tarifInput.value = formatRupiahUI(val);
+        }
+
         function onChangeDest(index) {
             const moda = document.getElementById(`rute-moda-${index}`).value;
             const origin = document.getElementById(`rute-origin-${index}`).value;
             const dest = document.getElementById(`rute-dest-${index}`).value;
             const tarifInput = document.getElementById(`rute-tarif-${index}`);
+            const tarifSelect = document.getElementById(`rute-tarif-select-${index}`);
+            
             let activeMatrix = moda === "PRIMER UDARA" ? matrixUdara : 
                                moda === "PRIMER DARAT" ? matrixDarat : 
                                moda === "PRIMER LAUT" ? matrixLaut : 
@@ -1233,11 +1256,36 @@
             
             if (dest && activeMatrix[origin] && activeMatrix[origin][dest]) {
                 let trueVal = activeMatrix[origin][dest];
-                tarifInput.value = formatRupiahUI(trueVal); 
-                tarifInput.dataset.value = trueVal;         
+                
+                if (Array.isArray(trueVal)) {
+                    tarifSelect.innerHTML = '';
+                    trueVal.forEach(val => {
+                        tarifSelect.innerHTML += `<option value="${val}">${formatRupiahUI(val)}</option>`;
+                    });
+                    if(trueVal.length > 1) {
+                        tarifSelect.classList.remove('hidden');
+                        tarifInput.classList.add('hidden');
+                        tarifInput.dataset.value = trueVal[0];
+                        tarifInput.value = formatRupiahUI(trueVal[0]);
+                    } else {
+                        tarifSelect.classList.add('hidden');
+                        tarifInput.classList.remove('hidden');
+                        tarifInput.value = formatRupiahUI(trueVal[0]); 
+                        tarifInput.dataset.value = trueVal[0];
+                    }
+                } else {
+                    if(tarifSelect) tarifSelect.classList.add('hidden');
+                    tarifInput.classList.remove('hidden');
+                    tarifInput.value = formatRupiahUI(trueVal); 
+                    tarifInput.dataset.value = trueVal;         
+                }
             } else { 
-                tarifInput.value = ''; 
-                tarifInput.dataset.value = 0; 
+                if(tarifSelect) tarifSelect.classList.add('hidden');
+                if(tarifInput) {
+                    tarifInput.classList.remove('hidden');
+                    tarifInput.value = ''; 
+                    tarifInput.dataset.value = 0; 
+                }
             }
             
             let rowElem = document.getElementById(`rute-row-${index}`);
@@ -1337,8 +1385,6 @@
                         }
                     });
                     let costTersier = globalTersier.tarif * pCW;
-                    
-                    // UPDATE v3.8: Delivery menggunakan flat rate 2875 per kg
                     let delivery = 2875 * pCW;
                     
                     let totalOpt = collecting + processing + costRoutes.reduce((a,b)=>a+b, 0) + costTersier + delivery;
@@ -1431,10 +1477,13 @@
         }
 
         function getColName(n) {
+            let ordA = 'A'.charCodeAt(0);
+            let ordZ = 'Z'.charCodeAt(0);
+            let len = ordZ - ordA + 1;
             let s = "";
             while(n >= 0) {
-                s = String.fromCharCode(n % 26 + 65) + s;
-                n = Math.floor(n / 26) - 1;
+                s = String.fromCharCode(n % len + ordA) + s;
+                n = Math.floor(n / len) - 1;
             }
             return s;
         }
@@ -1514,7 +1563,6 @@
                     let colAct = getColName(iAct), colP = getColName(iP), colL = getColName(iL);
                     let colT = getColName(iT), colVol = getColName(iVol), colCW = getColName(iCW), colBiaya = getColName(iBiaya);
 
-                    // UPDATE v3.8: Pembagi Volumetrik Dinamis pada File Excel
                     let modaValExport = document.querySelector('input[name="modaUtama"]:checked').value;
                     let pmbExport = modaValExport === 'UDARA' ? 6000 : 4000;
                     rowData[iVol] = { t: 'n', f: `${colP}${R}*${colL}${R}*${colT}${R}/${pmbExport}`, z: '0.00', s: getStylePlain() };
@@ -1541,7 +1589,7 @@
                     
                     rowData[iTer] = { t: 'n', f: `$${colCW}${R}*${globalTersier.tarif}`, z: rpFmt, s: getStyleRp() };
                     
-                    // UPDATE v3.8: Delivery flat rate pada File Excel
+                    // Delivery flat rate
                     rowData[iDeliv] = { t: 'n', f: `$${colCW}${R}*2875`, z: rpFmt, s: getStyleRp() };
                     
                     rowData[iOpt] = { t: 'n', f: `SUM(${getColName(iCol)}${R}:${getColName(iDeliv)}${R})`, z: rpFmt, s: getStyleRp() };
@@ -1633,5 +1681,6 @@
             }
         }
     </script>
+    <script src="assets/app-enhancements.js"></script>
 </body>
 </html>
