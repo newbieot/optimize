@@ -1,3 +1,12 @@
+## v5.2 — Excel CBA dan Scope of Work
+
+- Menambahkan tombol **Proses Excel CBA** setelah kalkulasi berhasil.
+- Membatasi input tambahan pada identitas pelanggan, alamat, kontak, dan tanggal mulai; nilai, rute, biaya, berat, serta dimensi diambil otomatis dari kalkulasi.
+- Menambahkan sheet **CBA**, **Rincian Biaya Fix**, dan **NEW SOW** ke workbook formula-driven yang juga memuat sheet Perhitungan dan Tabel Optimalisasi.
+- Mengambil dimensi per koli dari paket dengan berat volumetrik terbesar.
+- Menghasilkan gambar pola operasi dari asal, rute, moda, dan tujuan, lalu menanamkannya langsung ke sheet NEW SOW.
+- Mengganti referensi eksternal yang putus pada file contoh dengan formula internal antar-sheet.
+
 ## v5.1 — Footer parity with lacak.posnew.com
 - Footer diubah menjadi bar tipis 38 px dengan garis oranye di atas dan latar navy.
 - Menambahkan ikon brand, caption tengah, dan badge kreator interaktif seperti lacak.posnew.com.

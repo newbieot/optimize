@@ -1,6 +1,6 @@
-# Laporan Pengujian — PosNew Hub Optimize v5.1
+# Laporan Pengujian — PosNew Hub Optimize v5.2
 
-Tanggal pengujian: 27 Juli 2026
+Tanggal pengujian: 19 September 2026
 
 ## Hasil utama
 
@@ -14,6 +14,8 @@ Tanggal pengujian: 27 Juli 2026
 - **Lulus** — kasus berat nol/kosong ditangani dengan pembagian aman dan tidak menampilkan `Infinity` atau `NaN`.
 - **Lulus** — input negatif yang tidak masuk akal ditandai melalui validasi inline.
 - **Lulus** — reset, ekspor/impor JSON, penyimpanan skenario lokal, perbandingan skenario, salin ringkasan, dan print memiliki handler aktif.
+- **Lulus** — alur Proses Excel CBA hanya meminta enam field identitas, responsif pada desktop dan mobile, serta memilih dimensi paket dengan volumetrik terbesar.
+- **Lulus** — workbook CBA memiliki lima sheet, formula internal tanpa `#REF!`, dan gambar pola operasi tertanam pada NEW SOW.
 
 ## Sampel regression formula
 
@@ -44,3 +46,10 @@ Firebase Authentication dan sumber tarif Google Sheets/CSV merupakan layanan eks
 - Gaya desktop: tinggi 38 px, baris tunggal, garis oranye, tiga zona konten.
 - Gaya mobile: tinggi 36 px, caption disembunyikan, badge kreator tetap terlihat.
 - Footer tetap tersembunyi pada mode cetak dan tidak memengaruhi formula aplikasi.
+
+## Regression v5.2 — Excel CBA
+
+- Workbook uji berhasil dibuka kembali dan seluruh lima sheet dapat dirender.
+- Pemindaian formula tidak menemukan `#REF!`, `#DIV/0!`, `#VALUE!`, `#NAME?`, atau error formula umum lainnya.
+- Data contoh memilih dimensi `P150 × L86 × T22 cm` karena paket tersebut memiliki berat volumetrik terbesar.
+- Gambar pola operasi hasil web ditemukan sebagai media PNG tertanam di sheet NEW SOW.

@@ -2,6 +2,7 @@
   'use strict';
   const STORAGE_KEY = 'posnew_optimize_scenarios_v5';
   const LAST_STATE_KEY = 'posnew_optimize_last_state_v5';
+  const CBA_META_KEY = 'posnew_optimize_cba_meta_v1';
   let latestModel = null;
   let deleteArmed = false;
 
@@ -40,13 +41,13 @@
     const summary = document.createElement('aside'); summary.className='workspace-summary'; summary.setAttribute('aria-label','Ringkasan analisis');
     summary.innerHTML = summaryMarkup();
     shell.append(form,summary); result.insertAdjacentElement('beforebegin',shell);
-    rebuildResultsShell(result);
+    rebuildResultsShell(result); mountCbaModal();
     enhanceHeader(); enhanceFooter(); enhanceAccessibility(); bindActions(); renderScenarioOptions(); updateSummary(calculateModel(false));
   }
 
   function enhanceHeader(){
     const h=$('#appHeader'); if(!h)return;
-    h.innerHTML=`<div class="app-brand-lockup"><div class="app-brand-mark" aria-hidden="true">O</div><div class="app-brand-copy"><small>PosNew Hub</small><h1>Optimalisasi Proyek Logistik</h1></div><span class="app-version text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full">v5.1</span></div><div class="header-actions"><span class="header-privacy">🔒 Data diproses di browser</span><button onclick="logoutFirebase()" class="bg-red-50 text-red-600 border border-red-200 px-3 py-2 rounded-lg font-bold text-sm">Keluar</button></div>`;
+    h.innerHTML=`<div class="app-brand-lockup"><div class="app-brand-mark" aria-hidden="true">O</div><div class="app-brand-copy"><small>PosNew Hub</small><h1>Optimalisasi Proyek Logistik</h1></div><span class="app-version text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full">v5.2</span></div><div class="header-actions"><span class="header-privacy">🔒 Data diproses di browser</span><button onclick="logoutFirebase()" class="bg-red-50 text-red-600 border border-red-200 px-3 py-2 rounded-lg font-bold text-sm">Keluar</button></div>`;
   }
   function enhanceFooter(){
     const f=$('#appFooter'); if(!f)return;
@@ -60,7 +61,7 @@
 
   function rebuildResultsShell(result){
     if(!result)return;
-    result.innerHTML=`<div class="results-head"><div><h2>Hasil Analisis Proyek</h2><p id="labelTujuan"></p><p class="print-meta" id="printMeta"></p></div><div class="results-actions"><button id="copyResultsBtn">Salin</button><button id="printResultsBtn">Cetak / PDF</button><button class="excel" onclick="exportToExcel()">Unduh Excel</button></div></div><div class="results-body"><div class="breakdown-grid"><div class="breakdown-card"><h3>Rincian Perhitungan</h3><div id="breakdownList" class="breakdown-list"></div><p class="formula-note">Basis berat: total chargeable weight. Volumetrik menggunakan pembagi 6.000 untuk udara dan 4.000 untuk darat/laut. Nilai proyek per kg tidak sama dengan biaya per kg.</p></div><div class="comparison-card"><h3>Perbandingan Skenario</h3><div id="comparisonOutput" class="comparison-output">Pilih skenario tersimpan, lalu tekan <strong>Bandingkan</strong> untuk melihat selisih terhadap kondisi saat ini.</div></div></div><div class="print-input-card"><h3>Ringkasan Input</h3><div id="printInputList" class="breakdown-list"></div></div><div class="table-scroll overflow-x-auto"><table class="w-full text-sm text-left text-gray-700 border" id="tableHasil"><thead id="hasilHeaders"></thead><tbody id="tbodyHasil"></tbody><tfoot id="tfootHasil"></tfoot></table></div></div>`;
+    result.innerHTML=`<div class="results-head"><div><h2>Hasil Analisis Proyek</h2><p id="labelTujuan"></p><p class="print-meta" id="printMeta"></p></div><div class="results-actions"><button id="copyResultsBtn">Salin</button><button id="printResultsBtn">Cetak / PDF</button><button class="excel cba" id="processCbaBtn">Proses Excel CBA</button><button class="excel secondary" onclick="exportToExcel()">Excel Ringkas</button></div></div><div class="results-body"><div class="breakdown-grid"><div class="breakdown-card"><h3>Rincian Perhitungan</h3><div id="breakdownList" class="breakdown-list"></div><p class="formula-note">Basis berat: total chargeable weight. Volumetrik menggunakan pembagi 6.000 untuk udara dan 4.000 untuk darat/laut. Nilai proyek per kg tidak sama dengan biaya per kg.</p></div><div class="comparison-card"><h3>Perbandingan Skenario</h3><div id="comparisonOutput" class="comparison-output">Pilih skenario tersimpan, lalu tekan <strong>Bandingkan</strong> untuk melihat selisih terhadap kondisi saat ini.</div></div></div><div class="print-input-card"><h3>Ringkasan Input</h3><div id="printInputList" class="breakdown-list"></div></div><div class="table-scroll overflow-x-auto"><table class="w-full text-sm text-left text-gray-700 border" id="tableHasil"><thead id="hasilHeaders"></thead><tbody id="tbodyHasil"></tbody><tfoot id="tfootHasil"></tfoot></table></div></div>`;
   }
 
   function getRoutes(){
@@ -79,7 +80,7 @@
     const directCost=typeof unformatRupiah==='function'?unformatRupiah($('#inputNominalBL')?.value||'0'):0;
     const routes=getRoutes(); const tertiaryRate=Number($('#tarifTersier')?.dataset.value||0);
     const rows=$$('.paket-row');
-    const packages=rows.map((row,i)=>({name:$('.paket-nama',row)?.value||`PAKET ${i+1}`,actual:Number($('.paket-aktual',row)?.value||0),vol:Number($('.paket-vol',row)?.value||0),cw:Number($('.paket-cw',row)?.value||0)}));
+    const packages=rows.map((row,i)=>({name:$('.paket-nama',row)?.value||`PAKET ${i+1}`,actual:Number($('.paket-aktual',row)?.value||0),p:Number($('.paket-p',row)?.value||0),l:Number($('.paket-l',row)?.value||0),t:Number($('.paket-t',row)?.value||0),vol:Number($('.paket-vol',row)?.value||0),cw:Number($('.paket-cw',row)?.value||0)}));
     const invalid = !destination || !packages.length || packages.some(p=>p.cw<=0) || routes.length===0 || marginInput>=100 || marginInput<0;
     if(requireComplete && invalid) return {valid:false,destination,marginInput,packages,routes};
     let baseTotal=0;
@@ -157,10 +158,37 @@
   async function copySummary(){try{await navigator.clipboard.writeText(summaryText());toast('Ringkasan disalin.','success')}catch{toast('Tidak dapat mengakses clipboard.','error')}}
   async function shareSummary(){const text=summaryText();if(navigator.share)try{await navigator.share({title:'Analisis Proyek Logistik',text});return}catch(e){if(e.name==='AbortError')return}await copySummary();}
   function exportJson(){const blob=new Blob([JSON.stringify(serializeState(),null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`optimize-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href);toast('Data JSON diekspor.','success');}
+  function mountCbaModal(){
+    if($('#cbaModal'))return;
+    const modal=document.createElement('div');modal.id='cbaModal';modal.className='cba-modal';modal.hidden=true;
+    modal.innerHTML=`<div class="cba-dialog" role="dialog" aria-modal="true" aria-labelledby="cbaTitle"><div class="cba-dialog-head"><div><span class="cba-kicker">Dokumen proyek</span><h2 id="cbaTitle">Proses Excel CBA</h2><p>Isi data identitas yang tidak tersedia di kalkulator. Nilai, rute, biaya, berat, dan dimensi diambil otomatis.</p></div><button type="button" class="cba-close" id="closeCbaBtn" aria-label="Tutup">×</button></div><form id="cbaForm"><div class="cba-form-grid"><label class="cba-field"><span>Nama pelanggan / PIC <b>*</b></span><input id="cbaCustomer" name="customer" type="text" maxlength="100" required placeholder="Contoh: Bapak Rosyid"></label><label class="cba-field"><span>Tanggal mulai <b>*</b></span><input id="cbaStart" name="startDate" type="date" required></label><label class="cba-field cba-wide"><span>Alamat penjemputan <b>*</b></span><textarea id="cbaPickup" name="pickupAddress" rows="2" maxlength="300" required></textarea></label><label class="cba-field cba-wide"><span>Alamat tujuan <b>*</b></span><textarea id="cbaDropoff" name="dropoffAddress" rows="2" maxlength="300" required></textarea></label><label class="cba-field"><span>Nomor HP</span><input id="cbaPhone" name="phone" type="tel" maxlength="30" placeholder="Opsional"></label><label class="cba-field"><span>Email</span><input id="cbaEmail" name="email" type="email" maxlength="100" placeholder="Opsional"></label></div><div class="cba-derived"><strong>Diisi otomatis dari kalkulasi</strong><p id="cbaDerivedText">Rute, biaya, berat, dan dimensi per koli.</p></div><div class="cba-actions"><button type="button" id="cancelCbaBtn">Batal</button><button type="submit" class="cba-submit" id="downloadCbaBtn">Buat & Unduh Excel CBA</button></div></form></div>`;
+    document.body.appendChild(modal);
+  }
+  function readCbaMeta(){try{return JSON.parse(localStorage.getItem(CBA_META_KEY)||'{}')}catch{return {}}}
+  function closeCbaModal(){const modal=$('#cbaModal');if(modal)modal.hidden=true;document.body.classList.remove('modal-open');}
+  function openCbaModal(){
+    const model=calculateModel(true);if(!model.valid)return toast('Kalkulasi proyek belum lengkap. Jalankan kalkulasi terlebih dahulu.','error');
+    latestModel=model;const saved=readCbaMeta(),today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),rep=model.packages.reduce((best,item)=>!best||item.vol>best.vol?item:best,null);
+    $('#cbaCustomer').value=saved.customer||'';$('#cbaPickup').value=saved.pickupAddress||'';$('#cbaDropoff').value=saved.dropoffAddress||'';$('#cbaPhone').value=saved.phone||'';$('#cbaEmail').value=saved.email||'';$('#cbaStart').value=saved.startDate||today;
+    $('#cbaPickup').placeholder=`Alamat lengkap penjemputan di ${model.routes[0]?.origin||'lokasi asal'}`;$('#cbaDropoff').placeholder=`Alamat lengkap tujuan di ${model.destination}`;
+    $('#cbaDerivedText').textContent=`${model.packages.length} koli • ${number(model.totalWeight,2)} kg CW • dimensi terbesar P${number(rep?.p||0)} × L${number(rep?.l||0)} × T${number(rep?.t||0)} cm • ${model.routes.length} rute • 5 sheet Excel.`;
+    $('#cbaModal').hidden=false;document.body.classList.add('modal-open');setTimeout(()=>$('#cbaCustomer').focus(),0);
+  }
+  async function submitCba(event){
+    event.preventDefault();const form=event.currentTarget;if(!form.reportValidity())return;
+    const model=calculateModel(true);if(!model.valid)return toast('Data kalkulasi berubah atau belum lengkap. Kalkulasikan ulang terlebih dahulu.','error');
+    const data=Object.fromEntries(new FormData(form).entries()),button=$('#downloadCbaBtn'),oldText=button.textContent;
+    button.disabled=true;button.textContent='Menyusun 5 sheet...';
+    try{
+      if(!window.PosNewCba?.download)throw new Error('Modul Excel CBA belum berhasil dimuat.');
+      localStorage.setItem(CBA_META_KEY,JSON.stringify(data));const filename=await window.PosNewCba.download(model,data);closeCbaModal();toast(`${filename} berhasil dibuat.`,'success');
+    }catch(error){console.error('CBA Excel Export Error:',error);toast(`Gagal membuat Excel CBA: ${error.message}`,'error')}
+    finally{button.disabled=false;button.textContent=oldText;}
+  }
   function resetAll(){const form=$('.workspace-form');$$('input',form).forEach(i=>{if(i.type==='radio')i.checked=i.value==='UDARA';else if(i.type==='checkbox')i.checked=false;});$('#jumlahPaket').value=1;$('#inputMargin').value=15;$('#inputNamaBL').value='';$('#inputNominalBL').value='';if($('#tujuanAkhirSelect')?.tomselect)$('#tujuanAkhirSelect').tomselect.clear();else $('#tujuanAkhirSelect').value='';renderPaketRows();const row=$('.paket-row');if(row){$('.paket-nama',row).value='PAKET 1';$('.paket-aktual',row).value=10;$('.paket-p',row).value=20;$('.paket-l',row).value=20;$('.paket-t',row).value=20;calcCW($('.paket-aktual',row));}renderDefaultRoutes();$('#hasil-container').classList.add('hidden');updateSummary(calculateModel(false));localStorage.removeItem(LAST_STATE_KEY);toast('Form dikembalikan ke nilai awal.','success');}
   function saveLastState(){try{localStorage.setItem(LAST_STATE_KEY,JSON.stringify(serializeState()))}catch{}}
   function bindActions(){
-    $('#copySummaryBtn')?.addEventListener('click',copySummary);$('#shareSummaryBtn')?.addEventListener('click',shareSummary);$('#printBtn')?.addEventListener('click',()=>window.print());$('#copyResultsBtn')?.addEventListener('click',copySummary);$('#printResultsBtn')?.addEventListener('click',()=>window.print());$('#exportJsonBtn')?.addEventListener('click',exportJson);$('#importJsonBtn')?.addEventListener('click',()=>$('#importFile').click());$('#importFile')?.addEventListener('change',e=>{const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{try{applyState(JSON.parse(r.result))}catch{toast('File JSON tidak valid.','error')}};r.readAsText(file);});$('#resetBtn')?.addEventListener('click',resetAll);$('#saveScenarioBtn')?.addEventListener('click',saveScenario);$('#loadScenarioBtn')?.addEventListener('click',loadScenario);$('#deleteScenarioBtn')?.addEventListener('click',deleteScenario);$('#duplicateScenarioBtn')?.addEventListener('click',duplicateScenario);$('#compareScenarioBtn')?.addEventListener('click',compareScenario);$('#clearLocalBtn')?.addEventListener('click',()=>{if(!deleteArmed){deleteArmed=true;$('#clearLocalBtn').textContent='Klik lagi';toast('Klik sekali lagi untuk menghapus semua data lokal.');setTimeout(()=>{deleteArmed=false;if($('#clearLocalBtn'))$('#clearLocalBtn').textContent='Hapus Data'},4000);return}localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(LAST_STATE_KEY);renderScenarioOptions();deleteArmed=false;$('#clearLocalBtn').textContent='Hapus Data';toast('Semua data lokal dihapus.','success')});
+    $('#copySummaryBtn')?.addEventListener('click',copySummary);$('#shareSummaryBtn')?.addEventListener('click',shareSummary);$('#printBtn')?.addEventListener('click',()=>window.print());$('#copyResultsBtn')?.addEventListener('click',copySummary);$('#printResultsBtn')?.addEventListener('click',()=>window.print());$('#processCbaBtn')?.addEventListener('click',openCbaModal);$('#closeCbaBtn')?.addEventListener('click',closeCbaModal);$('#cancelCbaBtn')?.addEventListener('click',closeCbaModal);$('#cbaForm')?.addEventListener('submit',submitCba);$('#cbaModal')?.addEventListener('click',event=>{if(event.target.id==='cbaModal')closeCbaModal()});document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('#cbaModal')?.hidden)closeCbaModal()});$('#exportJsonBtn')?.addEventListener('click',exportJson);$('#importJsonBtn')?.addEventListener('click',()=>$('#importFile').click());$('#importFile')?.addEventListener('change',e=>{const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=()=>{try{applyState(JSON.parse(r.result))}catch{toast('File JSON tidak valid.','error')}};r.readAsText(file);});$('#resetBtn')?.addEventListener('click',resetAll);$('#saveScenarioBtn')?.addEventListener('click',saveScenario);$('#loadScenarioBtn')?.addEventListener('click',loadScenario);$('#deleteScenarioBtn')?.addEventListener('click',deleteScenario);$('#duplicateScenarioBtn')?.addEventListener('click',duplicateScenario);$('#compareScenarioBtn')?.addEventListener('click',compareScenario);$('#clearLocalBtn')?.addEventListener('click',()=>{if(!deleteArmed){deleteArmed=true;$('#clearLocalBtn').textContent='Klik lagi';toast('Klik sekali lagi untuk menghapus semua data lokal.');setTimeout(()=>{deleteArmed=false;if($('#clearLocalBtn'))$('#clearLocalBtn').textContent='Hapus Data'},4000);return}localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(LAST_STATE_KEY);renderScenarioOptions();deleteArmed=false;$('#clearLocalBtn').textContent='Hapus Data';toast('Semua data lokal dihapus.','success')});
     let timer;document.addEventListener('input',e=>{if(e.target.closest('.workspace-form')){clearTimeout(timer);timer=setTimeout(()=>updateSummary(calculateModel(false)),120)}});document.addEventListener('change',e=>{if(e.target.closest('.workspace-form')){clearTimeout(timer);timer=setTimeout(()=>updateSummary(calculateModel(false)),120)}});
   }
   function enhanceAccessibility(){

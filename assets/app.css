@@ -143,3 +143,43 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
   .footer-creator-badge{max-width:64%!important;overflow:hidden!important;text-overflow:ellipsis!important}
 }
 @media print{.dashboard-footer{display:none!important}}
+
+/* CBA workbook flow */
+.results-actions .excel.secondary{background:#fff;color:#117a4b}
+.results-actions .excel.cba{background:linear-gradient(135deg,#117a4b,#0d6440);box-shadow:0 7px 16px rgba(17,122,75,.2)}
+.modal-open{overflow:hidden}
+.cba-modal{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;padding:20px;background:rgba(8,20,39,.72);backdrop-filter:blur(4px)}
+.cba-modal[hidden]{display:none}
+.cba-dialog{width:min(760px,100%);max-height:calc(100vh - 40px);overflow:auto;border:1px solid rgba(255,255,255,.3);border-radius:20px;background:#fff;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.cba-dialog-head{display:flex;justify-content:space-between;gap:20px;padding:23px 24px 18px;border-bottom:1px solid #e2e8f0;background:linear-gradient(145deg,#f9fbff,#edf4fb)}
+.cba-kicker{display:block;margin-bottom:5px;color:#117a4b;font-size:.68rem;font-weight:850;letter-spacing:.11em;text-transform:uppercase}
+.cba-dialog-head h2{margin:0;color:var(--navy);font-family:'Sora',sans-serif;font-size:1.25rem}
+.cba-dialog-head p{margin:6px 0 0;max-width:590px;color:#64748b;font-size:.78rem;line-height:1.5}
+.cba-close{flex:0 0 38px;width:38px;height:38px;border:1px solid #d8e0eb;border-radius:10px;background:#fff;color:#42526a;font-size:1.45rem;line-height:1}
+.cba-dialog form{padding:21px 24px 24px}
+.cba-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.cba-field{display:grid;gap:6px}
+.cba-field.cba-wide{grid-column:1/-1}
+.cba-field span{color:#344258;font-size:.76rem;font-weight:800}
+.cba-field b{color:#d14335}
+.cba-field input,.cba-field textarea{width:100%;border:1px solid #cfd8e5;border-radius:10px;background:#fff;padding:10px 11px;color:#172943;font:inherit;font-size:.82rem;transition:border-color .15s,box-shadow .15s}
+.cba-field textarea{resize:vertical;min-height:64px}
+.cba-field input:focus,.cba-field textarea:focus{outline:0;border-color:#1a75c1;box-shadow:0 0 0 3px rgba(26,117,193,.12)}
+.cba-derived{margin-top:16px;padding:12px 14px;border:1px solid #cfe5da;border-radius:11px;background:#f1faf5}
+.cba-derived strong{display:block;color:#126641;font-size:.76rem}
+.cba-derived p{margin:4px 0 0;color:#4c6659;font-size:.74rem;line-height:1.45}
+.cba-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+.cba-actions button{min-height:42px;border:1px solid #d4dce7;border-radius:10px;background:#fff;padding:9px 15px;color:#30415a;font-size:.78rem;font-weight:800}
+.cba-actions .cba-submit{border-color:#117a4b;background:#117a4b;color:#fff}
+.cba-actions .cba-submit:disabled{cursor:wait;opacity:.65}
+@media(max-width:620px){
+  .cba-modal{padding:0;place-items:end center}
+  .cba-dialog{max-height:94vh;border-radius:20px 20px 0 0}
+  .cba-dialog-head,.cba-dialog form{padding-left:17px;padding-right:17px}
+  .cba-form-grid{grid-template-columns:1fr}
+  .cba-field.cba-wide{grid-column:auto}
+  .cba-actions{display:grid;grid-template-columns:1fr 1.6fr}
+  .cba-actions button{padding-inline:8px}
+  .results-actions .excel.cba{flex-basis:100%}
+}
+@media print{.cba-modal{display:none!important}}
